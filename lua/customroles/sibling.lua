@@ -233,7 +233,14 @@ if CLIENT then
 
     AddHook("TTTTargetIDPlayerText", "Sibling_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
         if cli:IsSibling() and IsPlayer(ent) and ent:SteamID64() == cli.TTTSiblingTarget and not cli:IsRoleAbilityDisabled() then
-            return LANG.GetTranslation("sibling_targetid"), ROLE_COLORS_RADAR[ROLE_SIBLING]
+            -- Don't overwrite text
+            if text then
+                -- Don't overwrite secondary text either
+                if secondary_text then return end
+                return text, col, LANG.GetTranslation("sibling_targetid"), ROLE_COLORS_RADAR[ROLE_SIBLING]
+            else
+                return LANG.GetTranslation("sibling_targetid"), ROLE_COLORS_RADAR[ROLE_SIBLING]
+            end
         end
     end)
 
