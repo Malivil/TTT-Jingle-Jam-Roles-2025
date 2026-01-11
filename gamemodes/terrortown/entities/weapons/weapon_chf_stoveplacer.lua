@@ -184,7 +184,7 @@ function SWEP:ViewModelDrawn()
     if not IsValid(self.GhostEnt) then
         self.GhostEnt = ClientsideModel(self.StoveModel)
         -- Scale this down to match (roughly) the size it will be in the world
-        self.GhostEnt:SetModelScale(0.53)
+        self.GhostEnt:SetModelScale(0.6)
     end
 
     -- Draw a box where the stove will be placed, colored GREEN for a good location and RED for a bad one
