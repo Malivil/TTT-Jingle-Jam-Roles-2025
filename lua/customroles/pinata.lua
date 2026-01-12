@@ -53,12 +53,6 @@ ROLE.translations =
     }
 }
 
-RegisterRole(ROLE)
--- Add the accent back after registering the role
-timer.Simple(5, function()
-    ROLE_STRINGS[ROLE_PINATA] = "Piñata"
-end)
-
 ------------------
 -- ROLE CONVARS --
 ------------------
@@ -70,7 +64,7 @@ if SERVER then
     -- ROLE FEATURES --
     -------------------
 
-    ROLE_ON_ROLE_ASSIGNED[ROLE_PINATA] = function(ply)
+    ROLE.onroleassigned = function(ply)
         -- Use a slight delay to make sure nothing else is changing this player's role first
         timer.Simple(0.25, function()
             ply.TTTPinataDamageTaken = 0
@@ -273,3 +267,9 @@ if CLIENT then
         end
     end)
 end
+
+RegisterRole(ROLE)
+-- Add the accent back after registering the role
+timer.Simple(5, function()
+    ROLE_STRINGS[ROLE_PINATA] = "Piñata"
+end)
