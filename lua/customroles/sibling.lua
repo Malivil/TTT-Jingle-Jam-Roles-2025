@@ -242,7 +242,7 @@ if CLIENT then
         end
     end)
 
-    ROLE_IS_TARGETID_OVERRIDDEN[ROLE_SIBLING] = function(ply, target, showJester)
+    ROLE.istargetidoverridden = function(ply, target, showJester)
         if not ply:IsSibling() then return end
         if not IsPlayer(target) then return end
         if ply:IsRoleAbilityDisabled() then return end
@@ -262,7 +262,7 @@ if CLIENT then
         end
     end)
 
-    ROLE_IS_SCOREBOARD_INFO_OVERRIDDEN[ROLE_SIBLING] = function(ply, target)
+    ROLE.isscoreboardinfooverridden = function(ply, target)
         if not ply:IsSibling() then return end
         if not IsPlayer(target) then return end
         if ply:IsRoleAbilityDisabled() then return end
