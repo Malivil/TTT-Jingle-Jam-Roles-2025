@@ -127,7 +127,7 @@ if CLIENT then
     -- Only set up the net methods once
     if not netSetup then
         netSetup = true
-print("Setting up food network methods")
+
         local client = nil
         net.Receive("TTTChefFoodAddHook", function()
             if not IsValid(client) then
