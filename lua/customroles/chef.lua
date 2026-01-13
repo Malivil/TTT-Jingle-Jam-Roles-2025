@@ -210,6 +210,7 @@ if CLIENT then
     -- ROLE FEATURES --
     -------------------
 
+    local client
     net.Receive("TTTChefFoodRemoveHooks", function()
         if not IsValid(client) then
             client = LocalPlayer()

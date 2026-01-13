@@ -123,33 +123,27 @@ local function RemoveBuffHook(ply, entIndex, foodType)
 end
 
 if CLIENT then
-    local netSetup = netSetup or false
-    -- Only set up the net methods once
-    if not netSetup then
-        netSetup = true
+    local client = nil
+    net.Receive("TTTChefFoodAddHook", function()
+        if not IsValid(client) then
+            client = LocalPlayer()
+        end
 
-        local client = nil
-        net.Receive("TTTChefFoodAddHook", function()
-            if not IsValid(client) then
-                client = LocalPlayer()
-            end
+        local entIndex = net.ReadUInt(16)
+        local foodType = net.ReadUInt(2)
+        local amount = net.ReadFloat()
+        AddBuffHook(client, entIndex, foodType, amount)
+    end)
 
-            local entIndex = net.ReadUInt(16)
-            local foodType = net.ReadUInt(2)
-            local amount = net.ReadFloat()
-            AddBuffHook(client, entIndex, foodType, amount)
-        end)
+    net.Receive("TTTChefFoodRemoveHook", function()
+        if not IsValid(client) then
+            client = LocalPlayer()
+        end
 
-        net.Receive("TTTChefFoodRemoveHook", function()
-            if not IsValid(client) then
-                client = LocalPlayer()
-            end
-
-            local entIndex = net.ReadUInt(16)
-            local foodType = net.ReadUInt(2)
-            RemoveBuffHook(client, entIndex, foodType)
-        end)
-    end
+        local entIndex = net.ReadUInt(16)
+        local foodType = net.ReadUInt(2)
+        RemoveBuffHook(client, entIndex, foodType)
+    end)
 end
 
 if SERVER then
