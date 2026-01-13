@@ -3,9 +3,13 @@ if SERVER then
 end
 
 local ents = ents
+local math = math
 local table = table
 
 local CreateEntity = ents.Create
+local MathRand = math.Rand
+local MathRandom = math.random
+local MathRound = math.Round
 
 -- State
 CHEF_STOVE_STATE_IDLE = 0
@@ -63,6 +67,19 @@ ENT.Type = "anim"
 ENT.CanUseKey = true
 ENT.StoveModel = "models/props_forest/stove01.mdl"
 
+if CLIENT then
+    ENT.SmokeEmitter = nil
+    ENT.SmokeNextPart = nil
+    ENT.SmokeColorStart = COLOR_WHITE
+    ENT.SmokeColorCooked = COLOR_GRAY
+    ENT.SmokeColorBurnt = COLOR_BLACK
+    ENT.SmokeParticle = "particle/snow.vmt"
+    ENT.SmokeOffset = Vector(0, 0, 30)
+end
+
+local cook_time = CreateConVar("ttt_chef_cook_time", "30", FCVAR_REPLICATED, "How long (in seconds) it takes to cook food", 1, 60)
+local overcook_time = CreateConVar("ttt_chef_overcook_time", "5", FCVAR_REPLICATED, "How long (in seconds) after food is finished cooking before it burns", 1, 60)
+
 AccessorFuncDT(ENT, "FoodType", "FoodType")
 AccessorFuncDT(ENT, "EndTime", "EndTime")
 AccessorFuncDT(ENT, "OvercookTime", "OvercookTime")
@@ -99,9 +116,75 @@ function ENT:Initialize()
     end
 end
 
+function ENT:Think()
+    local state = self:GetState()
+    if state < CHEF_STOVE_STATE_COOKING then
+        if CLIENT and self.SmokeEmitter then
+            self.SmokeEmitter:Finish()
+            self.SmokeEmitter = nil
+        end
+        return
+    end
+
+    if SERVER and state <= CHEF_STOVE_STATE_DONE then
+        local endTime = self:GetEndTime()
+        if endTime <= CurTime() then
+            if self:GetOvercookTime() <= CurTime() then
+                self:SetState(CHEF_STOVE_STATE_BURNT)
+            elseif state ~= CHEF_STOVE_STATE_DONE then
+                self:SetState(CHEF_STOVE_STATE_DONE)
+            end
+        end
+    elseif CLIENT then
+        if not self.SmokeEmitter then self.SmokeEmitter = ParticleEmitter(self:GetPos()) end
+        if not self.SmokeNextPart then self.SmokeNextPart = CurTime() end
+        local pos = self:GetPos() + self.SmokeOffset
+        -- Use DistToSqr as it's more efficient and this is called very frequently
+        -- 9000000 = 3000^2
+        local client = LocalPlayer()
+        if self.SmokeNextPart < CurTime() and client:GetPos():DistToSqr(pos) <= 9000000 then
+            self.SmokeEmitter:SetPos(pos)
+            self.SmokeNextPart = CurTime() + MathRand(0.003, 0.01)
+            local vec = Vector(MathRand(-8, 8), MathRand(-8, 8), MathRand(10, 55))
+            local particle = self.SmokeEmitter:Add(self.SmokeParticle, self:LocalToWorld(vec))
+            particle:SetVelocity(Vector(0, 0, 4) + VectorRand() * 3)
+            particle:SetDieTime(MathRand(0.5, 2))
+            particle:SetStartAlpha(MathRandom(150, 220))
+            particle:SetEndAlpha(0)
+            local size = MathRandom(1, 3)
+            particle:SetStartSize(size)
+            particle:SetEndSize(size + 1)
+            particle:SetRoll(0)
+            particle:SetRollDelta(0)
+            local smokeColor
+            if state == CHEF_STOVE_STATE_BURNT then
+                smokeColor = self.SmokeColorBurnt
+            else
+                local startColor, endColor, progress
+                if state == CHEF_STOVE_STATE_DONE then
+                    startColor = self.SmokeColorCooked
+                    endColor = self.SmokeColorBurnt
+                    progress = (self:GetOvercookTime() - CurTime()) / overcook_time:GetInt()
+                else
+                    startColor = self.SmokeColorStart
+                    endColor = self.SmokeColorCooked
+                    progress = (self:GetEndTime() - CurTime()) / cook_time:GetInt()
+                end
+
+                print(startColor, endColor, progress)
+
+                smokeColor = {
+                    r = MathRound(endColor.r + ((startColor.r - endColor.r) * progress)),
+                    g = MathRound(endColor.g + ((startColor.g - endColor.g) * progress)),
+                    b = MathRound(endColor.b + ((startColor.b - endColor.b) * progress))
+                }
+            end
+            particle:SetColor(smokeColor.r, smokeColor.g, smokeColor.b)
+        end
+    end
+end
+
 if SERVER then
-    local cook_time = CreateConVar("ttt_chef_cook_time", "30", FCVAR_REPLICATED, "How long (in seconds) it takes to cook food", 1, 60)
-    local overcook_time = CreateConVar("ttt_chef_overcook_time", "5", FCVAR_REPLICATED, "How long (in seconds) after food is finished cooking before it burns", 1, 60)
     local damage_own_stove = CreateConVar("ttt_chef_damage_own_stove", "0", FCVAR_NONE, "Whether a stove's owner can damage it", 0, 1)
     local warn_damage = CreateConVar("ttt_chef_warn_damage", "1", FCVAR_NONE, "Whether to warn a stove's owner is warned when it is damaged", 0, 1)
     local warn_destroy = CreateConVar("ttt_chef_warn_destroy", "1", FCVAR_NONE, "Whether to warn a stove's owner is warned when it is destroyed", 0, 1)
@@ -146,7 +229,8 @@ if SERVER then
             self:SetState(CHEF_STOVE_STATE_COOKING)
         else
             local food = CreateEntity("ttt_chef_food")
-            food:SetPos(self:GetPos() + Vector(0, 0, 30))
+            -- Spawn the food slightly in front of the stove
+            food:SetPos(self:GetPos() + (self:GetAngles():Forward() * 20) + Vector(0, 0, 10))
             food:SetChef(placer)
             food:SetFoodType(self:GetFoodType())
             if state == CHEF_STOVE_STATE_BURNT then
@@ -155,20 +239,6 @@ if SERVER then
             food:Spawn()
 
             self:SetState(CHEF_STOVE_STATE_IDLE)
-        end
-    end
-
-    function ENT:Think()
-        local state = self:GetState()
-        if state < CHEF_STOVE_STATE_COOKING or state > CHEF_STOVE_STATE_DONE then return end
-
-        local endTime = self:GetEndTime()
-        if endTime <= CurTime() then
-            if self:GetOvercookTime() <= CurTime() then
-                self:SetState(CHEF_STOVE_STATE_BURNT)
-            elseif state ~= CHEF_STOVE_STATE_DONE then
-                self:SetState(CHEF_STOVE_STATE_DONE)
-            end
         end
     end
 
