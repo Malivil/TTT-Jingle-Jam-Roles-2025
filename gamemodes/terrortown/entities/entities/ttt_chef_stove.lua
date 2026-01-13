@@ -171,8 +171,6 @@ function ENT:Think()
                     progress = (self:GetEndTime() - CurTime()) / cook_time:GetInt()
                 end
 
-                print(startColor, endColor, progress)
-
                 smokeColor = {
                     r = MathRound(endColor.r + ((startColor.r - endColor.r) * progress)),
                     g = MathRound(endColor.g + ((startColor.g - endColor.g) * progress)),
