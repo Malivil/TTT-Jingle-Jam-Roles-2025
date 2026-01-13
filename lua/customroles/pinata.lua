@@ -199,7 +199,7 @@ if CLIENT then
         end
     end)
 
-    ROLE_IS_TARGETID_OVERRIDDEN[ROLE_PINATA] = function(ply, target, showJester)
+    ROLE.istargetidoverridden = function(ply, target, showJester)
         if not ply:IsPinata() then return end
         if not IsPlayer(target) then return end
         if ply:IsRoleAbilityDisabled() then return end
