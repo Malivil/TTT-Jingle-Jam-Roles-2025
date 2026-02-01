@@ -81,6 +81,14 @@ SIBLING_SHARE_MODE_COPY = 1
 SIBLING_SHARE_MODE_STEAL = 2
 SIBLING_SHARE_MODE_COPY_STEAL = 3
 
+local function IsCopyMode(mode)
+    return mode == SIBLING_SHARE_MODE_COPY or mode == SIBLING_SHARE_MODE_COPY_STEAL
+end
+
+local function IsStealMode(mode)
+    return mode == SIBLING_SHARE_MODE_STEAL or mode == SIBLING_SHARE_MODE_COPY_STEAL
+end
+
 ------------------
 -- ROLE CONVARS --
 ------------------
@@ -179,14 +187,6 @@ if SERVER then
         timer.Simple(0.25, function()
             AssignTarget(ply)
         end)
-    end
-
-    local function IsCopyMode(mode)
-        return mode == SIBLING_SHARE_MODE_COPY or mode == SIBLING_SHARE_MODE_COPY_STEAL
-    end
-
-    local function IsStealMode(mode)
-        return mode == SIBLING_SHARE_MODE_STEAL or mode == SIBLING_SHARE_MODE_COPY_STEAL
     end
 
     AddHook("TTTCanOrderEquipment", "Sibling_TTTCanOrderEquipment", function(ply, item, is_item)
@@ -358,23 +358,39 @@ if CLIENT then
                 html = html .. "</ul></span>"
             end
 
+            local share_mode = sibling_share_mode:GetInt()
+            local steal_chance = sibling_steal_chance:GetFloat()
+            local is_copy_mode = IsCopyMode(share_mode)
+            local is_steal_mode = IsStealMode(share_mode) and steal_chance > 0
+
             local copy_count = sibling_copy_count:GetInt()
             html = html .. "<span style='display: block; margin-top: 10px;'>When their target buys something from the shop"
-            if copy_count > 0 then
-                html = html .. " the first "
-                if copy_count == 1 then
-                    html = html .. "time"
-                else
-                    html = html .. copy_count .. " times"
-                end
-            end
-            html = html .. ", the " .. ROLE_STRINGS[ROLE_SIBLING] .. " <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>also gets a copy</span>.</span>"
 
-            local steal_chance = sibling_steal_chance:GetFloat()
-            if steal_chance > 0 then
-                local pct = MathRound(steal_chance * 100) .. "%"
-                html = html .. "<span style='display: block; margin-top: 10px;'>There is also a " .. pct .. " chance that the " .. ROLE_STRINGS[ROLE_SIBLING] .. " <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>will steal</span> their target's item, preventing them from getting it.</span>"
+            if is_copy_mode then
+                if copy_count > 0 then
+                    html = html .. " the first "
+                    if copy_count == 1 then
+                        html = html .. "time"
+                    else
+                        html = html .. copy_count .. " times"
+                    end
+                end
+                html = html .. ", the " .. ROLE_STRINGS[ROLE_SIBLING] .. " <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>also gets a copy</span>"
+
+                if is_steal_mode then
+                    html = html .. ".</span>"
+                    html = html .. "<span style='display: block; margin-top: 10px;'>There is also"
+                end
+            elseif is_steal_mode then
+                html = html .. ", there is"
             end
+
+            if is_steal_mode then
+                local pct = MathRound(steal_chance * 100) .. "%"
+                html = html .. " a " .. pct .. " chance that the " .. ROLE_STRINGS[ROLE_SIBLING] .. " <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>will steal</span> their target's item, preventing them from getting it"
+            end
+
+            html = html .. ".</span>"
 
             return html
         end
