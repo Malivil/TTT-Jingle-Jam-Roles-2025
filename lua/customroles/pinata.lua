@@ -256,7 +256,7 @@ if CLIENT then
         if wintype == WIN_PINATA then return end
 
         for _, p in PlayerIterator() do
-            if not p:Alive() and not p:IsSpec() then continue end
+            if not p:Alive() or p:IsSpec() then continue end
             if not p:IsPinata() then continue end
 
             TableInsert(secondary_wins, ROLE_PINATA)
