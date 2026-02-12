@@ -192,6 +192,7 @@ if SERVER then
             local pos = safe:GetPos() + ang:Forward() * -10
             local ent = CreateEntity(wep)
             ent:SetPos(pos)
+            ent.TTTSafekeeperSpawnedBy = ownerSid64
             ent:Spawn()
 
             local phys = ent:GetPhysicsObject()

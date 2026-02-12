@@ -207,6 +207,7 @@ if SERVER then
         ply:ClearProperty("TTTSafekeeperSafe")
     end)
 
+    -- Mark the safe for a dead Safekeeper as revealed and tell everyone
     AddHook("TTTBodyFound", "Safekeeper_TTTBodyFound", function(ply, deadply, rag)
         if not IsPlayer(deadply) then return end
 
@@ -225,6 +226,17 @@ if SERVER then
             end
         end
         safe:SetProperty("TTTSafekeeperSafeRevealed", true)
+    end)
+
+    -- If this weapon comes from a Safekeeper's safe, the Safekeeper cannot pick it up
+    AddHook("PlayerCanPickupWeapon", "Safekeeper_PlayerCanPickupWeapon", function(ply, wep)
+        if not IsPlayer(ply) then return end
+        if not IsValid(wep) then return end
+        if not ply:IsSafekeeper() then return end
+
+        if wep.TTTSafekeeperSpawnedBy == ply:SteamID64() then
+            return false
+        end
     end)
 
     -------------
