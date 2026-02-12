@@ -1,9 +1,11 @@
+local ents = ents
 local hook = hook
 local player = player
 local surface = surface
 local table = table
 
 local AddHook = hook.Add
+local EntsFindByClass = ents.FindByClass
 local PlayerIterator = player.Iterator
 local TableInsert = table.insert
 
@@ -59,7 +61,7 @@ if SERVER then
     -- PICK TRACKING --
     --------------------
 
-    AddHook("TTTPlayerAliveThink", "Safekeeper_TTTPlayerAliveThink", function(ply)
+    AddHook("TTTPlayerAliveThink", "Safekeeper_TTTPlayerAliveThink_Picking", function(ply)
         if ply.SafekeeperLastPickTime == nil then return end
 
         local pickTarget = ply.SafekeeperPickTarget
@@ -94,20 +96,23 @@ if SERVER then
     -- ROLE FEATURES --
     -------------------
 
-    local function DropSafe(ply)
+    -- Drop the safe when the player they hold it for too long
+    AddHook("TTTPlayerAliveThink", "Safekeeper_TTTPlayerAliveThink_DropSafe", function(ply)
+        if not IsPlayer(ply) then return end
+        if not ply:IsSafekeeper() then return end
+        if not ply.TTTSafekeeperDropTime then return end
+
+        local remaining = ply.TTTSafekeeperDropTime - CurTime()
+        if remaining > 0 then return end
+
         local wep = ply:GetWeapon("weapon_sfk_safeplacer")
         if not IsValid(wep) then return end
 
         wep:PrimaryAttack()
-    end
-
-    AddHook("DoPlayerDeath", "Safekeeper_DoPlayerDeath_DropSafe", function(ply, attacker, dmg)
-        if not IsPlayer(ply) then return end
-        if not ply:IsSafekeeper() then return end
-
-        DropSafe(ply)
     end)
 
+    -- Automatically switch to the safe placers when they player gets it and
+    -- start the auto-drop timer
     AddHook("WeaponEquip", "Safekeeper_WeaponEquip", function(wep, ply)
         if not IsPlayer(ply) then return end
         if not ply:IsActiveSafekeeper() then return end
@@ -125,15 +130,14 @@ if SERVER then
         end)
     end)
 
-    AddHook("TTTPlayerAliveThink", "Safekeeper_TTTPlayerAliveThink", function(ply)
-        if not IsPlayer(ply) then return end
-        if not ply:IsSafekeeper() then return end
-        if not ply.TTTSafekeeperDropTime then return end
+    AddHook("TTTBodyFound", "Safekeeper_TTTBodyFound", function(ply, deadply, rag)
+        if not IsPlayer(deadply) then return end
 
-        local remaining = ply.TTTSafekeeperDropTime - CurTime()
-        if remaining <= 0 then
-            DropSafe(ply)
-        end
+        local safe = deadply.TTTSafekeeperSafe
+        if not IsValid(safe) then return end
+
+        -- TODO: Show message?
+        safe:SetProperty("TTTSafekeeperSafeRevealed", true)
     end)
 
     -------------
@@ -142,6 +146,7 @@ if SERVER then
 
     AddHook("TTTPrepareRound", "Safekeeper_TTTPrepareRound", function()
         for _, v in PlayerIterator() do
+            v.TTTSafekeeperSafe = nil
             v:ClearProperty("TTTSafekeeperDropTime", v)
         end
     end)
@@ -175,6 +180,25 @@ if CLIENT then
         local y = ScrH() / 2
         local w = 300
         CRHUD:PaintProgressBar(x, y, w, COLOR_GREEN, text, progress)
+    end)
+
+    ----------------------
+    -- SAFE REVEAL HALO --
+    ----------------------
+
+    AddHook("PreDrawHalos", "Safekeeper_Highlight_PreDrawHalos", function()
+        local targets = {}
+
+        for _, e in ipairs(EntsFindByClass("ttt_safekeeper_safe")) do
+            if not IsValid(e) then continue end
+            if e.TTTSafekeeperSafeRevealed then
+                TableInsert(targets, e)
+            end
+        end
+
+        if #targets == 0 then return end
+
+        halo.Add(targets, COLOR_WHITE, 1, 1, 1, true, true)
     end)
 
     ---------

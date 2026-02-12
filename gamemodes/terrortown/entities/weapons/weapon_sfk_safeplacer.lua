@@ -138,6 +138,7 @@ function SWEP:PrimaryAttack()
     safe:Spawn()
     safe:Activate()
 
+    owner.TTTSafekeeperSafe = safe
     owner:ClearProperty("TTTSafekeeperDropTime", owner)
     self:Remove()
 end
@@ -153,5 +154,6 @@ function SWEP:OnDrop()
 end
 
 function SWEP:Holster(wep)
+    -- Drop the safe when the player changes weapons or dies
     self:PrimaryAttack()
 end
