@@ -73,6 +73,29 @@ ttt_randoswapper_swap_lovers              1   // Whether the Randoswapper should
 ttt_randoswapper_max_swaps                5   // The maximum number of times the Randoswapper can swap before they become a regular Swapper. Set to "0" to allow swapping forever
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/sfk/tab_sfk.png) Safekeeper
+_Suggested By_: Corvatile\
+The Sibling is a Independent role that is .
+\
+\
+**ConVars**
+```cpp
+ttt_safekeeper_enabled             0   // Whether or not a Safekeeper should spawn
+ttt_safekeeper_spawn_weight        1   // The weight assigned to spawning a Safekeeper
+ttt_safekeeper_min_players         0   // The minimum number of players required to spawn a Safekeeper
+ttt_safekeeper_starting_health     100 // The amount of health a Safekeeper starts with
+ttt_safekeeper_max_health          100 // The maximum amount of health a Safekeeper can have
+```
+
+**Hooks**
+#### TTTSafekeeperSafePicked(placer, opener, safe)
+Called when a Safekeeper's safe is picked open\
+*Realm:* Server\
+*Parameters:*
+- *placer* - The Safekeeper who placed the safe
+- *opener* - The player who opened the safe
+- *safe* - The safe that was picked open
+
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/sib/tab_sib.png) Sibling
 _Suggested By_: u/Vitaproficiscar\
 The Sibling is a Special Innocent role that is assigned a shop-having target. When their target buys something from the shop, the Sibling gets a copy (and sometimes steals the item entirely).
@@ -85,7 +108,6 @@ ttt_sibling_spawn_weight        1   // The weight assigned to spawning a Sibling
 ttt_sibling_min_players         0   // The minimum number of players required to spawn a Sibling
 ttt_sibling_starting_health     100 // The amount of health a Sibling starts with
 ttt_sibling_max_health          100 // The maximum amount of health a Sibling can have
-ttt_sibling_respawn_health      100 // What amount of health to give the Sibling when they are killed and respawned
 ttt_sibling_copy_count          1   // How many times the sibling should copy their target's shop purchases. Set to "0" to copy all purchases. Only used when "ttt_sibling_share_mode" is set to a mode that copies
 ttt_sibling_share_mode          3   // How to handle the sibling's "share" logic. 1 - Copy the purchased item. 2 - Chance to steal. 3 - Copy the purchased item with a chance to steal
 ttt_sibling_steal_chance        0.5 // The chance that a sibling will steal their target's shop purchase instead of copying (e.g. 0.5 = 50% chance to steal). Only used when "ttt_sibling_share_mode" is set to a mode that steals
@@ -94,7 +116,6 @@ ttt_sibling_target_independents 1   // Whether the sibling's target can be an in
 ttt_sibling_target_innocents    1   // Whether the sibling's target can be an innocent role (not including detectives)
 ttt_sibling_target_jesters      1   // Whether the sibling's target can be a jester role
 ttt_sibling_target_traitors     1   // Whether the sibling's target can be a traitor role
-
 ```
 
 # Special Thanks

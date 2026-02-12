@@ -3,6 +3,7 @@ if SERVER then
 end
 
 local ents = ents
+local hook = hook
 local ipairs = ipairs
 local math = math
 local table = table
@@ -194,6 +195,8 @@ if SERVER then
                 phys:ApplyForceCenter(Vector(MathRand(-5, 5), MathRand(-5, 5), 25) * phys:GetMass())
             end
         end)
+
+        hook.Call("TTTSafekeeperSafePicked", nil, placer, opener, self)
     end
 
     function ENT:OnRemove()
