@@ -62,21 +62,21 @@ if SERVER then
     --------------------
 
     AddHook("TTTPlayerAliveThink", "Safekeeper_TTTPlayerAliveThink_Picking", function(ply)
-        if ply.SafekeeperLastPickTime == nil then return end
+        if ply.TTTSafekeeperLastPickTime == nil then return end
 
-        local pickTarget = ply.SafekeeperPickTarget
+        local pickTarget = ply.TTTSafekeeperPickTarget
         if not IsValid(pickTarget) then return end
 
-        local pickStart = ply.SafekeeperPickStart
+        local pickStart = ply.TTTSafekeeperPickStart
         if not pickStart or pickStart <= 0 then return end
 
         local curTime = CurTime()
 
         -- If it's been too long since the user used the ankh, stop tracking their progress
-        if curTime - ply.SafekeeperLastPickTime >= safekeeper_pick_grace_time:GetFloat() then
-            ply.SafekeeperLastPickTime = nil
-            ply:SetProperty("SafekeeperPickTarget", nil, ply)
-            ply:SetProperty("SafekeeperPickStart", 0, ply)
+        if curTime - ply.TTTSafekeeperLastPickTime >= safekeeper_pick_grace_time:GetFloat() then
+            ply.TTTSafekeeperLastPickTime = nil
+            ply:ClearProperty("TTTSafekeeperPickTarget", ply)
+            ply:ClearProperty("TTTSafekeeperPickStart", ply)
             return
         end
 
@@ -128,12 +128,16 @@ if SERVER then
             local drop_time = safekeeper_drop_time:GetInt()
             ply:SetProperty("TTTSafekeeperDropTime", CurTime() + drop_time, ply)
         end)
+        ply:ClearProperty("TTTSafekeeperSafe")
     end)
 
     AddHook("TTTBodyFound", "Safekeeper_TTTBodyFound", function(ply, deadply, rag)
         if not IsPlayer(deadply) then return end
 
-        local safe = deadply.TTTSafekeeperSafe
+        local safeEntIdx = deadply.TTTSafekeeperSafe
+        if not safeEntIdx then return end
+
+        local safe = Entity(safeEntIdx)
         if not IsValid(safe) then return end
 
         -- TODO: Show message?
@@ -146,9 +150,29 @@ if SERVER then
 
     AddHook("TTTPrepareRound", "Safekeeper_TTTPrepareRound", function()
         for _, v in PlayerIterator() do
-            v.TTTSafekeeperSafe = nil
+            v.TTTSafekeeperLastPickTime = nil
+            v:ClearProperty("TTTSafekeeperSafe")
+            v:ClearProperty("TTTSafekeeperPickTarget", v)
+            v:ClearProperty("TTTSafekeeperPickStart", v)
             v:ClearProperty("TTTSafekeeperDropTime", v)
         end
+    end)
+
+    ----------------
+    -- DISCONNECT --
+    ----------------
+
+    -- On disconnect, destroy the safe if they have one
+    AddHook("PlayerDisconnected", "Safekeeper_PlayerDisconnected", function(ply)
+        if not IsPlayer(ply) then return end
+
+        local safeEntIdx = ply.TTTSafekeeperSafe
+        if not safeEntIdx then return end
+
+        local safe = Entity(safeEntIdx)
+        if not IsValid(safe) then return end
+
+        SafeRemoveEntity(safe)
     end)
 end
 
@@ -163,10 +187,10 @@ if CLIENT then
             client = LocalPlayer()
         end
 
-        local pickTarget = client.SafekeeperPickTarget
+        local pickTarget = client.TTTSafekeeperPickTarget
         if not IsValid(pickTarget) then return end
 
-        local pickStart = client.SafekeeperPickStart
+        local pickStart = client.TTTSafekeeperPickStart
         if not pickStart or pickStart <= 0 then return end
 
         local curTime = CurTime()
@@ -199,6 +223,28 @@ if CLIENT then
         if #targets == 0 then return end
 
         halo.Add(targets, COLOR_WHITE, 1, 1, 1, true, true)
+    end)
+
+    ----------------
+    -- WIN CHECKS --
+    ----------------
+
+    AddHook("TTTScoringSecondaryWins", "Safekeeper_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+        for _, p in PlayerIterator() do
+            if not p:IsSafekeeper() then continue end
+
+            local safeEntIdx = p.TTTSafekeeperSafe
+            if not safeEntIdx then continue end
+
+            local safe = Entity(safeEntIdx)
+            if not IsValid(safe) then continue end
+
+            -- If the safe is still closed, they win
+            if not safe:GetOpen() then
+                TableInsert(secondary_wins, ROLE_SAFEKEEPER)
+                return
+            end
+        end
     end)
 
     ---------

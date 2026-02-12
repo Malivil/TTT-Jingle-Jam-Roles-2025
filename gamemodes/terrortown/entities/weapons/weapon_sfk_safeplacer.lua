@@ -138,7 +138,7 @@ function SWEP:PrimaryAttack()
     safe:Spawn()
     safe:Activate()
 
-    owner.TTTSafekeeperSafe = safe
+    owner:SetProperty("TTTSafekeeperSafe", safe:EntIndex())
     owner:ClearProperty("TTTSafekeeperDropTime", owner)
     self:Remove()
 end

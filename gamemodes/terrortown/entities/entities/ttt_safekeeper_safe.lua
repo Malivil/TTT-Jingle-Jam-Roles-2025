@@ -118,18 +118,18 @@ if SERVER then
         end
 
         -- If this is a new activator, start tracking how long they've been using it for
-        local stealTarget = activator.SafekeeperPickTarget
+        local stealTarget = activator.TTTSafekeeperPickTarget
         if self ~= stealTarget then
             if safekeeper_warn_pick_start:GetBool() then
                 placer:QueueMessage(MSG_PRINTBOTH, "Your safe is being picked!")
                 -- TODO: Sound?
             end
-            activator:SetProperty("SafekeeperPickTarget", self, activator)
-            activator:SetProperty("SafekeeperPickStart", curTime, activator)
+            activator:SetProperty("TTTSafekeeperPickTarget", self, activator)
+            activator:SetProperty("TTTSafekeeperPickStart", curTime, activator)
         end
 
         -- Keep track of the last time they used it so we can time it out
-        activator.SafekeeperLastPickTime = curTime
+        activator.TTTSafekeeperLastPickTime = curTime
     end
 
     function ENT:Open(opener)
