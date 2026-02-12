@@ -40,13 +40,13 @@ The Piñata is an Independent role that drops shop weapons on an interval based 
 \
 **ConVars**
 ```cpp
-ttt_pinata_enabled                  0   // Whether or not a Piñata should spawn
-ttt_pinata_spawn_weight             1   // The weight assigned to spawning a Piñata
-ttt_pinata_min_players              0   // The minimum number of players required to spawn a Piñata
-ttt_pinata_starting_health          150 // The amount of health a Piñata starts with
-ttt_pinata_max_health               150 // The maximum amount of health a Piñata can have
-ttt_pinata_damage_interval          20  // How much damage the Piñata must take between weapon drops
-ttt_pinata_announce                 1   // Whether to announce to everyone that there is a Piñata in the round
+ttt_pinata_enabled         0   // Whether or not a Piñata should spawn
+ttt_pinata_spawn_weight    1   // The weight assigned to spawning a Piñata
+ttt_pinata_min_players     0   // The minimum number of players required to spawn a Piñata
+ttt_pinata_starting_health 150 // The amount of health a Piñata starts with
+ttt_pinata_max_health      150 // The maximum amount of health a Piñata can have
+ttt_pinata_damage_interval 20  // How much damage the Piñata must take between weapon drops
+ttt_pinata_announce        1   // Whether to announce to everyone that there is a Piñata in the round
 ```
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/rsw/tab_rsw.png) Randoswapper
@@ -80,11 +80,21 @@ The Sibling is a Independent role that is .
 \
 **ConVars**
 ```cpp
-ttt_safekeeper_enabled             0   // Whether or not a Safekeeper should spawn
-ttt_safekeeper_spawn_weight        1   // The weight assigned to spawning a Safekeeper
-ttt_safekeeper_min_players         0   // The minimum number of players required to spawn a Safekeeper
-ttt_safekeeper_starting_health     100 // The amount of health a Safekeeper starts with
-ttt_safekeeper_max_health          100 // The maximum amount of health a Safekeeper can have
+ttt_safekeeper_enabled            0    // Whether or not a Safekeeper should spawn
+ttt_safekeeper_spawn_weight       1    // The weight assigned to spawning a Safekeeper
+ttt_safekeeper_min_players        0    // The minimum number of players required to spawn a Safekeeper
+ttt_safekeeper_starting_health    100  // The amount of health a Safekeeper starts with
+ttt_safekeeper_max_health         100  // The maximum amount of health a Safekeeper can have
+ttt_safekeeper_warmup_time_min    30   // Minimum time (in seconds) before the Safekeeper will be given their safe
+ttt_safekeeper_warmup_time_max    60   // Maximum time (in seconds) before the Safekeeper will be given their safe
+ttt_safekeeper_drop_time          30   // How long (in seconds) before the Safekeeper will automatically drop their safe
+ttt_safekeeper_pick_grace_time    0.25 // How long (in seconds) before the pick progress of a safe is reset when a player stops looking at it
+ttt_safekeeper_pick_time          30   // How long (in seconds) it takes to pick a safe
+ttt_safekeeper_warn_pick_start    1    // Whether to warn a safe's owner when someone starts picking it
+ttt_safekeeper_warn_pick_complete 1    // Whether to warn a safe's owner when it is picked
+ttt_safekeeper_move_safe          1    // Whether an Safekeeper can move their safe
+ttt_safekeeper_move_cooldown      30   // How long a Safekeeper must wait after placing their safe before they can move it again
+ttt_safekeeper_weapons_dropped    8    // How many weapons the Safekeeper's safe drops when it is picked open
 ```
 
 **Hooks**

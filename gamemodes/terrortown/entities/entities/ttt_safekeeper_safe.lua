@@ -17,7 +17,6 @@ local TableRemove = table.remove
 
 local safekeeper_move_safe = CreateConVar("ttt_safekeeper_move_safe", "1", FCVAR_REPLICATED, "Whether an Safekeeper can move their safe", 0, 1)
 local safekeeper_move_cooldown = CreateConVar("ttt_safekeeper_move_cooldown", "30", FCVAR_REPLICATED, "How long a Safekeeper must wait after placing their safe before they can move it again", 0, 120)
-local safekeeper_weapons_dropped = CreateConVar("ttt_safekeeper_weapons_dropped", "8", FCVAR_NONE, "How many weapons the Safekeeper's safe drops when it is picked open", 0, 10)
 
 if CLIENT then
     local hint_params = {usekey = Key("+use", "USE")}
@@ -108,6 +107,7 @@ function ENT:Initialize()
 end
 
 if SERVER then
+    local safekeeper_weapons_dropped = CreateConVar("ttt_safekeeper_weapons_dropped", "8", FCVAR_NONE, "How many weapons the Safekeeper's safe drops when it is picked open", 0, 10)
     local safekeeper_warn_pick_start = CreateConVar("ttt_safekeeper_warn_pick_start", "1", FCVAR_NONE, "Whether to warn a safe's owner when someone starts picking it", 0, 1)
     local safekeeper_warn_pick_complete = CreateConVar("ttt_safekeeper_warn_pick_complete", "1", FCVAR_NONE, "Whether to warn a safe's owner when it is picked", 0, 1)
 

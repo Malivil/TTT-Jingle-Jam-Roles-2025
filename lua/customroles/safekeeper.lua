@@ -28,6 +28,53 @@ ROLE.team = ROLE_TEAM_INDEPENDENT
 
 ROLE.convars =
 {
+    {
+        cvar = "ttt_safekeeper_drop_time",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_safekeeper_move_cooldown",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_safekeeper_move_safe",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_safekeeper_pick_grace_time",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 2
+    },
+    {
+        cvar = "ttt_safekeeper_pick_time",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_safekeeper_warmup_time_min",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_safekeeper_warmup_time_max",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_safekeeper_warn_pick_start",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_safekeeper_warn_pick_complete",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_safekeeper_weapons_dropped",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    }
 }
 
 ROLE.translations = {
