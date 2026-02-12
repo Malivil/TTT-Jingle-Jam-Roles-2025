@@ -172,7 +172,7 @@ if SERVER then
         local placerSid64 = placer:SteamID64()
         local lootedList
         if opener.TTTSafekeeperLootedList then
-            lootedList = TTTSafekeeperLootedList
+            lootedList = opener.TTTSafekeeperLootedList
         else
             lootedList = {}
         end

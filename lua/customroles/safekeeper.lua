@@ -195,7 +195,7 @@ if SERVER then
     AddHook("WeaponEquip", "Safekeeper_WeaponEquip", function(wep, ply)
         if not IsPlayer(ply) then return end
 
-        -- If this weapon is from a Safekeeper's safe, 
+        -- If this weapon is from a Safekeeper's safe,
         -- keep track of which Safekeepers this person has looted
         if wep.TTTSafekeeperSpawnedBy and #wep.TTTSafekeeperSpawnedBy > 0 then
             if wep.TTTSafekeeperTracked then return end
