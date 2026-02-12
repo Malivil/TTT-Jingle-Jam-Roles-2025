@@ -61,8 +61,9 @@ ENT.Type = "anim"
 ENT.CanUseKey = true
 ENT.SafeModel = "models/sudisteprops/simple_safe.mdl"
 
-ENT.CollisionMins = Vector(-15.5, -13.5, -2.5)
-ENT.CollisionMaxs = Vector(13.2, 14, 28.7)
+-- Slightly oversized so it handles angles as well
+ENT.CollisionMins = Vector(-20.5, -19.2, -2.5)
+ENT.CollisionMaxs = Vector(19, 20.5, 28.7)
 
 AccessorFuncDT(ENT, "Open", "Open")
 AccessorFuncDT(ENT, "EndTime", "EndTime")
@@ -91,7 +92,6 @@ function ENT:Initialize()
         self:ManipulateBoneScale(i, scale)
     end
 
-    -- TODO: This isn't rotated correctly
     self:SetCollisionBounds(self.CollisionMins, self.CollisionMaxs)
     self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
 
