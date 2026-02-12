@@ -126,6 +126,7 @@ function SWEP:PrimaryAttack()
     local eyeAngles = owner:EyeAngles()
     local ang = Angle(0, eyeAngles.y, 0)
 
+    -- TODO: Move this further away from the player or make it not based on their aim, just where they are looking
     local offset = owner:GetAimVector() * 15
     offset.z = -5
 
@@ -136,7 +137,7 @@ function SWEP:PrimaryAttack()
     safe:Spawn()
     safe:Activate()
 
-    --self:Remove()
+    self:Remove()
 end
 
 function SWEP:SecondaryAttack() end

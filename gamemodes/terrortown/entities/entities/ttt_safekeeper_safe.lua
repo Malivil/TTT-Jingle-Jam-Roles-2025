@@ -2,62 +2,40 @@ if SERVER then
     AddCSLuaFile()
 end
 
-local ents = ents
-local math = math
 local table = table
-
-local CreateEntity = ents.Create
-local MathRand = math.Rand
-local MathRandom = math.random
-local MathRound = math.Round
 
 -- State
 SAFEKEEPER_SAFE_STATE_IDLE = 0
 SAFEKEEPER_SAFE_STATE_PICKING = 1
 SAFEKEEPER_SAFE_STATE_OPEN = 2
 
+local safekeeper_move_safe = CreateConVar("ttt_safekeeper_move_safe", "1", FCVAR_REPLICATED, "Whether an Safekeeper can move their safe", 0, 1)
+
 if CLIENT then
     local hint_params = {usekey = Key("+use", "USE")}
 
-    --ENT.TargetIDHint = function(safe)
-    --    local client = LocalPlayer()
-    --    if not IsPlayer(client) then return end
+    ENT.TargetIDHint = function(safe)
+        local client = LocalPlayer()
+        if not IsPlayer(client) then return end
 
-    --    local name
-    --    if not IsValid(safe) or safe:GetPlacer() ~= client then
-    --        name = LANG.GetTranslation("chf_safe_name")
-    --    else
-    --        name = LANG.GetParamTranslation("chf_safe_name_health", { current = safe:Health(), max = safe:GetMaxHealth() })
-    --    end
+        return {
+            name = LANG.GetTranslation("sfk_safe_name"),
+            hint = "sfk_safe_hint",
+            fmt  = function(ent, txt)
+                if not IsValid(safe) then return nil end
 
-    --    return {
-    --        name = name,
-    --        hint = "chf_safe_hint",
-    --        fmt  = function(ent, txt)
-    --            if not IsValid(safe) then return nil end
+                local placer = safe:GetPlacer()
+                if not IsPlayer(placer) then return nil end
 
-    --            local placer = safe:GetPlacer()
-    --            if not IsPlayer(placer) then return nil end
-    --            if placer ~= client then return nil end
+                local hint = txt
+                if placer ~= client then
+                    hint = hint .. "_pick"
+                end
 
-    --            local hint = txt
-    --            local state = safe:GetState()
-    --            if state == CHEF_SAFE_STATE_COOKING then
-    --                local remaining = safe:GetEndTime() - CurTime()
-    --                hint_params.time = util.SimpleTime(remaining, "%02i:%02i")
-    --                hint = hint .. "_progress"
-    --            elseif state >= CHEF_SAFE_STATE_DONE then
-    --                local remaining = safe:GetOvercookTime() - CurTime()
-    --                hint_params.time = util.SimpleTime(remaining, "%02i:%02i")
-    --                hint = hint .. "_retrieve_" .. state
-    --            else
-    --                hint = hint .. "_start"
-    --            end
-
-    --            return LANG.GetParamTranslation(hint, hint_params)
-    --        end
-    --    }
-    --end
+                return LANG.GetParamTranslation(hint, hint_params)
+            end
+        }
+    end
     ENT.AutomaticFrameAdvance = true
 end
 
@@ -66,7 +44,8 @@ ENT.Type = "anim"
 ENT.CanUseKey = true
 ENT.SafeModel = "models/sudisteprops/simple_safe.mdl"
 
-local pick_time = CreateConVar("ttt_safekeeper_pick_time", "30", FCVAR_REPLICATED, "How long (in seconds) it takes to pick a safe", 1, 60)
+ENT.CollisionMins = Vector(-15.5, -13.5, -2.5)
+ENT.CollisionMaxs = Vector(13.2, 14, 28.7)
 
 AccessorFuncDT(ENT, "EndTime", "EndTime")
 AccessorFuncDT(ENT, "State", "State")
@@ -86,13 +65,15 @@ function ENT:Initialize()
     end
     self:SetMoveType(MOVETYPE_VPHYSICS)
     self:SetSolid(SOLID_BBOX)
-    self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
-    -- TODO: Set collision bounding box
 
     local scale = Vector(0.5, 0.5, 0.5)
     for i=0, self:GetBoneCount() - 1 do
         self:ManipulateBoneScale(i, scale)
     end
+
+    -- TODO: This isn't rotated correctly
+    self:SetCollisionBounds(self.CollisionMins, self.CollisionMaxs)
+    self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
 
     if SERVER then
         self:SetUseType(CONTINUOUS_USE)
@@ -106,30 +87,41 @@ function ENT:Initialize()
     end
 end
 
-function ENT:Think()
-    if CLIENT then return end
-
-    local state = self:GetState()
-    if state == SAFEKEEPER_SAFE_STATE_IDLE then return end
-
-    --local endTime = self:GetEndTime()
-    --if endTime <= CurTime() then
-    --    
-    --end
-end
-
 if SERVER then
+    local safekeeper_warn_pick_start = CreateConVar("ttt_safekeeper_warn_pick_start", "1", FCVAR_NONE, "Whether to warn an safe's owner is warned when someone starts picking it", 0, 1)
+
     function ENT:Use(activator)
         if not IsPlayer(activator) or not activator:IsActive() then return end
-
-        local placer = self:GetPlacer()
-        if not IsPlayer(placer) then return end
-        if activator ~= placer then return end
 
         local state = self:GetState()
         if state == SAFEKEEPER_SAFE_STATE_OPEN then return end
 
-        -- TODO
+        local placer = self:GetPlacer()
+        if not IsPlayer(placer) then return end
+        if activator == placer then
+            if not safekeeper_move_safe:GetBool() then return end
+
+            activator:Give("weapon_sfk_safeplacer")
+            self:SetPlacer(nil)
+            self:Remove()
+            return
+        end
+
+        local curTime = CurTime()
+
+        -- If this is a new activator, start tracking how long they've been using it for
+        local stealTarget = activator.SafekeeperPickTarget
+        if self ~= stealTarget then
+            if safekeeper_warn_pick_start:GetBool() then
+                placer:QueueMessage(MSG_PRINTBOTH, "Your safe is being picked!")
+                -- TODO: Sound?
+            end
+            activator:SetProperty("SafekeeperPickTarget", self, activator)
+            activator:SetProperty("SafekeeperPickStart", curTime, activator)
+        end
+
+        -- Keep track of the last time they used it so we can time it out
+        activator.SafekeeperLastPickTime = curTime
     end
 
     -- Copied from C4
