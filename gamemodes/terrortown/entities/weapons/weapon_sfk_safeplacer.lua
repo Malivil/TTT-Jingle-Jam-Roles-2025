@@ -122,28 +122,41 @@ end
 
 function SWEP:PrimaryAttack()
     if CLIENT then return end
+	if not IsFirstTimePredicted() then return end
 
     local owner = self:GetOwner()
     if not IsPlayer(owner) then return end
 
     if owner:IsRoleAbilityDisabled() then return end
 
-    local eyeAngles = owner:EyeAngles()
-    local startPos = owner:GetPos() + eyeAngles:Forward() * 55
+    -- Ignore the up-and-down component of where the player is aiming
+    local aimVec = owner:GetAimVector()
+    aimVec.z = 0
+    -- Convert it to an angle and use that as the start position
+    local eyeAngles = aimVec:Angle()
+    local startPos = owner:GetPos()
+    -- If the player is alive, place it in front of them
+    if owner:Alive() and not owner:IsSpec() then
+        startPos = startPos + eyeAngles:Forward() * 55
+    end
+
     -- Find a location to drop the safe in front of the player
+    local length = 100
     local tr = util.TraceLine({
-        start = startPos,
-        endpos = startPos + eyeAngles:Up() * -10000
+        start = startPos + Vector(0, 0, 5),
+        endpos = startPos + eyeAngles:Up() * -length
     })
 
-    -- If we didn't find the world, somehow, just throw it from the start position and see what happens
     local safePos
-    if tr.Hit then
+    -- Make sure the hit isn't at the end of the length because that seems to mean it actually hasn't hit anything
+    if tr.Hit and tr.HitPos:Distance(startPos) < length then
         safePos = tr.HitPos
+        safePos.z = safePos.z + 5
+    -- If we didn't find a place, let the user know and don't actually place the safe
     else
-        safePos = startPos
+        owner:QueueMessage(MSG_PRINTBOTH, "Could not find valid location for safe! Try somewhere else.", nil, "sfkInvalidDrop")
+        return
     end
-    safePos.z = safePos.z + 5
 
     local safe = ents.Create("ttt_safekeeper_safe")
     local ang = Angle(0, eyeAngles.y, 0)
@@ -172,6 +185,11 @@ function SWEP:OnDrop()
 end
 
 function SWEP:Holster(wep)
+	if not IsFirstTimePredicted() then return end
+
     -- Drop the safe when the player changes weapons or dies
     self:PrimaryAttack()
+    -- Don't actually let them holster it because if the drop fails then we want them to keep the safe
+    -- If they are dead then this might not work very well but of well
+    return false
 end
