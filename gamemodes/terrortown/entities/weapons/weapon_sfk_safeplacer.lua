@@ -125,6 +125,7 @@ function SWEP:PrimaryAttack()
     local safe = ents.Create("ttt_safekeeper_safe")
     local eyeAngles = owner:EyeAngles()
     local ang = Angle(0, eyeAngles.y, 0)
+    ang:RotateAroundAxis(Vector(0, 0, 1), 90)
 
     -- TODO: Move this further away from the player or make it not based on their aim, just where they are looking
     local offset = owner:GetAimVector() * 15

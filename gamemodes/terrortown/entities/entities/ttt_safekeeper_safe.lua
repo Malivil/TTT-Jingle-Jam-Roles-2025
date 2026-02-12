@@ -23,7 +23,9 @@ if CLIENT then
                 if not IsPlayer(placer) then return nil end
 
                 local hint = txt
-                if placer ~= client then
+                if safe:GetOpen() then
+                    hint = hint .. "_open"
+                elseif placer ~= client then
                     hint = hint .. "_pick"
                 end
 
@@ -88,8 +90,8 @@ if SERVER then
     local safekeeper_warn_pick_start = CreateConVar("ttt_safekeeper_warn_pick_start", "1", FCVAR_NONE, "Whether to warn an safe's owner is warned when someone starts picking it", 0, 1)
 
     function ENT:Use(activator)
-        if not IsPlayer(activator) or not activator:IsActive() then return end
         if self:GetOpen() then return end
+        if not IsPlayer(activator) or not activator:IsActive() then return end
 
         local placer = self:GetPlacer()
         if not IsPlayer(placer) then return end
@@ -120,11 +122,16 @@ if SERVER then
     end
 
     function ENT:Open(opener)
+        if self:GetOpen() then return end
         if not IsPlayer(opener) then return end
         if not opener:Alive() or opener:IsSpec() then return end
 
         self:SetOpen(true)
-        -- TODO: Change to model "Base1" Submodel 1? Maybe bodygroups?
+        -- Change to model "Base1" Submodel 1 to show the door as open
+        local boneId = self:FindBodygroupByName("Base1")
+        if boneId >= 0 then
+            self:SetBodygroup(boneId, 1)
+        end
         -- TODO: Spawn weapons
     end
 

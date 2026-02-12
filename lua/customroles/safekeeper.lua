@@ -26,6 +26,7 @@ ROLE.translations = {
         ["sfk_safe_name"] = "Safe",
         ["sfk_safe_hint"] = "Press {usekey} to pick up",
         ["sfk_safe_hint_pick"] = "Hold {usekey} to pick open",
+        ["sfk_safe_hint_open"] = "Already picked and looted",
         ["safekeeper_picking"] = "PICKING"
     }
 }
