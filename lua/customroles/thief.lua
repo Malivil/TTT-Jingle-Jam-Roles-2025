@@ -1,9 +1,11 @@
 local hook = hook
 local ipairs = ipairs
+local player = player
 local weapons = weapons
 local util = util
 
 local AddHook = hook.Add
+local PlayerIterator = player.Iterator
 
 local ROLE = {}
 

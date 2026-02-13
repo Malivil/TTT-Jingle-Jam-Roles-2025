@@ -1280,7 +1280,8 @@ globals = {
     "SIBLING_SHARE_MODE_STEAL",
     "THIEF_STEAL_MODE_PROXIMITY",
     "THIEF_STEAL_MODE_TOOLS",
-    "WIN_PINATA"
+    "WIN_PINATA",
+    "WIN_THIEF"
 }
 std = {
     globals = {
