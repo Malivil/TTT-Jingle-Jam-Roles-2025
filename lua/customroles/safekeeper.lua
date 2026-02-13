@@ -106,7 +106,7 @@ ROLE.haspassivewin = true
 -- ROLE CONVARS --
 ------------------
 
-local safekeeper_pick_time = CreateConVar("ttt_safekeeper_pick_time", "30", FCVAR_REPLICATED, "How long (in seconds) it takes to pick a safe", 1, 60)
+local safekeeper_pick_time = CreateConVar("ttt_safekeeper_pick_time", "15", FCVAR_REPLICATED, "How long (in seconds) it takes to pick a safe", 1, 60)
 
 if SERVER then
     AddCSLuaFile()
@@ -117,7 +117,7 @@ if SERVER then
     local safekeeper_pick_grace_time = CreateConVar("ttt_safekeeper_pick_grace_time", 0.25, FCVAR_NONE, "How long (in seconds) before the pick progress of a safe is reset when a player stops looking at it", 0, 1)
     local safekeeper_warmup_time_min = CreateConVar("ttt_safekeeper_warmup_time_min", "30", FCVAR_NONE, "Minimum time (in seconds) before the Safekeeper will be given their safe", 1, 60)
     local safekeeper_warmup_time_max = CreateConVar("ttt_safekeeper_warmup_time_max", "60", FCVAR_NONE, "Maximum time (in seconds) before the Safekeeper will be given their safe", 1, 120)
-    local safekeeper_drop_time = CreateConVar("ttt_safekeeper_drop_time", "30", FCVAR_NONE, "How long (in seconds) before the Safekeeper will automatically drop their safe", 1, 60)
+    local safekeeper_drop_time = CreateConVar("ttt_safekeeper_drop_time", "15", FCVAR_NONE, "How long (in seconds) before the Safekeeper will automatically drop their safe", 1, 60)
 
     --------------------
     -- PICK TRACKING --
@@ -360,6 +360,7 @@ if CLIENT then
         if not IsPlayer(ply) then return end
         if not ply.TTTSafekeeperLootedList then return end
         if not TableHasValue(ply.TTTSafekeeperLootedList, cli:SteamID64()) then return end
+        if ply:ShouldActLikeJester() then return end
         if cli:IsRoleAbilityDisabled() then return end
 
         return "kill", true, ROLE_COLORS_SPRITE[ROLE_SAFEKEEPER], "down"
@@ -371,6 +372,7 @@ if CLIENT then
         if not IsPlayer(ent) then return end
         if not ent.TTTSafekeeperLootedList then return end
         if not TableHasValue(ent.TTTSafekeeperLootedList, cli:SteamID64()) then return end
+        if ent:ShouldActLikeJester() then return end
         if cli:IsRoleAbilityDisabled() then return end
 
         return LANG.GetTranslation("safekeeper_target_looter"), ROLE_COLORS_RADAR[ROLE_SAFEKEEPER], secondary_text
@@ -381,6 +383,7 @@ if CLIENT then
         if not IsPlayer(target) then return end
         if not target.TTTSafekeeperLootedList then return end
         if not TableHasValue(target.TTTSafekeeperLootedList, ply:SteamID64()) then return end
+        if target:ShouldActLikeJester() then return end
         if ply:IsRoleAbilityDisabled() then return end
 
         ------ icon,  ring,  text
@@ -395,6 +398,7 @@ if CLIENT then
         if not ply:IsSafekeeper() then return end
         if not IsPlayer(target) then return end
         if not target.TTTSafekeeperLootedList then return end
+        if target:ShouldActLikeJester() then return end
         if ply:IsRoleAbilityDisabled() then return end
 
         return TableHasValue(target.TTTSafekeeperLootedList, ply:SteamID64())
@@ -414,6 +418,7 @@ if CLIENT then
                 if client == p then continue end
                 if not p:Alive() or p:IsSpec() then continue end
                 if not p.TTTSafekeeperLootedList then continue end
+                if p:ShouldActLikeJester() then continue end
 
                 if TableHasValue(p.TTTSafekeeperLootedList, sid64) then
                     TableInsert(looters, p)
@@ -494,6 +499,7 @@ if CLIENT then
                 for _, l in PlayerIterator() do
                     if p == l then continue end
                     if not l.TTTSafekeeperLootedList then continue end
+                    if l:ShouldActLikeJester() then continue end
 
                     -- We only need to find one to prevent the safekeeper from winning, so break early once we find one
                     if TableHasValue(l.TTTSafekeeperLootedList, sid64) and l:Alive() and not l:IsSpec() then

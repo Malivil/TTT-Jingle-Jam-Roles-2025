@@ -87,9 +87,9 @@ ttt_safekeeper_starting_health    100  // The amount of health a Safekeeper star
 ttt_safekeeper_max_health         100  // The maximum amount of health a Safekeeper can have
 ttt_safekeeper_warmup_time_min    30   // Minimum time (in seconds) before the Safekeeper will be given their safe
 ttt_safekeeper_warmup_time_max    60   // Maximum time (in seconds) before the Safekeeper will be given their safe
-ttt_safekeeper_drop_time          30   // How long (in seconds) before the Safekeeper will automatically drop their safe
+ttt_safekeeper_drop_time          15   // How long (in seconds) before the Safekeeper will automatically drop their safe
 ttt_safekeeper_pick_grace_time    0.25 // How long (in seconds) before the pick progress of a safe is reset when a player stops looking at it
-ttt_safekeeper_pick_time          30   // How long (in seconds) it takes to pick a safe
+ttt_safekeeper_pick_time          15   // How long (in seconds) it takes to pick a safe
 ttt_safekeeper_warn_pick_start    1    // Whether to warn a safe's owner when someone starts picking it
 ttt_safekeeper_warn_pick_complete 1    // Whether to warn a safe's owner when it is picked
 ttt_safekeeper_move_safe          1    // Whether an Safekeeper can move their safe
