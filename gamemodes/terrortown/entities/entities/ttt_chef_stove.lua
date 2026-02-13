@@ -218,6 +218,10 @@ if SERVER then
         if not IsPlayer(placer) then return end
         if activator ~= placer then return end
 
+        -- Completely disable the stove if the role ability is disabled
+        -- This will also cause any cooking food to overcook by nature of not being able to stop it
+        if placer:IsRoleAbilityDisabled() then return end
+
         local state = self:GetState()
         if state == CHEF_STOVE_STATE_COOKING then return end
 
