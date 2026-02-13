@@ -96,9 +96,10 @@ ROLE.translations =
         ["thfsteal_stealing"] = "STEALING FROM {target}",
         ["thfsteal_failed"] = "STEALING FAILED",
         ["thief_hud"] = "Steal cooldown: {time}",
+        ["thief_steal_notify"] = "You stole \"{item}\" from {victim}!",
         ["win_thief"] = "The {role} has stolen its way to victory!",
         ["ev_win_thief"] = "The {role} has stolen its way to victory!",
-        ["ev_thiefstolen"] = "{thief} stole {item} from {victim}"
+        ["ev_thiefstolen"] = "{thief} stole \"{item}\" from {victim}"
     }
 }
 
@@ -163,6 +164,11 @@ if SERVER then
     -- ROLE FEATURES --
     -------------------
 
+    AddHook("Initialize", "Thief_Initialize", function()
+        WIN_THIEF = GenerateNewWinID(ROLE_THIEF)
+        EVENT_THIEFSTOLEN = GenerateNewEventID(ROLE_THIEF)
+    end)
+
     function plymeta:ThiefSteal(target)
         if not self:Alive() or self:IsSpec() then return end
         if not IsPlayer(target) then return end
@@ -171,13 +177,11 @@ if SERVER then
         -- TODO: Steal a weapon and set the property on the weapon so the thief can get it
         local item = "something"
 
-        -- TODO: Notify the thief
-
         self:SetProperty("TTTThiefStealStartTime", CurTime(), self)
         self:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_COOLDOWN, self)
 
         net.Start("TTT_ThiefItemStolen")
-            net.WriteString(self:Nick())
+            net.WritePlayer(self)
             net.WriteString(target:Nick())
             net.WriteString(item)
         net.Broadcast()
@@ -337,16 +341,13 @@ if SERVER then
         ply.TTTThiefDisabled = false
     end)
 
-    AddHook("Initialize", "Thief_Initialize", function()
-        WIN_THIEF = GenerateNewWinID(ROLE_THIEF)
-        EVENT_THIEFSTOLEN = GenerateNewEventID(ROLE_THIEF)
-    end)
-
     -- Thief can only use the weapons they steal
     ROLE.onroleassigned = function(ply)
         -- Use a slight delay to make sure nothing else is changing this player's role first
         timer.Simple(0.25, function()
             if not IsPlayer(ply) then return end
+            if not ply:IsActiveThief() then return end
+
             ply:StripWeapons()
             ply:Give("weapon_ttt_unarmed")
         end)
@@ -550,14 +551,20 @@ if CLIENT then
     end)
 
     net.Receive("TTT_ThiefItemStolen", function(len)
-        local thief = net.ReadString()
+        local thief = net.ReadPlayer()
         local victim = net.ReadString()
-        local item = net.ReadString()
+        local item = GetWeaponName(net.ReadString())
+
+        if not IsPlayer(thief) then return end
+
+        local message = LANG.GetParamTranslation("thief_steal_notify", {item = item, victim = victim})
+        thief:QueueMessage(MSG_PRINTBOTH, message)
+
         CLSCORE:AddEvent({
             id = EVENT_THIEFSTOLEN,
-            thf = thief,
+            thf = thief:Nick(),
             vic = victim,
-            item = GetWeaponName(item)
+            item = item
         })
     end)
 
