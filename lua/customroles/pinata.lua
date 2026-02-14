@@ -65,6 +65,8 @@ local pinata_damage_interval = CreateConVar("ttt_pinata_damage_interval", "20", 
 local pinata_announce = CreateConVar("ttt_pinata_announce", "1", FCVAR_REPLICATED, "Whether to announce to everyone that there is a piñata in the round", 0, 1)
 
 if SERVER then
+    AddCSLuaFile()
+
     -------------------
     -- ROLE FEATURES --
     -------------------
@@ -72,6 +74,9 @@ if SERVER then
     ROLE.onroleassigned = function(ply)
         -- Use a slight delay to make sure nothing else is changing this player's role first
         timer.Simple(0.25, function()
+            if not IsPlayer(ply) then return end
+            if not ply:IsActivePinata() then return end
+
             ply.TTTPinataDamageTaken = 0
         end)
     end
@@ -256,7 +261,7 @@ if CLIENT then
         if wintype == WIN_PINATA then return end
 
         for _, p in PlayerIterator() do
-            if not p:Alive() and not p:IsSpec() then continue end
+            if not p:Alive() or p:IsSpec() then continue end
             if not p:IsPinata() then continue end
 
             TableInsert(secondary_wins, ROLE_PINATA)

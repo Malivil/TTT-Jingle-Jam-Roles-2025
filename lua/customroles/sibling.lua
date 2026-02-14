@@ -104,6 +104,8 @@ local sibling_target_jesters = CreateConVar("ttt_sibling_target_jesters", "1", F
 local sibling_target_monsters = CreateConVar("ttt_sibling_target_monsters", "1", FCVAR_REPLICATED, "Whether the sibling's target can be a monster role", 0, 1)
 
 if SERVER then
+    AddCSLuaFile()
+
     -------------------
     -- ROLE FEATURES --
     -------------------
@@ -185,6 +187,7 @@ if SERVER then
     ROLE.onroleassigned = function(ply)
         -- Use a slight delay to make sure nothing else is changing this player's role first
         timer.Simple(0.25, function()
+            if not IsPlayer(ply) then return end
             AssignTarget(ply)
         end)
     end

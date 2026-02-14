@@ -173,7 +173,6 @@ end
 if SERVER then
     util.AddNetworkString("TTTChefFoodRemoveHooks")
 
-
     -------------------
     -- ROLE FEATURES --
     -------------------
@@ -217,6 +216,8 @@ if SERVER then
 end
 
 if CLIENT then
+    AddCSLuaFile()
+
     -------------------
     -- ROLE FEATURES --
     -------------------

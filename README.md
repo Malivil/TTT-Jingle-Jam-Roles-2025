@@ -5,7 +5,7 @@ A pack of [Custom Roles for TTT](https://github.com/Custom-Roles-for-TTT/TTT-Cus
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/chf/tab_chf.png) Chef
 _Suggested By_: Sparth\
-The Chef is an Special Innocent role that cooks a chosen food for other players which provides a buff (or, if burnt, causes damage).
+The Chef is a Special Innocent role that cooks a chosen food for other players which provides a buff (or, if burnt, causes damage).
 \
 \
 **ConVars**
@@ -40,13 +40,13 @@ The Piñata is an Independent role that drops shop weapons on an interval based 
 \
 **ConVars**
 ```cpp
-ttt_pinata_enabled                  0   // Whether or not a Piñata should spawn
-ttt_pinata_spawn_weight             1   // The weight assigned to spawning a Piñata
-ttt_pinata_min_players              0   // The minimum number of players required to spawn a Piñata
-ttt_pinata_starting_health          150 // The amount of health a Piñata starts with
-ttt_pinata_max_health               150 // The maximum amount of health a Piñata can have
-ttt_pinata_damage_interval          20  // How much damage the Piñata must take between weapon drops
-ttt_pinata_announce                 1   // Whether to announce to everyone that there is a Piñata in the round
+ttt_pinata_enabled         0   // Whether or not a Piñata should spawn
+ttt_pinata_spawn_weight    1   // The weight assigned to spawning a Piñata
+ttt_pinata_min_players     0   // The minimum number of players required to spawn a Piñata
+ttt_pinata_starting_health 150 // The amount of health a Piñata starts with
+ttt_pinata_max_health      150 // The maximum amount of health a Piñata can have
+ttt_pinata_damage_interval 20  // How much damage the Piñata must take between weapon drops
+ttt_pinata_announce        1   // Whether to announce to everyone that there is a Piñata in the round
 ```
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/rsw/tab_rsw.png) Randoswapper
@@ -85,7 +85,6 @@ ttt_sibling_spawn_weight        1   // The weight assigned to spawning a Sibling
 ttt_sibling_min_players         0   // The minimum number of players required to spawn a Sibling
 ttt_sibling_starting_health     100 // The amount of health a Sibling starts with
 ttt_sibling_max_health          100 // The maximum amount of health a Sibling can have
-ttt_sibling_respawn_health      100 // What amount of health to give the Sibling when they are killed and respawned
 ttt_sibling_copy_count          1   // How many times the sibling should copy their target's shop purchases. Set to "0" to copy all purchases. Only used when "ttt_sibling_share_mode" is set to a mode that copies
 ttt_sibling_share_mode          3   // How to handle the sibling's "share" logic. 1 - Copy the purchased item. 2 - Chance to steal. 3 - Copy the purchased item with a chance to steal
 ttt_sibling_steal_chance        0.5 // The chance that a sibling will steal their target's shop purchase instead of copying (e.g. 0.5 = 50% chance to steal). Only used when "ttt_sibling_share_mode" is set to a mode that steals
@@ -94,7 +93,6 @@ ttt_sibling_target_independents 1   // Whether the sibling's target can be an in
 ttt_sibling_target_innocents    1   // Whether the sibling's target can be an innocent role (not including detectives)
 ttt_sibling_target_jesters      1   // Whether the sibling's target can be a jester role
 ttt_sibling_target_traitors     1   // Whether the sibling's target can be a traitor role
-
 ```
 
 # Special Thanks

@@ -84,7 +84,7 @@ function SWEP:Initialize()
             local text = LANG.GetTranslation("chf_buff_type_label") .. LANG.GetTranslation("chf_buff_type_" .. self.SelectedFoodType)
             local _, h = surface.GetTextSize(text)
 
-            -- Move this up based on how many other labels here are
+            -- Move this up based on how many other labels there are
             label_top = label_top + (20 * #active_labels)
 
             surface.SetTextPos(label_left, ScrH() - label_top - h)
@@ -107,10 +107,6 @@ function SWEP:Initialize()
         end)
     end
     return self.BaseClass.Initialize(self)
-end
-
-function SWEP:SetupDataTables()
-    self:NetworkVar("Float", 0, "NextIdle")
 end
 
 function SWEP:GetAimTrace(owner)
@@ -215,7 +211,8 @@ function SWEP:OnRemove()
         SafeRemoveEntity(self.GhostEnt)
         self.GhostEnt = nil
 
-        if IsValid(self:GetOwner()) and self:GetOwner() == LocalPlayer() and self:GetOwner():Alive() then
+        local owner = self:GetOwner()
+        if IsValid(owner) and owner == LocalPlayer() and owner:Alive() then
             RunConsoleCommand("lastinv")
         end
     end
