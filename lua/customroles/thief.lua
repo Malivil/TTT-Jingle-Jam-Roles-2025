@@ -10,6 +10,7 @@ local weapons = weapons
 local AddHook = hook.Add
 local MathRandom = math.random
 local PlayerIterator = player.Iterator
+local TableHasValue = table.HasValue
 local TableInsert = table.insert
 
 local ROLE = {}
@@ -55,8 +56,7 @@ ROLE.convars =
     },
     {
         cvar = "ttt_thief_steal_cost",
-        type = ROLE_CONVAR_TYPE_NUM,
-        decimal = 0
+        type = ROLE_CONVAR_TYPE_BOOL
     },
     {
         cvar = "ttt_thief_steal_notify_delay_min",
@@ -95,7 +95,8 @@ ROLE.translations =
     {
         ["thfsteal_stealing"] = "STEALING FROM {target}",
         ["thfsteal_failed"] = "STEALING FAILED",
-        ["thief_hud"] = "Steal cooldown: {time}",
+        ["thief_credits_hud"] = "Current Credits: {credits}",
+        ["thief_cooldown_hud"] = "Steal cooldown: {time}",
         ["thief_steal_notify"] = "You stole \"{item}\" from {victim}!",
         ["win_thief"] = "The {role} has stolen its way to victory!",
         ["ev_win_thief"] = "The {role} has stolen its way to victory!",
@@ -119,6 +120,7 @@ THIEF_STEAL_STATE_COOLDOWN = 5
 
 local thief_is_innocent = CreateConVar("ttt_thief_is_innocent", "0", FCVAR_REPLICATED, "Whether the Thief should be on the innocent team", 0, 1)
 local thief_is_traitor = CreateConVar("ttt_thief_is_traitor", "0", FCVAR_REPLICATED, "Whether the Thief should be on the traitor team", 0, 1)
+local thief_steal_mode = CreateConVar("ttt_thief_steal_mode", "0", FCVAR_REPLICATED, "How stealing a weapon from a player works. 0 - Steal automatically when in proximity. 1 - Steal using their Thieves' Tools", 0, 1)
 local thief_steal_success_cooldown = CreateConVar("ttt_thief_steal_success_cooldown", "30", FCVAR_REPLICATED, "How long (in seconds) after the Thief steals something before they can try to steal another thing", 0, 60)
 local thief_steal_cost = CreateConVar("ttt_thief_steal_cost", "0", FCVAR_REPLICATED, "Whether stealing a weapon from a player requires a credit. Enables credit looting for innocent and independent Thieves on new round", 0, 1)
 local thief_steal_notify_delay_min = CreateConVar("ttt_thief_steal_notify_delay_min", "10", FCVAR_REPLICATED, "The minimum delay before a player is notified they've been robbed. Set to \"0\" to disable notifications", 0, 30)
@@ -140,6 +142,15 @@ AddHook("TTTUpdateRoleState", "Thief_TTTUpdateRoleState", function()
     -- Only let thieves loot credits if they have something that costs credits
     -- NOTE: If they are on the traitor team, this is ignored so we don't have to even bother checking
     CAN_LOOT_CREDITS_ROLES[ROLE_THIEF] = thief_steal_cost:GetInt() > 0
+
+    if SERVER then
+        local tools = weapons.GetStored("weapon_thf_thievestools")
+        if thief_steal_mode:GetInt() == THIEF_STEAL_MODE_PROXIMITY then
+            tools.InLoadoutFor = {}
+        else
+            tools.InLoadoutFor = tools.InLoadoutForDefault
+        end
+    end
 end)
 
 if SERVER then
@@ -154,7 +165,6 @@ if SERVER then
     -- ROLE CONVARS --
     ------------------
 
-    local thief_steal_mode = CreateConVar("ttt_thief_steal_mode", "0", FCVAR_NONE, "How stealing a weapon from a player works. 0 - Steal automatically when in proximity. 1 - Steal using their Thieves' Tools", 0, 1)
     local thief_steal_failure_cooldown = CreateConVar("ttt_thief_steal_failure_cooldown", "3", FCVAR_NONE, "How long (in seconds) after the Thief loses their target before they can try to steal another thing", 0, 60)
     local thief_steal_proximity_float_time = CreateConVar("ttt_thief_steal_proximity_float_time", "3", FCVAR_NONE, "The amount of time (in seconds) it takes for the Thief to lose their target after getting out of range. Only used when \"ttt_thief_steal_mode 0\" is set", 0, 60)
     local thief_steal_proximity_require_los = CreateConVar("ttt_thief_steal_proximity_require_los", "1", FCVAR_NONE, "Whether the Thief requires line-of-sight to steal something. Only used when \"ttt_thief_steal_mode 0\" is set", 0, 1)
@@ -163,6 +173,10 @@ if SERVER then
     -------------------
     -- ROLE FEATURES --
     -------------------
+
+    -- TODO: Weapon for mode == 0
+
+    local allowedWeaponClasses = {"weapon_ttt_unarmed", "weapon_zm_carry", "weapon_thf_thievestools"}
 
     AddHook("Initialize", "Thief_Initialize", function()
         WIN_THIEF = GenerateNewWinID(ROLE_THIEF)
@@ -174,11 +188,28 @@ if SERVER then
         if not IsPlayer(target) then return end
         if not target:Alive() or target:IsSpec() then return end
 
+        local curTime = CurTime()
+
         -- TODO: Steal a weapon and set the property on the weapon so the thief can get it
         local item = "something"
 
-        self:SetProperty("TTTThiefStealStartTime", CurTime(), self)
+        -- If no valid weapons are found, set to "LOST" state for the quick reset
+        -- And tell them why it failed
+        if not item then
+            local steal_failure_cooldown = thief_steal_failure_cooldown:GetInt()
+            if steal_failure_cooldown > 0 then
+                self:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_LOST, self)
+                self:SetProperty("TTTThiefStealStartTime", curTime + steal_failure_cooldown, self)
+            end
+            self:QueueMessage(MSG_PRINTCENTER, target:Nick() .. " has nothing worth stealing, try someone else!")
+            return
+        end
+
+        if thief_steal_cost:GetBool() then
+            self:SubtractCredits(1)
+        end
         self:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_COOLDOWN, self)
+        self:SetProperty("TTTThiefStealStartTime", curTime, self)
 
         net.Start("TTT_ThiefItemStolen")
             net.WritePlayer(self)
@@ -199,35 +230,36 @@ if SERVER then
         timer.Create("TTTThiefNotifyDelay_" .. target:SteamID64(), delay, 1, function()
             if not IsPlayer(target) then return end
             if not target:Alive() or target:IsSpec() then return end
-
-            local message = "You have been been robbed by the " .. ROLE_STRINGS[ROLE_THIEF] .. "!"
-            target:QueueMessage(MSG_PRINTBOTH, message)
+            target:QueueMessage(MSG_PRINTBOTH, "You have been been robbed by the " .. ROLE_STRINGS[ROLE_THIEF] .. "!")
         end)
     end
 
+    local function ClearTracking(ply)
+        if ply.TTTThiefStealStartTime then
+            ply:ClearProperty("TTTThiefStealStartTime", ply)
+            ply:ClearProperty("TTTThiefStealLostTime", ply)
+        end
+
+        if ply.TTTThiefStealState then
+            ply:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_IDLE, ply)
+        end
+
+        local targetSid64 = ply.TTTThiefStealTarget
+        if targetSid64 and #targetSid64 > 0 then
+            ply:ClearProperty("TTTThiefStealTarget", ply)
+        end
+    end
+
     AddHook("TTTPlayerAliveThink", "Thief_TTTPlayerAliveThink_Steal", function(ply)
+        if GetRoundState() ~= ROUND_ACTIVE then return end
         if not ply:IsThief() then return end
         if ply.TTTThiefDisabled then return end
-
-        local startTime = ply.TTTThiefStealStartTime
-        local targetSid64 = ply.TTTThiefStealTarget
 
         -- If this role has their ability disabled, clear any set tracking variables and continue
         -- Clearing the state is required to get the progress bar to disappear if they were
         -- actively stealing when it begins
         if ply:IsRoleAbilityDisabled() then
-            if startTime then
-                ply:ClearProperty("TTTThiefStealStartTime", ply)
-                ply:ClearProperty("TTTThiefStealLostTime", ply)
-            end
-
-            if ply.TTTThiefStealState then
-                ply:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_IDLE, ply)
-            end
-
-            if targetSid64 and #targetSid64 > 0 then
-                ply:ClearProperty("TTTThiefStealTarget", ply)
-            end
+            ClearTracking(ply)
 
             -- Use a server-side property to track this so we can short-circuit the processing loop and prevent repeated hook calls
             ply.TTTThiefDisabled = false
@@ -235,25 +267,32 @@ if SERVER then
         end
 
         local curTime = CurTime()
-        local state = ply.TTTThiefStealState or THIEF_STEAL_STATE_IDLE
+        local startTime = ply.TTTThiefStealStartTime
+        local state = ply.TTTThiefStealState
 
         -- Keep track of the success cooldown
         if state == THIEF_STEAL_STATE_COOLDOWN then
             local steal_success_cooldown = thief_steal_success_cooldown:GetInt()
             if curTime - (startTime + steal_success_cooldown) >= 0 then
-                ply:ClearProperty("TTTThiefStealStartTime", ply)
-                ply:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_IDLE, ply)
+                ClearTracking(ply)
             end
             return
         end
 
         if thief_steal_mode:GetInt() ~= THIEF_STEAL_MODE_PROXIMITY then return end
 
+        -- Don't let the player track anything if they don't have the credits to pay for it
+        if thief_steal_cost:GetBool() and ply:GetCredits() <= 0 then
+            ClearTracking(ply)
+            return
+        end
+
         local proximity_require_los = thief_steal_proximity_require_los:GetBool()
         local proximity_distance = thief_steal_proximity_distance:GetFloat() * UNITS_PER_METER
         local proxyDistanceSqr = proximity_distance * proximity_distance
 
         -- If we don't already have a target, find one
+        local targetSid64 = ply.TTTThiefStealTarget
         local target = player.GetBySteamID64(targetSid64)
         if not IsPlayer(target) then
             local closestPly
@@ -272,6 +311,7 @@ if SERVER then
 
             if IsPlayer(closestPly) then
                 ply:SetProperty("TTTThiefStealTarget", closestPly:SteamID64(), ply)
+                ply:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_IDLE, ply)
             end
             return
         end
@@ -286,9 +326,7 @@ if SERVER then
                 ply:SetProperty("TTTThiefStealStartTime", curTime + steal_failure_cooldown, ply)
             elseif curTime > startTime or steal_failure_cooldown == 0 then
                 -- After the buffer time has passed, reset the variables for the thief
-                ply:ClearProperty("TTTThiefStealTarget", ply)
-                ply:ClearProperty("TTTThiefStealStartTime", ply)
-                ply:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_IDLE, ply)
+                ClearTracking(ply)
             end
             return
         end
@@ -311,18 +349,14 @@ if SERVER then
                     -- Wait for the cooldown after losing before resetting
                     ply:SetProperty("TTTThiefStealStartTime", curTime + steal_failure_cooldown, ply)
                 else
-                    ply:ClearProperty("TTTThiefStealTarget", ply)
-                    ply:ClearProperty("TTTThiefStealStartTime", ply)
-                    ply:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_IDLE, ply)
+                    ClearTracking(ply)
                 end
             elseif distance <= proxyDistanceSqr and (not proximity_require_los or ply:IsLineOfSightClear(target)) then
                 ply:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_STEALING, ply)
                 ply:ClearProperty("TTTThiefStealLostTime", ply)
             end
         elseif state == THIEF_STEAL_STATE_LOST and curTime > startTime then
-            ply:ClearProperty("TTTThiefStealTarget", ply)
-            ply:ClearProperty("TTTThiefStealStartTime", ply)
-            ply:SetProperty("TTTThiefStealState", THIEF_STEAL_STATE_IDLE, ply)
+            ClearTracking(ply)
         end
 
         local proximity_time = thief_steal_proximity_time:GetInt()
@@ -341,15 +375,43 @@ if SERVER then
         ply.TTTThiefDisabled = false
     end)
 
-    -- Thief can only use the weapons they steal
+    -- Thief can only use the weapons they steal, plus the allowed defaults, their thieves' tools, and any melee weapons
     ROLE.onroleassigned = function(ply)
         -- Use a slight delay to make sure nothing else is changing this player's role first
         timer.Simple(0.25, function()
             if not IsPlayer(ply) then return end
             if not ply:IsActiveThief() then return end
 
-            ply:StripWeapons()
-            ply:Give("weapon_ttt_unarmed")
+            local activeWep = ply.GetActiveWeapon and ply:GetActiveWeapon()
+            local activeRemoved = false
+            local switchTo
+            for _, w in ipairs(ply:GetWeapons()) do
+                local wepClass = WEPS.GetClass(w)
+                if w.Kind == WEAPON_MELEE then
+                    -- Save the first melee weapon to switch to, if we need it
+                    if not switchTo then
+                        switchTo = wepClass
+                    end
+                    continue
+                end
+
+                if not TableHasValue(allowedWeaponClasses, wepClass) then
+                    -- If we are removing the active weapon, keep track so we switch weapons later for them
+                    if activeWep == w then
+                        activeRemoved = true
+                    end
+                    ply:StripWeapon(wepClass)
+                end
+            end
+
+            -- We removed their active weapon, switch to something else
+            if activeRemoved then
+                -- If we haven't found a melee weapon, switch to the magneto stick
+                if not switchTo then
+                    switchTo = "weapon_zm_carry"
+                end
+                ply:SelectWeapon(switchTo)
+            end
         end)
     end
 
@@ -357,9 +419,10 @@ if SERVER then
         if not IsPlayer(ply) then return end
         if not ply:IsActiveThief() then return end
         if not IsValid(wep) then return end
+        if wep.Kind == WEAPON_MELEE then return end
 
         local wepClass = WEPS.GetClass(wep)
-        if wepClass ~= "weapon_ttt_unarmed" and not wep.TTTThiefStolen then
+        if not TableHasValue(allowedWeaponClasses, wepClass) and not wep.TTTThiefStolen then
             return false
         end
     end)
@@ -466,28 +529,64 @@ if CLIENT then
         end
     end)
 
+    local icon_tex = Material("icon16/coins.png")
     AddHook("TTTHUDInfoPaint", "Thief_TTTHUDInfoPaint", function(cli, label_left, label_top, active_labels)
         if hide_role:GetBool() then return end
         if not cli:IsActiveThief() then return end
 
+        surface.SetFont("TabLarge")
+
+        local text
+        local _, h
+
+        local steal_cost = thief_steal_cost:GetBool()
+        if steal_cost then
+            local credits = client:GetCredits()
+            if credits == 0 then
+                surface.SetTextColor(255, 0, 0, 230)
+            else
+                surface.SetTextColor(255, 255, 255, 230)
+            end
+            text = LANG.GetParamTranslation("thief_credits_hud", {credits = credits})
+            _, h = surface.GetTextSize(text)
+
+            -- Move this up based on how many other labels there are
+            label_top = label_top + (20 * #active_labels)
+
+            local icon_x, icon_y = 16, 16
+            surface.SetMaterial(icon_tex)
+            surface.SetDrawColor(255, 255, 255, 255)
+            surface.DrawTexturedRect(label_left, ScrH() - label_top - icon_y, icon_x, icon_y)
+
+            label_left = label_left + 20
+
+            surface.SetTextPos(label_left, ScrH() - label_top - h)
+            surface.DrawText(text)
+
+            -- Track that the label was added so others can position accurately
+            TableInsert(active_labels, "thiefCredits")
+        end
+
         if cli.TTTThiefStealState ~= THIEF_STEAL_STATE_COOLDOWN then return end
         if not cli.TTTThiefStealStartTime then return end
 
-        surface.SetFont("TabLarge")
-        surface.SetTextColor(255, 255, 255, 230)
-
         local remaining = cli.TTTThiefStealStartTime + thief_steal_success_cooldown:GetInt() - CurTime()
-        local text = LANG.GetParamTranslation("thief_hud", {time = util.SimpleTime(remaining, "%02i:%02i")})
-        local _, h = surface.GetTextSize(text)
+        text = LANG.GetParamTranslation("thief_cooldown_hud", {time = util.SimpleTime(remaining, "%02i:%02i")})
+        _, h = surface.GetTextSize(text)
 
-        -- Move this up based on how many other labels here are
-        label_top = label_top + (20 * #active_labels)
+        -- Move this up based on how many other labels there are
+        if steal_cost then
+            label_top = label_top + 20
+        else
+            label_top = label_top + (20 * #active_labels)
+        end
 
+        surface.SetTextColor(255, 255, 255, 230)
         surface.SetTextPos(label_left, ScrH() - label_top - h)
         surface.DrawText(text)
 
         -- Track that the label was added so others can position accurately
-        TableInsert(active_labels, "thief")
+        TableInsert(active_labels, "thiefCooldown")
     end)
 
     ----------------
