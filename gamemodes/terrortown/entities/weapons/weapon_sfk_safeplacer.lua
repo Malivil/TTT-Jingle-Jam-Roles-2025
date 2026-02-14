@@ -117,6 +117,11 @@ if CLIENT then
     function SWEP:OnRemove()
         SafeRemoveEntity(self.ClientWorldModel)
         self.ClientWorldModel = nil
+
+        local owner = self:GetOwner()
+        if IsValid(owner) and owner == LocalPlayer() and owner:Alive() then
+            RunConsoleCommand("lastinv")
+        end
     end
 end
 
