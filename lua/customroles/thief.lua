@@ -692,7 +692,7 @@ if CLIENT then
 
     AddHook("TTTSyncEventIDs", "Thief_TTTSyncEventIDs", function()
         EVENT_THIEFSTOLEN = EVENTS_BY_ROLE[ROLE_THIEF]
-        local swap_icon = Material("icon16/lock_open.png")
+        local swap_icon = Material("icon16/money.png")
         local Event = CLSCORE.DeclareEventDisplay
         local PT = LANG.GetParamTranslation
         Event(EVENT_THIEFSTOLEN, {
@@ -759,10 +759,55 @@ if CLIENT then
 
     AddHook("TTTTutorialRoleText", "Thief_TTTTutorialRoleText", function(role, titleLabel)
         if role == ROLE_THIEF then
-            local roleColor = GetRoleTeamColor(ROLE_TEAM_INDEPENDENT)
-            local html = "The " .. ROLE_STRINGS[ROLE_THIEF] .. " is an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent</span> role whose goal is to be the last player standing."
+            local roleColor
+            local html = "The " .. ROLE_STRINGS[ROLE_THIEF] .. " is "
+            local winCondition
+            if INDEPENDENT_ROLES[ROLE_THIEF] then
+                roleColor = GetRoleTeamColor(ROLE_TEAM_INDEPENDENT)
+                html = html .. "an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent role</span> role"
+                winCondition = "be the last player standing"
+            else
+                local roleTeam = player.GetRoleTeam(ROLE_THIEF, true)
+                local roleTeamName
+                roleTeamName, roleColor = GetRoleTeamInfo(roleTeam)
+                html = html .. "a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>" .. roleTeamName .. " team</span>"
+                winCondition = "help their team win"
+            end
+            html = html .. " whose goal is to steal weapons from their enemies and " .. winCondition .. "."
 
-            -- TODO
+            -- Steal mode
+            local steal_mode = thief_steal_mode:GetInt()
+            html = html .. "<span style='display: block; margin-top: 10px;'>To steal a weapon from a player, the " .. ROLE_STRINGS[ROLE_THIEF] .. " must <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>"
+            local extra = ""
+            if steal_mode == THIEF_STEAL_MODE_PROXIMITY then
+                html = html .. "stay near"
+                extra = " for " .. thief_steal_proximity_time:GetInt() .. " second(s)"
+            else
+                html = html .. "use their Thieves' Tools on"
+            end
+            html = html .. " a target of their choosing</span>" .. extra .. ".</span>"
+
+            -- Cost
+            if thief_steal_cost:GetBool() then
+                html = html .. "<span style='display: block; margin-top: 10px;'>Stealing a weapon from a player <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>costs 1 credit</span> which you can get from the normal sources.</span>"
+            end
+
+            -- Show a warning about the notification delay if its enabled
+            local delay_min = thief_steal_notify_delay_min:GetInt()
+            local delay_max = thief_steal_notify_delay_max:GetInt()
+            if delay_min > delay_max then
+                delay_min = delay_max
+            end
+
+            if delay_min > 0 then
+                html = html .. "<span style='display: block; margin-top: 10px;'>Be careful though! Players <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>are notified when they are robbed</span> after a short delay. Be sure to be sneaky or blend in with other players to disguise that you are the " .. ROLE_STRINGS[ROLE_THIEF] .. ".</span>"
+            end
+
+            -- Cooldown
+            local steal_success_cooldown = thief_steal_success_cooldown:GetInt()
+            if steal_success_cooldown > 0 then
+                html = html .. "<span style='display: block; margin-top: 10px;'>After successfully stealing a weapon, the " .. ROLE_STRINGS[ROLE_THIEF] .. " <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>must wait " .. steal_success_cooldown .. " second(s)</span> before they can steal again.</span>"
+            end
 
             return html
         end
