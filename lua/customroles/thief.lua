@@ -195,7 +195,7 @@ if SERVER then
             if w.Kind == WEAPON_MELEE then continue end
 
             -- Or weapons they already have
-            local wepClass = WEAPS.GetClass(w)
+            local wepClass = WEPS.GetClass(w)
             if self:HasWeapon(wepClass) then continue end
 
             -- Or weapons that they can't carry because something is already in that slot
@@ -402,34 +402,20 @@ if SERVER then
             if not ply:IsActiveThief() then return end
 
             local activeWep = ply.GetActiveWeapon and ply:GetActiveWeapon()
-            local activeRemoved = false
-            local switchTo
             for _, w in ipairs(ply:GetWeapons()) do
                 local wepClass = WEPS.GetClass(w)
-                if w.Kind == WEAPON_MELEE then
-                    -- Save the first melee weapon to switch to, if we need it
-                    if not switchTo then
-                        switchTo = wepClass
-                    end
-                    continue
-                end
+                if w.Kind == WEAPON_MELEE then continue end
 
                 if not TableHasValue(allowedWeaponClasses, wepClass) then
-                    -- If we are removing the active weapon, keep track so we switch weapons later for them
+                    -- If we are removing the active weapon, switch to something we know they'll have instead
                     if activeWep == w then
-                        activeRemoved = true
+                        activeWep = nil
+                        timer.Simple(0.25, function()
+                            ply:SelectWeapon("weapon_zm_carry")
+                        end)
                     end
                     ply:StripWeapon(wepClass)
                 end
-            end
-
-            -- We removed their active weapon, switch to something else
-            if activeRemoved then
-                -- If we haven't found a melee weapon, switch to the magneto stick
-                if not switchTo then
-                    switchTo = "weapon_zm_carry"
-                end
-                ply:SelectWeapon(switchTo)
             end
         end)
     end
