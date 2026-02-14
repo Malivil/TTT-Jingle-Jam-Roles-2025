@@ -180,6 +180,22 @@ if SERVER then
 
     local allowedWeaponClasses = {"weapon_ttt_unarmed", "weapon_zm_carry", "weapon_thf_thievestools"}
 
+    local function CanBeStolen(thief, wep)
+        -- Don't try to steal role weapons
+        if wep.Category == WEAPON_CATEGORY_ROLE then return false end
+
+        local wepClass = WEPS.GetClass(wep)
+        -- Or weapons the thief can get
+        if TableHasValue(allowedWeaponClasses, wepClass) then return false end
+        -- Or weapons the thief already has
+        if thief:HasWeapon(wepClass) then return false end
+
+        -- Or weapons that the thief can't carry because something is already in that slot
+        if not thief:CanCarryType(wep.Kind) then return false end
+
+        return true
+    end
+
     AddHook("Initialize", "Thief_Initialize", function()
         WIN_THIEF = GenerateNewWinID(ROLE_THIEF)
         EVENT_THIEFSTOLEN = GenerateNewEventID(ROLE_THIEF)
@@ -194,18 +210,12 @@ if SERVER then
 
         -- Find a weapon for the thief to steal
         local items = {}
+        local activeWep = target.GetActiveWeapon and target:GetActiveWeapon()
         for _, w in ipairs(target:GetWeapons()) do
-            -- Don't try to steal melee weapons
-            if w.Kind == WEAPON_MELEE then continue end
-            -- Or role weapons
-            if w.Category == WEAPON_CATEGORY_ROLE then continue end
+            if not CanBeStolen(self, w) then continue end
 
-            -- Or weapons the thief already has
-            local wepClass = WEPS.GetClass(w)
-            if self:HasWeapon(wepClass) then continue end
-
-            -- Or weapons that the thief can't carry because something is already in that slot
-            if not self:CanCarryType(w.Kind) then continue end
+            -- Ignore the active weapon for now, we'll use that as a fallback so it's not obvious the target has been robbed
+            if w == activeWep then continue end
 
             TableInsert(items, w)
         end
@@ -214,6 +224,9 @@ if SERVER then
         -- Choose a random item from the list
         if #items > 0 then
             item = items[MathRandom(#items)]
+        -- If we didn't find anything worth stealing, see if the active weapon is an option
+        elseif activeWep and CanBeStolen(self, activeWep) then
+            item = activeWep
         end
 
         -- If no valid weapons are found, set to "LOST" state for the quick reset
