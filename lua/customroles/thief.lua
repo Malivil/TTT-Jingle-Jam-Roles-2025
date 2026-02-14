@@ -21,9 +21,10 @@ ROLE.nameplural = "Thieves"
 ROLE.nameext = "a Thief"
 ROLE.nameshort = "thf"
 
-ROLE.desc = [[You are {role}!
-TODO]]
-ROLE.shortdesc = "TODO"
+ROLE.desc = [[You are {role}! {comrades}
+Steal weapons from other players by
+{method}.{cost}]]
+ROLE.shortdesc = "Can only obtain weapons by stealing from other players. Steal something good and survive!"
 
 ROLE.team = ROLE_TEAM_INDEPENDENT
 
@@ -719,6 +720,37 @@ if CLIENT then
             vic = victim,
             item = item
         })
+    end)
+
+    ----------------
+    -- ROLE POPUP --
+    ----------------
+
+    AddHook("TTTRolePopupParams", "Thief_TTTRolePopupParams", function(cli)
+        if not cli:IsThief() then return end
+
+        local params = {
+            comrades = ""
+        }
+        if cli:IsIndependentTeam() then
+            params.comrades = "Kill all others to win!\n"
+        else cli:IsInnocentTeam()
+            params.comrades = "Work with your team to win!\n"
+        end
+
+        if thief_steal_cost:GetBool() then
+            params.cost = "\n\nStealing costs 1 credit per item."
+        else
+            params.cost = ""
+        end
+
+        if thief_steal_mode:GetInt() == THIEF_STEAL_MODE_PROXIMITY then
+            params.method = "staying near a target"
+        else
+            params.method = "using your Thieves' Tools on a target"
+        end
+
+        return params
     end)
 
     --------------
