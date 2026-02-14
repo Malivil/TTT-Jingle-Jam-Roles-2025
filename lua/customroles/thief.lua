@@ -193,13 +193,15 @@ if SERVER then
         for _, w in ipairs(target:GetWeapons()) do
             -- Don't try to steal melee weapons
             if w.Kind == WEAPON_MELEE then continue end
+            -- Or role weapons
+            if w.Category == WEAPON_CATEGORY_ROLE then continue end
 
-            -- Or weapons they already have
+            -- Or weapons the thief already has
             local wepClass = WEPS.GetClass(w)
             if self:HasWeapon(wepClass) then continue end
 
-            -- Or weapons that they can't carry because something is already in that slot
-            if not self:CanCarryType(w.kind) then continue end
+            -- Or weapons that the thief can't carry because something is already in that slot
+            if not self:CanCarryType(w.Kind) then continue end
 
             TableInsert(items, w)
         end
@@ -222,7 +224,16 @@ if SERVER then
             return
         end
 
-        -- TODO: Steal the weapon and set the property on the weapon so the thief can get it
+        -- Steal the weapon and set the property on the weapon so the thief can get it
+        local itemClass = WEPS.GetClass(item)
+        target:StripWeapon(itemClass)
+        self.TTTThiefStolenWeapon = {
+            class = itemClass,
+            clip1 = item:Clip1(),
+            clip2 = item:Clip2(),
+            PAPUpgrade = item.PAPUpgrade
+        }
+        self:Give(itemClass)
 
         if thief_steal_cost:GetBool() then
             self:SubtractCredits(1)
@@ -233,7 +244,7 @@ if SERVER then
         net.Start("TTT_ThiefItemStolen")
             net.WritePlayer(self)
             net.WriteString(target:Nick())
-            net.WriteString(item)
+            net.WriteString(itemClass)
         net.Broadcast()
 
         local steal_notify_delay_min = thief_steal_notify_delay_min:GetInt()
@@ -427,8 +438,34 @@ if SERVER then
         if wep.Kind == WEAPON_MELEE then return end
 
         local wepClass = WEPS.GetClass(wep)
-        if not TableHasValue(allowedWeaponClasses, wepClass) and not wep.TTTThiefStolen then
+        if ply.TTTThiefStolenWeapon and ply.TTTThiefStolenWeapon.class == wepClass then
+            return true
+        end
+
+        if not TableHasValue(allowedWeaponClasses, wepClass) then
             return false
+        end
+    end)
+
+    AddHook("WeaponEquip", "Thief_WeaponEquip", function(wep, ply)
+        if not IsPlayer(ply) then return end
+        if not ply:IsActiveThief() then return end
+        if not IsValid(wep) then return end
+
+        local wepClass = WEPS.GetClass(wep)
+        local data = ply.TTTThiefStolenWeapon
+        if data and data.class == wepClass then
+            -- Transfer weapon ammo
+            wep:SetClip1(data.clip1)
+            wep:SetClip2(data.clip2)
+
+            -- Transfer the PAP upgrade over if it had one
+            if TTTPAP and data.PAPUpgrade then
+                TTTPAP:ApplyUpgrade(wep, data.PAPUpgrade)
+            end
+
+            -- Reset the property for the next steal
+            ply.TTTThiefStolenWeapon = nil
         end
     end)
 
@@ -470,6 +507,7 @@ if SERVER then
 
     AddHook("TTTPrepareRound", "Thief_TTTPrepareRound", function()
         for _, v in PlayerIterator() do
+            v.TTTThiefStolenWeapon = nil
             v.TTTThiefDisabled = false
             v:ClearProperty("TTTThiefStealTarget", v)
             v:ClearProperty("TTTThiefStealStartTime", v)
