@@ -85,8 +85,8 @@ if SERVER then
             net.Broadcast()
         end
 
-        -- TODO: Show message in chat
-        -- TODO: Play drinking sound
+        self:QueueMessage(MSG_PRINTCENTER, "You've had a lovely cup of tea =)", nil, "ysmTea")
+        self:EmitSound("ysm/drink.mp3", 100, 100, 1, CHAN_ITEM)
 
         SafeRemoveEntity(ent)
     end

@@ -237,9 +237,12 @@ ttt_yorkshireman_max_health          100 // The maximum amount of health a Yorks
 - [avhatar](https://sketchfab.com/avhatar) for the [original model](https://sketchfab.com/3d-models/simple-safe-2e308cb3fe1d4676beb43e75fdd27e8e) for the Safekeeper
   - Licensed as [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - [Famoso](https://steamcommunity.com/profiles/76561198308951372) for the GMod version of the [safe model](https://steamcommunity.com/sharedfiles/filedetails/?id=3030515670) for the Safekeeper
-- [GFXSounds.com](https://gfxsounds.com) for the picking and opening sounds used for the Safekeeper's safe
-  - [Safe lock, vault, opening mechanism 6](https://gfxsounds.com/sound-effect/safe-lock-vault-opening-mechanism-6/)
-  - [Safe vault, dial lock, turning click 6](https://gfxsounds.com/sound-effect/safe-vault-dial-lock-turning-click-6/)
+- [GFXSounds.com](https://gfxsounds.com) for:
+  - The picking and opening sounds used for the Safekeeper's safe:
+    - [Safe lock, vault, opening mechanism 6](https://gfxsounds.com/sound-effect/safe-lock-vault-opening-mechanism-6/)
+    - [Safe vault, dial lock, turning click 6](https://gfxsounds.com/sound-effect/safe-vault-dial-lock-turning-click-6/)
+  - The drinking sound used by the Yorkshireman:
+    - [Drinking with a swallow and ah sound effect](https://gfxsounds.com/sound-effect/drinking-with-a-swallow-and-ah/)
 - [THE PIE GUY](https://steamcommunity.com/profiles/76561198082760562) for the [Pie Bomb](https://steamcommunity.com/sharedfiles/filedetails/?id=316765309) whose model is used by the Yorkshireman
 - [THE PIE GUY](https://steamcommunity.com/profiles/76561198082760562) for the [Pie Bomb](https://steamcommunity.com/sharedfiles/filedetails/?id=316765309) whose model is used by the Yorkshireman
 - [Lykrast](https://steamcommunity.com/id/Lykrast) for the code and models used to create the Yorkshireman's double barrel shotgun taken from ['Lykrast's TTT Weapon Collection'](https://steamcommunity.com/sharedfiles/filedetails/?id=337994500).
