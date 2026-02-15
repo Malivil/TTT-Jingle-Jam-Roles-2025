@@ -27,7 +27,7 @@ Place your safe somewhere on the map
 and keep it defended.
 If it remains unopened by the end
 of the round, you win!]]
-ROLE.shortdesc = "Places a safe that they must defend from being picked open for the rest of the round"
+ROLE.shortdesc = "Places a safe that they must defend from being picked open for the rest of the round."
 
 ROLE.team = ROLE_TEAM_INDEPENDENT
 
