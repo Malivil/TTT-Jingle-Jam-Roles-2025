@@ -15,6 +15,7 @@ SWEP.Category = WEAPON_CATEGORY_ROLE
 
 SWEP.Kind = WEAPON_HEAVY
 
+-- Don't use a loadout because we may need to remove a weapon in the same slot first
 SWEP.InLoadoutFor = {}
 SWEP.InLoadoutForDefault = {}
 
@@ -29,22 +30,25 @@ SWEP.Primary.Automatic = true
 SWEP.Primary.NumShots = 12
 SWEP.Primary.Sound = "weapons/ttt/dbsingle.wav"
 SWEP.Primary.Recoil = 15
-SWEP.AmmoEnt = "item_box_buckshot_ttt"
 
 SWEP.Secondary.Sound = "weapons/ttt/dbblast.wav"
 SWEP.Secondary.Recoil = 40
 
+SWEP.AmmoEnt = "item_box_buckshot_ttt"
 SWEP.AllowDrop = false
-
 SWEP.UseHands = false
+SWEP.ReloadTimer = 0
+
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 70
 SWEP.ViewModel = "models/weapons/v_old_doublebarrel.mdl"
 SWEP.WorldModel = "models/weapons/w_old_doublebarrel.mdl"
 
-SWEP.reloadtimer = 0
-
 local yorkshireman_shotgun_damage = CreateConVar("ttt_yorkshireman_shotgun_damage", "10", FCVAR_REPLICATED, "How much damage the Yorkshireman's double barrel shotgun should do", 0, 100)
+
+function SWEP:SetupDataTables()
+    self:NetworkVar("Bool", 0, "Reloading")
+end
 
 function SWEP:Initialize()
     self:SetWeaponHoldType(self.HoldType)
@@ -53,6 +57,9 @@ end
 
 function SWEP:Deploy()
     self.Primary.Damage = yorkshireman_shotgun_damage:GetInt()
+    self.ReloadTimer = 0
+    self:SetReloading(false)
+    return self.BaseClass.Deploy(self)
 end
 
 function SWEP:OnDrop()
@@ -120,35 +127,35 @@ function SWEP:SecondaryAttack(worldsnd)
     owner:ViewPunch(Angle(math.Rand(-0.2, -0.1) * bulletRecoil, math.Rand(-0.1, 0.1) * bulletRecoil, 0))
 end
 
-function SWEP:SetupDataTables()
-    self:DTVar("Bool", 0, "reloading")
-
-    return self.BaseClass.SetupDataTables(self)
-end
-
 function SWEP:Reload()
-    if self.dt.reloading then return end
+    if self:GetReloading() then return end
     if not IsFirstTimePredicted() then return end
+
     local owner = self:GetOwner()
     if not IsValid(owner) then return end
-    owner:GetViewModel():SetPlaybackRate(2)
 
-    if self:Clip1() < self.Primary.ClipSize and owner:GetAmmoCount(self.Primary.Ammo) > 0 then
-        self:StartReload()
-    end
+    if owner:GetAmmoCount(self.Primary.Ammo) <= 0 then return end
+    if self:Clip1() >= self.Primary.ClipSize then return end
+
+    owner:GetViewModel():SetPlaybackRate(2)
+    self:StartReload()
 end
 
 function SWEP:StartReload()
-    if self.dt.reloading then return false end
+    if self:GetReloading() then return false end
     if not IsFirstTimePredicted() then return false end
+
     self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
+
     local owner = self:GetOwner()
     if not IsValid(owner) then return end
-    if not owner or owner:GetAmmoCount(self.Primary.Ammo) <= 0 then return false end
+
+    if owner:GetAmmoCount(self.Primary.Ammo) <= 0 then return false end
     if self:Clip1() >= self.Primary.ClipSize then return false end
+
+    self:SetReloading(true)
     self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_START)
-    self.reloadtimer = CurTime() + self:SequenceDuration()
-    self.dt.reloading = true
+    self.ReloadTimer = CurTime() + self:SequenceDuration()
 
     return true
 end
@@ -156,58 +163,43 @@ end
 function SWEP:PerformReload()
     local owner = self:GetOwner()
     if not IsValid(owner) then return end
+
     self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-    if not owner or owner:GetAmmoCount(self.Primary.Ammo) <= 0 then return end
+
+    if owner:GetAmmoCount(self.Primary.Ammo) <= 0 then return end
     if self:Clip1() >= self.Primary.ClipSize then return end
+
     owner:RemoveAmmo(1, self.Primary.Ammo, false)
     self:SetClip1(self:Clip1() + 1)
     self:SendWeaponAnim(ACT_VM_RELOAD)
-    self.reloadtimer = CurTime() + self:SequenceDuration()
+    self.ReloadTimer = CurTime() + self:SequenceDuration()
 end
 
 function SWEP:FinishReload()
-    self.dt.reloading = false
+    self:SetReloading(false)
     self:SendWeaponAnim(ACT_SHOTGUN_RELOAD_FINISH)
-    self.reloadtimer = CurTime() + self:SequenceDuration()
+    self.ReloadTimer = CurTime() + self:SequenceDuration()
 end
 
 function SWEP:Think()
-    if self.dt.reloading and IsFirstTimePredicted() then
-        local owner = self:GetOwner()
-        if not IsValid(owner) then return end
+    if not self:GetReloading() then return end
+    if not IsFirstTimePredicted() then return end
 
-        if owner:KeyDown(IN_ATTACK) then
+    local owner = self:GetOwner()
+    if not IsValid(owner) then return end
+
+    if owner:KeyDown(IN_ATTACK) then
+        self:FinishReload()
+        return
+    end
+
+    if self.ReloadTimer <= CurTime() then
+        if owner:GetAmmoCount(self.Primary.Ammo) <= 0 then
             self:FinishReload()
-
-            return
-        end
-
-        if self.reloadtimer <= CurTime() then
-            if owner:GetAmmoCount(self.Primary.Ammo) <= 0 then
-                self:FinishReload()
-            elseif self:Clip1() < self.Primary.ClipSize then
-                self:PerformReload()
-            else
-                self:FinishReload()
-            end
-
-            return
+        elseif self:Clip1() < self.Primary.ClipSize then
+            self:PerformReload()
+        else
+            self:FinishReload()
         end
     end
-end
-
-function SWEP:Deploy()
-    self.dt.reloading = false
-    self.reloadtimer = 0
-
-    return self.BaseClass.Deploy(self)
-end
-
-function SWEP:GetHeadshotMultiplier(victim, dmginfo)
-    local att = dmginfo:GetAttacker()
-    if not IsValid(att) then return 3 end
-    local dist = victim:GetPos():Distance(att:GetPos())
-    local d = math.max(0, dist - 140)
-
-    return 1 + math.max(0, 2.1 - 0.002 * (d ^ 1.25))
 end
