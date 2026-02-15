@@ -26,7 +26,7 @@ ROLE.desc = [[You are {role}!
 TODO]]
 ROLE.shortdesc = "TODO"
 
-ROLE.team = ROLE_TEAM_INNOCENT
+ROLE.team = ROLE_TEAM_INDEPENDENT
 ROLE.haspassivewin = true
 -- TODO: This thing is completely broken
 --ROLE.loadout = {"weapon_ttt_guard_dog"}
