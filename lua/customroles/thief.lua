@@ -459,13 +459,12 @@ if SERVER then
 
             local activeWep = ply.GetActiveWeapon and ply:GetActiveWeapon()
             for _, w in ipairs(ply:GetWeapons()) do
-                local wepClass = WEPS.GetClass(w)
                 if w.Kind == WEAPON_MELEE then continue end
 
+                local wepClass = WEPS.GetClass(w)
                 if not TableHasValue(allowedWeaponClasses, wepClass) then
                     -- If we are removing the active weapon, switch to something we know they'll have instead
                     if activeWep == w then
-                        activeWep = nil
                         timer.Simple(0.25, function()
                             if thief_steal_mode:GetInt() == THIEF_STEAL_MODE_TOOLS then
                                 ply:SelectWeapon("weapon_thf_thievestools")
