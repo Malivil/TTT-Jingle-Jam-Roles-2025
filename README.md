@@ -241,8 +241,9 @@ ttt_yorkshireman_max_health          100 // The maximum amount of health a Yorks
   - The picking and opening sounds used for the Safekeeper's safe:
     - [Safe lock, vault, opening mechanism 6](https://gfxsounds.com/sound-effect/safe-lock-vault-opening-mechanism-6/)
     - [Safe vault, dial lock, turning click 6](https://gfxsounds.com/sound-effect/safe-vault-dial-lock-turning-click-6/)
-  - The drinking sound used by the Yorkshireman:
+  - The drinking and eating sounds used by the Yorkshireman:
     - [Drinking with a swallow and ah sound effect](https://gfxsounds.com/sound-effect/drinking-with-a-swallow-and-ah/)
+    - [Eating and chewing a carrot sound effect](https://gfxsounds.com/sound-effect/eating-and-chewing-a-carrot/) by [Panda Wave](https://gfxsounds.com/blog/pandawave/)
 - [THE PIE GUY](https://steamcommunity.com/profiles/76561198082760562) for the [Pie Bomb](https://steamcommunity.com/sharedfiles/filedetails/?id=316765309) whose model is used by the Yorkshireman
 - [THE PIE GUY](https://steamcommunity.com/profiles/76561198082760562) for the [Pie Bomb](https://steamcommunity.com/sharedfiles/filedetails/?id=316765309) whose model is used by the Yorkshireman
 - [Lykrast](https://steamcommunity.com/id/Lykrast) for the code and models used to create the Yorkshireman's double barrel shotgun taken from ['Lykrast's TTT Weapon Collection'](https://steamcommunity.com/sharedfiles/filedetails/?id=337994500).

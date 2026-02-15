@@ -134,8 +134,9 @@ function SWEP:PrimaryAttack()
     local owner = self:GetOwner()
     if not IsValid(owner) then return end
 
-    -- TODO: Heal, play sound
+    -- TODO: Heal
     print(owner, "PF")
+    owner:EmitSound("ysm/eat.mp3", 100, 100, 1, CHAN_ITEM)
     owner:SetProperty("TTTYorkshiremanCooldownEnd", CurTime() + GetConVar("ttt_yorkshireman_pie_cooldown"):GetInt(), owner)
 end
 
