@@ -37,8 +37,10 @@ ROLE.convars =
 
 ROLE.translations = {
     ["english"] = {
-        ["yorkshireman_collect_hud"] = "Tea collected: {collected}/{total}",
-        ["yorkshireman_cooldown_hud"] = "Pie ready in: {time}"
+        ["yorkshireman_collect_hud"] = "Tea drank: {collected}/{total}",
+        ["yorkshireman_cooldown_hud"] = "Pie ready in: {time}",
+        ["ysm_tea"] = "Cup of Tea",
+        ["ysm_tea_hint"] = "Press {usekey} to drink"
     }
 }
 
@@ -130,7 +132,7 @@ if SERVER then
                 local spawn = spawns[MathRandom(#spawns)]
                 local pos = spawn:GetPos()
                 local tea = CreateEnt("ttt_ysm_tea")
-                tea:SetPos(pos + Vector(MathRand(0, 5), 5, MathRand(0, 5)))
+                tea:SetPos(pos + Vector(MathRand(2, 5), 5, MathRand(2, 5)))
                 tea:Spawn()
                 tea:Activate()
             end

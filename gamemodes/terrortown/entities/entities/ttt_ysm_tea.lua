@@ -6,6 +6,25 @@ if SERVER then
     AddCSLuaFile()
 end
 
+if CLIENT then
+    local hint_params = {usekey = Key("+use", "USE")}
+
+    ENT.TargetIDHint = function(tea)
+        local client = LocalPlayer()
+        if not IsPlayer(client) then return end
+
+        return {
+            name = "ysm_tea",
+            hint = "ysm_tea_hint",
+            fmt  = function(ent, txt)
+                if not client:IsActiveYorkshireman() then return nil end
+                return LANG.GetParamTranslation(txt, hint_params)
+            end
+        }
+    end
+    ENT.AutomaticFrameAdvance = true
+end
+
 ENT.Type = "anim"
 
 ENT.DidCollide = false
@@ -28,10 +47,11 @@ function ENT:Initialize()
         self:PhysicsInit(SOLID_VPHYSICS)
     end
     self:SetMoveType(MOVETYPE_VPHYSICS)
-    self:SetSolid(SOLID_VPHYSICS)
-    self:SetCollisionGroup(COLLISION_GROUP_PROJECTILE)
+    self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 
     if SERVER then
+        self:SetUseType(SIMPLE_USE)
+
         local phys = self:GetPhysicsObject()
         if IsValid(phys) then
             phys:Wake()
@@ -40,16 +60,14 @@ function ENT:Initialize()
 end
 
 if SERVER then
-    -- TODO: Change to "use" instead
-    function ENT:PhysicsCollide(data, physObj)
+    function ENT:Use(activator)
         if not IsValid(self) then return end
         if self.DidCollide then return end
 
-        local ent = data.HitEntity
-        if not IsPlayer(ent) then return end
-        if not ent:IsActiveYorkshireman() then return end
+        if not IsPlayer(activator) then return end
+        if not activator:IsActiveYorkshireman() then return end
 
         self.DidCollide = true
-        ent:YorkshiremanCollect(self)
+        activator:YorkshiremanCollect(self)
     end
 end
