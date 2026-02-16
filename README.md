@@ -50,6 +50,37 @@ ttt_clone_target_detectives 0   // Whether the Clone can target detective roles
 ttt_clone_minimum_radius    5   // The minimum radius of the Clone's device in meters. Set to 0 to disable
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/mgb/tab_mgb.png) Mind Goblin
+_Suggested By_: BoboMcGraw\
+The Mind Goblin is a Jester role that possesses their killer, but wants to help them win. They can buff their killer and if their killer wins, so does the Mind Goblin.
+\
+\
+**ConVars**
+```cpp
+ttt_mindgoblin_enabled                0    // Whether or not a Mind Goblin should spawn
+ttt_mindgoblin_spawn_weight           1    // The weight assigned to spawning a Mind Goblin
+ttt_mindgoblin_min_players            0    // The minimum number of players required to spawn a Mind Goblin
+ttt_mindgoblin_starting_health        150  // The amount of health a Mind Goblin starts with
+ttt_mindgoblin_max_health             150  // The maximum amount of health a Mind Goblin can have
+ttt_mindgoblin_damage_interval        20   // How much damage the Mind Goblin must take between weapon drops
+ttt_mindgoblin_announce               1    // Whether to announce to everyone that there is a Mind Goblin in the round
+ttt_mindgoblin_dissolve               1    // Whether the Mind Goblin's body should dissolve when they die
+ttt_mindgoblin_possess_damage_cost    75   // The amount of power to spend when a Mind Goblin is increasing the damage of their killer via a possession. Set to 0 to disable
+ttt_mindgoblin_possess_damage_factor  0.25 // The damage bonus that the target has against other players (e.g. 0.25 = 25% extra damage)
+ttt_mindgoblin_possess_damage_length  10   // How long (in seconds) the target's damage boost lasts
+ttt_mindgoblin_possess_heal_amount    25   // The amount of health to heal the target for over time when a Mind Goblin uses the heal power
+ttt_mindgoblin_possess_heal_cost      50   // The amount of power to spend when a Mind Goblin is healing their killer via a possession. Set to 0 to disable
+ttt_mindgoblin_possess_power_max      100  // The maximum amount of power a Mind Goblin can have when possessing their killer
+ttt_mindgoblin_possess_power_rate     10   // The amount of power to regain per second when a Mind Goblin is possessing their killer
+ttt_mindgoblin_possess_power_starting 0    // The amount of power to the Mind Goblin starts with
+ttt_mindgoblin_possess_resist_cost    75   // The amount of power to spend when a Mind Goblin is giving their killer damage resist via a possession. Set to 0 to disable
+ttt_mindgoblin_possess_resist_factor  0.25 // The damage resist that the target has against other players (e.g. 0.25 = 25% less damage)
+ttt_mindgoblin_possess_resist_length  10   // How long (in seconds) the target's damage resist lasts
+ttt_mindgoblin_possess_speed_cost     25   // The amount of power to spend when a Mind Goblin is speeding up their killer attack via a possession. Set to 0 to disable
+ttt_mindgoblin_possess_speed_factor   0.5  // The speed boost to give the target (e.g. 0.5 = 50% faster movement)
+ttt_mindgoblin_possess_speed_length   10   // How long (in seconds) the target's speed boost lasts
+```
+
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/pin/tab_pin.png) Piñata
 _Suggested By_: detection.exe\
 The Piñata is an Independent role that drops shop weapons on an interval based on how much damage they take. They also cannot damage another player unless they are damaged by them first.
@@ -174,13 +205,10 @@ ttt_thief_steal_proximity_time        15  // How long (in seconds) it takes the 
 
 # Special Thanks
 - [Game icons](https://game-icons.net/) for the role icons
-<<<<<<< safekeeper
+- [The Stig](https://steamcommunity.com/id/The-Stig-294) for the code used to shrink imperfect clones
 - [avhatar](https://sketchfab.com/avhatar) for the [original model](https://sketchfab.com/3d-models/simple-safe-2e308cb3fe1d4676beb43e75fdd27e8e) for the Safekeeper
   - Licensed as [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - [Famoso](https://steamcommunity.com/profiles/76561198308951372) for the GMod version of the [safe model](https://steamcommunity.com/sharedfiles/filedetails/?id=3030515670) for the Safekeeper
 - [GFXSounds.com](https://gfxsounds.com) for the picking and opening sounds used for the Safekeeper's safe
   - [Safe lock, vault, opening mechanism 6](https://gfxsounds.com/sound-effect/safe-lock-vault-opening-mechanism-6/)
   - [Safe vault, dial lock, turning click 6](https://gfxsounds.com/sound-effect/safe-vault-dial-lock-turning-click-6/)
-=======
-- [The Stig](https://steamcommunity.com/id/The-Stig-294) for the code used to shrink imperfect clones
->>>>>>> main
