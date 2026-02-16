@@ -252,12 +252,12 @@ if CLIENT then
             local html = "The " .. ROLE_STRINGS[ROLE_CLONE] .. " is "
 
             if clone_is_independent:GetBool() then
-                html = html + "a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>jester role</span>"
+                html = html .. "a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>jester role</span>"
             else
-                html = html + "an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent role</span>"
+                html = html .. "an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent role</span>"
             end
 
-            html = html + " who chooses a player to clone using their Target Picker device."
+            html = html .. " who chooses a player to clone using their Target Picker device."
 
             -- Targets
             html = html .. "<span style='display: block; margin-top: 10px;'>Their target can be <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>any "

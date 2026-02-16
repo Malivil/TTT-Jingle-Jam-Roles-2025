@@ -138,7 +138,7 @@ ROLE.translations = {
 -- ROLE CONVARS --
 ------------------
 
-local is_detective = CreateConVar("ttt_chef_is_detective", 0, FCVAR_REPLICATED, "Whether the Chef should be treated as a detective role", 0, 1)
+local is_detective = CreateConVar("ttt_chef_is_detective", "0", FCVAR_REPLICATED, "Whether the Chef should be treated as a detective role", 0, 1)
 local hat_enabled = CreateConVar("ttt_chef_hat_enabled", "1", FCVAR_REPLICATED, "Whether the Chef gets a hat", 0, 1)
 local burger_time = CreateConVar("ttt_chef_burger_time", "30", FCVAR_REPLICATED, "The amount of time the burger effect should last", 1, 120)
 local burger_amount = CreateConVar("ttt_chef_burger_amount", "0.5", FCVAR_REPLICATED, "The percentage of speed boost that the burger eater should get (e.g. 0.5 = 50% speed boost)", 0.1, 1)
@@ -187,7 +187,7 @@ end
 
 AddHook("TTTUpdateRoleState", "Chef_TTTUpdateRoleState", function()
     local detective = is_detective:GetBool()
-    DETECTIVE_ROLES[ROLE_CHEF] = detective:GetBool()
+    DETECTIVE_ROLES[ROLE_CHEF] = detective
     SHOP_ROLES[ROLE_CHEF] = detective
 end)
 
@@ -261,13 +261,13 @@ if CLIENT then
             local roleColor
             if is_detective:GetBool() then
                 roleColor = GetRoleTeamColor(ROLE_TEAM_DETECTIVE)
-                html = html + " a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>detective role</span> "
+                html = html .. " a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>detective role</span> "
             else
                 roleColor = GetRoleTeamColor(ROLE_TEAM_INNOCENT)
-                html = html + " a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>innocent team</span> "
+                html = html .. " a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>innocent team</span> "
             end
 
-            html = html + "whose goal is to help their team by cooking food which provides a buff."
+            html = html .. "whose goal is to help their team by cooking food which provides a buff."
 
             -- Stove
             html = html .. "<span style='display: block; margin-top: 10px;'>Choose a food and <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>place down a stove using the Stove Placer</span>, then interact with the placed stove to start cooking.</span>"
