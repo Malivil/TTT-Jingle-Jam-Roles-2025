@@ -168,6 +168,13 @@ if SERVER then
                 end
             end
 
+            -- Fall back to using player locations if we can't find anything else
+            if #spawns == 0 then
+                for _, p in PlayerIterator() do
+                    TableInsert(spawns, p)
+                end
+            end
+
             for i=1, yorkshireman_tea_spawn:GetInt() do
                 local spawn = spawns[MathRandom(#spawns)]
                 local pos = spawn:GetPos()
