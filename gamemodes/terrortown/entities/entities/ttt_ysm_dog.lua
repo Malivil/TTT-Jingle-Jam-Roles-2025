@@ -131,7 +131,7 @@ if SERVER then
         while path:IsValid() and self:HasEnemy() do
             -- Update the path to the enemy as they move
             if path:GetAge() > 0.1 then
-                path:Compute(self, enemyPos:GetPos())
+                path:Compute(self, enemy:GetPos())
             end
             path:Update(self)
 

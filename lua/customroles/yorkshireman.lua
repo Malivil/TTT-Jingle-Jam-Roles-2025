@@ -176,6 +176,26 @@ if SERVER then
         end
     end)
 
+    --  Make the dog automatically attack anyone that damages the Yorkshireman if they don't already have an explicit target
+    AddHook("PostEntityTakeDamage", "Yorkshireman_PostEntityTakeDamage", function(ent, dmginfo, wasDamageTaken)
+        if not wasDamageTaken then return end
+        if not IsPlayer(ent) then return end
+        if not ent:IsActiveYorkshireman() then return end
+
+        -- Ignore these damage types and assume the rest are purposeful from a direct weapon
+        if dmginfo:IsFallDamage() or dmginfo:IsExplosionDamage() then return end
+
+        local dog = ent.TTTYorkshiremanDog
+        if not IsValid(dog) then return end
+        if dog:HasEnemy() then return end
+
+        local att = dmginfo:GetAttacker()
+        if not IsPlayer(att) then return end
+        if not att:Alive() or att:IsSpec() then return end
+
+        dog:SetEnemy(att)
+    end)
+
     -------------
     -- CLEANUP --
     -------------
