@@ -69,7 +69,9 @@ ROLE.translations = {
         ["ysm_dog_name"] = "Guard Dog",
         ["ysm_dog_name_health"] = "Guard Dog ({current}/{max})",
         ["ysm_tea"] = "Cup of Tea",
-        ["ysm_tea_hint"] = "Press {usekey} to drink"
+        ["ysm_tea_hint"] = "Press {usekey} to drink",
+        ["ysm_guarddog_help_pri"] = "Press {primaryfire} to set target, {secondaryfire} to clear",
+        ["ysm_guarddog_help_sec"] = "Press {reload} to unstuck"
     }
 }
 
@@ -202,6 +204,8 @@ if SERVER then
 
     AddHook("TTTPrepareRound", "Yorkshireman_TTTPrepareRound", function()
         for _, v in PlayerIterator() do
+            SafeRemoveEntity(v.TTTYorkshiremanDog)
+            v.TTTYorkshiremanDog = nil
             v:ClearProperty("TTTYorkshiremanCollected", v)
             v:ClearProperty("TTTYorkshiremanCooldownEnd", v)
         end

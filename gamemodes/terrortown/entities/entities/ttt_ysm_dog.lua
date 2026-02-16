@@ -33,9 +33,6 @@ ENT.Base         = "base_nextbot"
 ENT.LoseDistance = 2000
 ENT.SearchRadius = 1000
 
--- TODO: Sounds
--- TODO: Health regen by convar?
-
 if SERVER then
     CreateConVar("ttt_yorkshireman_dog_health", "100", FCVAR_NONE, "How much health the Yorkshireman's Guard Dog should have", 1, 200)
     CreateConVar("ttt_yorkshireman_dog_damage", "20", FCVAR_NONE, "How much damage the Yorkshireman's Guard Dog should do", 1, 200)
@@ -63,11 +60,27 @@ function ENT:Initialize()
         self:SetVar("Attacking", false)
         self:SetEnemy(nil)
 
-        -- TODO: Register sounds
-        -- cr4ttt_dog_bark
-        -- cr4ttt_dog_bite
-        -- cr4ttt_dog_whine
-        -- cr4ttt_dog_yelp
+        -- Register sounds
+        sound.Add({
+            name = "cr4ttt_dog_eat",
+            sound = "ysm/dog/eat.mp3"
+        })
+        sound.Add({
+            name = "cr4ttt_dog_bark",
+            sound = "ysm/dog/bark.mp3"
+        })
+        sound.Add({
+            name = "cr4ttt_dog_bite",
+            sound = "ysm/dog/bite.mp3"
+        })
+        sound.Add({
+            name = "cr4ttt_dog_whine",
+            sound = "ysm/dog/whine.mp3"
+        })
+        sound.Add({
+            name = "cr4ttt_dog_yelp",
+            sound = "ysm/dog/yelp.mp3"
+        })
     end
 end
 
@@ -274,13 +287,13 @@ if SERVER then
         self:SetPos(controller:GetPos())
     end
 
-    function ENT:OnContact(enemy)
+    function ENT:OnContact(contact)
         local curTime = CurTime()
         if curTime < self.NextAttack() then return end
-        if not IsPlayer(enemy) then return end
+        if not IsPlayer(contact) then return end
 
-        local setEnemy = self:GetEnemy()
-        if setEnemy ~= enemy then return end
+        local enemy = self:GetEnemy()
+        if enemy ~= contact then return end
 
         local controller = self:GetController()
         if not IsPlayer(controller) then return end

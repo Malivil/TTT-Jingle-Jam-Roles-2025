@@ -140,13 +140,33 @@ if SERVER then
         local owner = self:GetOwner()
         if not IsValid(owner) then return end
 
+        local eaten = false
+        local heal = yorkshireman_pie_heal:GetInt()
+
+        -- Heal the dog, if they have one
+        local dog = owner.TTTYorkshiremanDog
+        if IsValid(dog) and dog:Alive() then
+            local dogHp = dog:Health()
+            local dogMax = dog:GetMaxHealth()
+            if dogHp < dogMax then
+                dog:EmitSound("cr4ttt_dog_eat", 100, 100, 1, CHAN_ITEM)
+                dog:SetHealth(MathMin(dogMax, dogHp + heal))
+                eaten = true
+            end
+        end
+
         local hp = owner:Health()
         local max = owner:GetMaxHealth()
-        if hp >= max then return end
+        if hp < max then
+            owner:EmitSound("ysm/eat.mp3", 100, 100, 1, CHAN_ITEM)
+            owner:SetHealth(MathMin(max, hp + heal))
+            eaten = true
+        end
 
-        owner:SetHealth(MathMin(max, hp + yorkshireman_pie_heal:GetInt()))
-        owner:EmitSound("ysm/eat.mp3", 100, 100, 1, CHAN_ITEM)
-        owner:SetProperty("TTTYorkshiremanCooldownEnd", CurTime() + yorkshireman_pie_cooldown:GetInt(), owner)
+        -- If either the player or the dog have eaten, put the pie on cooldown
+        if eaten then
+            owner:SetProperty("TTTYorkshiremanCooldownEnd", CurTime() + yorkshireman_pie_cooldown:GetInt(), owner)
+        end
     end
 end
 
