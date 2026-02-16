@@ -4,7 +4,6 @@ end
 
 local math = math
 
-local MathMax = math.max
 local MathRand = math.Rand
 
 if CLIENT then
@@ -303,19 +302,7 @@ if SERVER then
         if not IsPlayer(controller) then return end
 
         self:EmitSound("cr4ttt_dog_bite")
-
-        -- Play an animation that kinda looks like a bite
-        local act = self:GetActivity()
-        local seq, len = self:LookupSequence("Hit_front_small")
-        if seq ~= -1 then
-            self:SetSequence(seq)
-            timer.Simple(len, function()
-                self:StartActivity(act)
-            end)
-            self.NextAttack = curTime + MathMax(len, self.AttackDelay)
-        else
-            self.NextAttack = curTime + self.AttackDelay
-        end
+        self.NextAttack = curTime + self.AttackDelay
 
         local dmg = DamageInfo()
         dmg:SetDamage(self:GetDamage())

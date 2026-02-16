@@ -92,7 +92,7 @@ if SERVER then
             self:SpawnDog()
             return
         end
-        if not self.DogEnt:Alive() then return end
+        if not IsValid(self.DogEnt) or not self.DogEnt:Alive() then return end
 
         local owner = self:GetOwner()
         if not IsPlayer(owner) then return end
@@ -108,7 +108,7 @@ if SERVER then
             self:SpawnDog()
             return
         end
-        if not self.DogEnt:Alive() then return end
+        if not IsValid(self.DogEnt) or not self.DogEnt:Alive() then return end
 
         self.DogEnt:ClearEnemy()
     end
@@ -118,7 +118,7 @@ if SERVER then
             self:SpawnDog()
             return
         end
-        if not self.DogEnt:Alive() then return end
+        if not IsValid(self.DogEnt) or not self.DogEnt:Alive() then return end
 
         local curTime = CurTime()
         if curTime < self.NextReloadTime then return end
