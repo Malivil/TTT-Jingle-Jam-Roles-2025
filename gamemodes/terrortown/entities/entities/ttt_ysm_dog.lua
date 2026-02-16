@@ -2,6 +2,11 @@ if SERVER then
     AddCSLuaFile()
 end
 
+local math = math
+
+local MathMax = math.max
+local MathRand = math.Rand
+
 if CLIENT then
     ENT.TargetIDHint = function(dog)
         local client = LocalPlayer()
@@ -28,7 +33,7 @@ ENT.Base         = "base_nextbot"
 ENT.LoseDistance = 2000
 ENT.SearchRadius = 1000
 
--- TODO: Skeleton, movement, targeting, unstuck, sounds
+-- TODO: Sounds
 -- TODO: Health regen by convar?
 
 if SERVER then
@@ -59,6 +64,249 @@ function ENT:Initialize()
         self:SetEnemy(nil)
 
         -- TODO: Register sounds
+        -- cr4ttt_dog_bark
+        -- cr4ttt_dog_bite
+        -- cr4ttt_dog_whine
+        -- cr4ttt_dog_yelp
+    end
+end
+
+function ENT:GetControllerDistToSqr()
+    local controller = self:GetController()
+    if not IsPlayer(controller) then return end
+
+    return self:GetRangeSquaredTo(controller)
+end
+
+if SERVER then
+    ENT.WanderDist = 150
+    ENT.FollowDist = 150*150
+    ENT.ReturnDist = 350*350
+    ENT.RunDist = 600*600
+
+    ENT.IdleSpeed = 100
+    ENT.WalkSpeed = 150
+    ENT.RunSpeed = 450
+
+    ENT.IdleAccel = 400
+    ENT.HuntAccel = 900
+
+    ENT.NextAttack = 0
+    ENT.AttackDelay = 1
+
+    ENT.LastYelp = 0
+    ENT.YelpDelay = 5
+
+    ENT.StuckTime = 3
+
+    ENT.TrackPause = 0.25
+
+    ----------------------
+    -- ENEMY MANAGEMENT --
+    ----------------------
+
+    function ENT:ClearEnemy()
+        self:SetEnemy(nil)
+    end
+
+    function ENT:HasEnemy()
+        local enemy = self:GetEnemy()
+        if not IsPlayer(enemy) then return false end
+
+        return enemy:Alive() and not enemy:IsSpec()
+    end
+
+    function ENT:ChaseEnemy()
+        local enemy = self:GetEnemy()
+        if not IsPlayer(enemy) then return end
+
+        local path = Path("Follow")
+        path:SetMinLookAheadDistance(300)
+        path:SetGoalTolerance(20)
+        path:Compute(self, enemy:GetPos())
+        if not path:IsValid() then
+            return "failed"
+        end
+
+        while path:IsValid() and self:HasEnemy() do
+            -- Update the path to the enemy as they move
+            if path:GetAge() > 0.1 then
+                path:Compute(self, enemyPos:GetPos())
+            end
+            path:Update(self)
+
+            if self.loco:IsStuck() then
+                self:HandleStuck()
+                return "stuck"
+            end
+
+            coroutine.yield()
+        end
+
+        return "ok"
+    end
+
+    function ENT:TrackEnemy()
+        local enemy = self:GetEnemy()
+        if not IsPlayer(enemy) then return end
+
+        local act = self:GetActivity()
+        self:EmitSound("cr4ttt_dog_bark")
+        self.loco:FaceTowards(enemy:GetPos())
+        self:PlaySequenceAndWait("ragdoll")
+        coroutine.wait(self.TrackPause)
+        self:StartActivity(ACT_RUN)
+        self.loco:SetDesiredSpeed(self.RunSpeed)
+        self.loco:SetAcceleration(self.HuntAccel)
+        self:ChaseEnemy()
+        self.loco:SetAcceleration(self.IdleAccel)
+        self:PlaySequenceAndWait("Push_back_medium")
+        self:StartActivity(act)
+    end
+
+    -----------
+    -- LOGIC --
+    -----------
+
+    function ENT:RunBehaviour()
+        local controller = self:GetController()
+        if not IsPlayer(controller) then return end
+
+        while true do
+            if self:HasEnemy() then
+                self:TrackEnemy()
+            else
+                local controllerDistSqr = self:GetRangeSquaredTo(controller)
+                if controllerDistSqr >= self.ReturnDist then
+                    local controllerPos = controller:GetPos()
+                    self.loco:FaceTowards(controllerPos)
+                    self.loco:SetAcceleration(self.IdleAccel)
+
+                    -- If they are really far away, run
+                    if controllerDistSqr >= self.RunDist then
+                        self:StartActivity(ACT_RUN)
+                        self.loco:SetDesiredSpeed(self.RunSpeed)
+                    -- Otherwise just walk
+                    else
+                        self:StartActivity(ACT_WALK)
+                        self.loco:SetDesiredSpeed(self.WalkSpeed)
+                    end
+
+                    -- Start trying to follow the controller
+                    local path = Path("Follow")
+                    path:SetMinLookAheadDistance(50)
+                    path:SetGoalTolerance(20)
+                    path:Compute(self, controllerPos)
+                    if not path:IsValid() then
+                        return "failed"
+                    end
+
+                    while path:IsValid() and controllerDistSqr > self.FollowDist do
+                        -- Update the path to the controller as they move
+                        if path:GetAge() > 0.1 then
+                            path:Compute(self, controller:GetPos())
+                        end
+                        path:Update(self)
+
+                        if self.loco:IsStuck() then
+                            self:HandleStuck()
+                            return "stuck"
+                        end
+
+                        if self:HasEnemy() then
+                            self:TrackEnemy()
+                        end
+
+                        local act = self:GetActivity()
+                        if controllerDistSqr >= self.RunDist then
+                            if act ~= ACT_RUN then
+                                self:StartActivity(ACT_RUN)
+                                self.loco:SetDesiredSpeed(self.RunSpeed)
+                            end
+                        elseif act ~= ACT_WALK then
+                            self:StartActivity(ACT_WALK)
+                            self.loco:SetDesiredSpeed(self.WalkSpeed)
+                        end
+
+                        -- Update the distance to the controller for the next iteration
+                        controllerDistSqr = self:GetRangeSquaredTo(controller)
+                        coroutine.yield()
+                    end
+                else
+                    -- Wander, maybe idle a bit
+                    self:StartActivity(ACT_WALK)
+                    self.loco:SetDesiredSpeed(self.IdleSpeed)
+                    self:MoveToPos(self:GetPos() + Vector(MathRand(-1, 1), MathRand(-1, 1), 0) * self.WanderDist)
+                    self:StartActivity(ACT_IDLE)
+                end
+            end
+            coroutine.wait(0.1)
+        end
+    end
+
+    --------------------
+    -- EVENT HANDLERS --
+    --------------------
+
+    function ENT:OnInjured(dmginfo)
+        local curTime = CurTime()
+        if curTime < self.LastYelp + self.YelpDelay then return end
+
+        self.LastYelp = curTime
+        self:EmitSound("cr4ttt_dog_yelp")
+    end
+
+    function ENT:OnKilled(dmginfo)
+        self:EmitSound("cr4ttt_dog_whine")
+        self:BecomeRagdoll(dmginfo)
+    end
+
+    function ENT:HandleStuck()
+        local startTime = CurTime()
+        while CurTime() < (startTime + self.StuckTime) do
+            self.loco:ClearStuck()
+        end
+
+        local controller = self:GetController()
+        if not IsPlayer(controller) then return end
+
+        self:ClearEnemy()
+        self:SetPos(controller:GetPos())
+    end
+
+    function ENT:OnContact(enemy)
+        local curTime = CurTime()
+        if curTime < self.NextAttack() then return end
+        if not IsPlayer(enemy) then return end
+
+        local setEnemy = self:GetEnemy()
+        if setEnemy ~= enemy then return end
+
+        local controller = self:GetController()
+        if not IsPlayer(controller) then return end
+
+        self:EmitSound("cr4ttt_dog_bite")
+
+        -- Play an animation that kinda looks like a bite
+        local act = self:GetActivity()
+        local seq, len = self:LookupSequence("Hit_front_small")
+        if seq ~= -1 then
+            self:SetSequence(seq)
+            timer.Simple(len, function()
+                self:StartActivity(act)
+            end)
+            self.NextAttack = curTime + MathMax(len, self.AttackDelay)
+        else
+            self.NextAttack = curTime + self.AttackDelay
+        end
+
+        local dmg = DamageInfo()
+        dmg:SetDamage(self:GetDamage())
+        dmg:SetDamageType(DMG_SLASH)
+        dmg:SetAttacker(controller)
+        dmg:SetInflictor(self)
+        dmg:SetWeapon(controller:GetWeapon("weapon_ysm_guarddog"))
+        enemy:TakeDamageInfo(dmg)
     end
 end
 
