@@ -99,7 +99,7 @@ if SERVER then
 
         local tr = owner:GetEyeTrace()
         if tr.Hit and IsValid(tr.Entity) then
-            self.DogEnt:SetEnemy(tr.Enemy)
+            self.DogEnt:SetEnemy(tr.Entity)
         end
     end
 
