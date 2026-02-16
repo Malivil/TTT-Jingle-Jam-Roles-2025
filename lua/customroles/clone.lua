@@ -73,7 +73,7 @@ CreateConVar("ttt_clone_update_scoreboard", "0", FCVAR_REPLICATED)
 -- TEAM CHANGE --
 -----------------
 
-AddHook("TTTUpdateRoleState", "Hermit_TTTUpdateRoleState", function()
+AddHook("TTTUpdateRoleState", "Clone_TTTUpdateRoleState", function()
     local is_independent = clone_is_independent:GetBool()
     INDEPENDENT_ROLES[ROLE_CLONE] = is_independent
     JESTER_ROLES[ROLE_CLONE] = not is_independent
