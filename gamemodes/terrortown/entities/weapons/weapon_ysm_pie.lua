@@ -158,7 +158,7 @@ if SERVER then
         local hp = owner:Health()
         local max = owner:GetMaxHealth()
         if hp < max then
-            owner:EmitSound("ysm/eat.mp3", 100, 100, 1, CHAN_ITEM)
+            owner:EmitSound("yorkshireman/eat.mp3", 100, 100, 1, CHAN_ITEM)
             owner:SetHealth(MathMin(max, hp + heal))
             eaten = true
         end

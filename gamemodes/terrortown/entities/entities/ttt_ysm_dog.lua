@@ -63,19 +63,19 @@ function ENT:Initialize()
         -- Register sounds
         sound.Add({
             name = "cr4ttt_dog_eat",
-            sound = "ysm/dog/eat.mp3"
+            sound = "yorkshireman/dog/eat.mp3"
         })
         sound.Add({
             name = "cr4ttt_dog_bark",
-            sound = "ysm/dog/bark.mp3"
+            sound = "yorkshireman/dog/bark.mp3"
         })
         sound.Add({
             name = "cr4ttt_dog_bite",
-            sound = "ysm/dog/bite.mp3"
+            sound = "yorkshireman/dog/bite.mp3"
         })
         sound.Add({
             name = "cr4ttt_dog_whine",
-            sound = "ysm/dog/whine.mp3"
+            sound = "yorkshireman/dog/whine.mp3"
         })
     end
 end
