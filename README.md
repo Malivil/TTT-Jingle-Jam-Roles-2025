@@ -33,6 +33,8 @@ ttt_chef_burnt_time             30  // The amount of time the burnt food effect 
 ttt_chef_burnt_interval         1   // How often the burnt food eater's health should be removed
 ttt_chef_burnt_amount           1   // The amount of the burnt food eater's health to remove per interval
 ttt_chef_placer_buyable         1   // Whether the Chef's Stove Placer is buyable in their shop. Only used if "ttt_chef_is_detective" is enabled
+ttt_chef_overcook_fire_time     30  // How long (in seconds) after food is burnt before it the stove catches fire. Set to "0" to disable
+ttt_chef_overcook_fire_lifetime 20  // How long (in seconds) the stove stays on fire once it ignites. Only used when "ttt_chef_overcook_fire_time" is greater than 0
 ttt_chef_credits_starting       1   // The number of credits a Chef should start with. Only used if "ttt_chef_is_detective" is enabled
 ttt_chef_shop_sync              0   // Whether Chefs should have all weapons that vanilla Detectives have in their weapon shop. Only used if "ttt_chef_is_detective" is enabled
 ttt_chef_shop_random_percent    0   // The percent chance that a weapon in the shop will not be shown for the Chef. Only used if "ttt_chef_is_detective" is enabled

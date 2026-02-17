@@ -111,6 +111,16 @@ ROLE.convars =
     {
         cvar = "ttt_chef_placer_buyable",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_chef_overcook_fire_time",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_chef_overcook_fire_lifetime",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
     }
 }
 
@@ -119,6 +129,7 @@ ROLE.translations = {
         ["chf_stove_name"] = "Stove",
         ["chf_stove_name_health"] = "Stove ({current}/{max})",
         ["chf_stove_hint_start"] = "Press {usekey} to start cooking a {food}",
+        ["chf_stove_hint_onfire"] = "Overheated",
         ["chf_stove_hint_progress"] = "Cooking a {food}: {time} remaining",
         ["chf_stove_hint_retrieve_2"] = "Press {usekey} to retrieve cooked {food} before it burns in {time}!",
         ["chf_stove_hint_retrieve_3"] = "Press {usekey} to retrieve burnt {food}",
@@ -268,6 +279,17 @@ if SERVER then
         if IsValid(ply.TTTChefHat) then
             ply.TTTChefHat:SetParent(ply)
             ply.TTTChefHat:SetNoDraw(false)
+        end
+    end)
+
+    AddHook("TTTSmokeGrenadeShouldExtinguish", "Chef_TTTSmokeGrenadeShouldExtinguish", function(ent, pos)
+        if not IsValid(ent) then return end
+        if ent:GetClass() ~= "ttt_chef_stove" then return end
+
+        if ent.OnFire then
+            ent:RemoveFire()
+            -- extinguish, remove
+            return true  , false
         end
     end)
 end
