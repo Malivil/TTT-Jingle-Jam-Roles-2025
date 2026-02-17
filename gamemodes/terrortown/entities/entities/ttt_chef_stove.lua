@@ -191,6 +191,8 @@ if SERVER then
 
     function ENT:OnTakeDamage(dmginfo)
         local att = dmginfo:GetAttacker()
+        if not IsPlayer(att) then return end
+
         local placer = self:GetPlacer()
         if not IsPlayer(placer) then return end
 
