@@ -81,7 +81,8 @@ ROLE.translations = {
         ["ysm_tea"] = "Cup of Tea",
         ["ysm_tea_hint"] = "Press {usekey} to drink",
         ["ysm_guarddog_help_pri"] = "Press {primaryfire} to set target, {secondaryfire} to clear",
-        ["ysm_guarddog_help_sec"] = "Press {reload} to unstuck"
+        ["ysm_guarddog_help_sec"] = "Press {reload} to unstuck",
+        ["score_ysm_collected"] = "Collected"
     }
 }
 
@@ -242,6 +243,20 @@ if CLIENT then
     AddHook("TTTScoringSecondaryWins", "Yorkshireman_TTTScoringSecondaryWins", function(wintype, secondary_wins)
         if not ysm_wins then return end
         TableInsert(secondary_wins, ROLE_YORKSHIREMAN)
+    end)
+
+    ------------
+    -- EVENTS --
+    ------------
+
+    AddHook("TTTScoringSummaryRender", "Yorkshireman_TTTScoringSummaryRender", function(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
+        if not IsPlayer(ply) then return end
+        if not ply:IsYorkshireman() then return end
+
+        local collected = ply.TTTYorkshiremanCollected or 0
+        local _, total = GetTeaLimits()
+
+        return roleFileName, groupingRole, roleColor, name, collected .. "/" .. total, LANG.GetTranslation("score_ysm_collected")
     end)
 
     ---------
