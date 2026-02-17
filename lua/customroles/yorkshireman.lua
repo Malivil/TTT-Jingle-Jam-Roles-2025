@@ -321,7 +321,9 @@ if CLIENT then
 
             html = html .. "<span style='display: block; margin-top: 10px;'>The " .. ROLE_STRINGS[ROLE_YORKSHIREMAN] .. " needs to <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>collect " .. yorkshireman_tea_collect:GetInt() .. " Cup(s) of Tea</span> to finally be able to relax and share the win with whoever is left.</span>"
 
-            html = html .. "<span style='display: block; margin-top: 10px;'>When they feel weak, they can <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>eat some Pie</span> to regain health.</span>"
+            html = html .. "<span style='display: block; margin-top: 10px;'>The " .. ROLE_STRINGS[ROLE_YORKSHIREMAN] .. "'s trusty <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>Guard Dog</span> will stay by their side and defend them from any threats.</span>"
+
+            html = html .. "<span style='display: block; margin-top: 10px;'>When they feel weak, they can <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>eat some Pie</span> to regain health (and heal their Guard Dog).</span>"
 
             return html
         end
