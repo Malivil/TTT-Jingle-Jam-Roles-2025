@@ -81,6 +81,7 @@ function SWEP:SecondaryAttack()
 
     -- If the thief doesn't have enough credits, let them know
     if GetConVar("ttt_thief_steal_cost"):GetBool() and owner:GetCredits() <= 0 then
+        owner:ClearQueuedMessage("thiefCredits")
         owner:QueueMessage(MSG_PRINTCENTER, "You don't have enough credits!", nil, "thiefCredits")
         self:SendWeaponAnim(ACT_VM_MISSCENTER)
         return
@@ -100,6 +101,7 @@ function SWEP:SecondaryAttack()
 
     -- Don't steal from people we know (or think) are friends
     if not hitEnt:CanThiefStealFrom() then
+        owner:ClearQueuedMessage("thiefTarget")
         owner:QueueMessage(MSG_PRINTCENTER, "You can't steal from allies!", nil, "thiefTarget")
         self:SendWeaponAnim(ACT_VM_MISSCENTER)
         return
