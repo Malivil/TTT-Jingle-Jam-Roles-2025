@@ -110,11 +110,13 @@ if SERVER then
         end
         if not IsValid(self.DogEnt) or not self.DogEnt:Alive() then return end
 
-        local owner = self:GetOwner()
-        if IsPlayer(owner) then
-            owner:EmitSound("yorkshireman/whistle_return.mp3", 50, 100, 1, CHAN_WEAPON)
+        if self.DogEnt:HasEnemy() then
+            local owner = self:GetOwner()
+            if IsPlayer(owner) then
+                owner:EmitSound("yorkshireman/whistle_return.mp3", 50, 100, 1, CHAN_WEAPON)
+            end
+            self.DogEnt:ClearEnemy()
         end
-        self.DogEnt:ClearEnemy()
     end
 
     function SWEP:Reload()
