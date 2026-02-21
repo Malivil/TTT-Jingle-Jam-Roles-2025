@@ -133,7 +133,7 @@ if SERVER then
     end
 
     ROLE.selectionpredicate = function()
-        return navmesh.IsLoaded() and file.Exists("models/tea/teacup.mdl", "GAME")
+        return navmesh.IsLoaded() and navmesh.GetNavAreaCount() > 0 and file.Exists("models/tea/teacup.mdl", "GAME")
     end
 
     ROLE.onroleassigned = function(ply)
