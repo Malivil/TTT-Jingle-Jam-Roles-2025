@@ -223,7 +223,7 @@ ttt_thief_shop_sync                   0   // Whether Thieves should have all wea
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/ysm/tab_ysm.png) Yorkshireman
 _Suggested By_: jambobinator\
 _Depends On_: [Tea set props](https://steamcommunity.com/sharedfiles/filedetails/?id=1676060509)\
-The Yorkshireman is an Independent role who craves tea and just wants to mind their own business. With their trusty hound and shotgun by their side to ward of any aggressors, they spent their day just meandering around eating pie and trying to keep their tea craving at bay.
+The Yorkshireman is an Independent role who craves tea and just wants to mind their own business. With their trusty hound and shotgun by their side to ward of any aggressors, they spend their day just meandering around eating pie and trying to keep their tea craving at bay.
 \
 \
 **ConVars**
