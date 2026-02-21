@@ -136,7 +136,7 @@ ttt_randoswapper_max_swaps                5   // The maximum number of times the
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/sfk/tab_sfk.png) Safekeeper
 _Suggested By_: Corvatile\
-The Sibling is a Independent role that places a safe somewhere on the map that they must defend. If the safe is placed and unopened when the round ends, they win!
+The Safekeeper is a Independent role that places a safe somewhere on the map that they must defend. If the safe is placed and unopened when the round ends, they win!
 \
 \
 **ConVars**
@@ -191,7 +191,7 @@ ttt_sibling_target_traitors     1   // Whether the sibling's target can be a tra
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/thf/tab_thf.png) Thief
 _Suggested By_: Goatylicious\
-The Sibling is an Independent role (that can be made into a Special Innocent or Special Traitor) that can only get weapons by stealing from other players.
+The Thief is an Independent role (that can be made into a Special Innocent or Special Traitor) that can only get weapons by stealing from other players.
 \
 \
 **ConVars**
