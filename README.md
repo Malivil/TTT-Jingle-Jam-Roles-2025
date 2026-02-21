@@ -220,12 +220,51 @@ ttt_thief_update_scoreboard           0   // Whether Thieves show dead players a
 ttt_thief_shop_sync                   0   // Whether Thieves should have all weapons that vanilla Traitors have in their weapon shop. Only used if "ttt_thief_is_traitor" is enabled and "ttt_thief_is_innocent" is disabled
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/ysm/tab_ysm.png) Yorkshireman
+_Suggested By_: jambobinator\
+_Depends On_: [Tea set props](https://steamcommunity.com/sharedfiles/filedetails/?id=1676060509)\
+The Yorkshireman is an Independent role who craves tea and just wants to mind their own business. With their trusty hound and shotgun by their side to ward of any aggressors, they spent their day just meandering around eating pie and trying to keep their tea craving at bay.
+\
+\
+**ConVars**
+```cpp
+ttt_yorkshireman_enabled           0   // Whether or not a Yorkshireman should spawn
+ttt_yorkshireman_spawn_weight      1   // The weight assigned to spawning a Yorkshireman
+ttt_yorkshireman_min_players       0   // The minimum number of players required to spawn a Yorkshireman
+ttt_yorkshireman_starting_health   100 // The amount of health a Yorkshireman starts with
+ttt_yorkshireman_max_health        100 // The maximum amount of health a Yorkshireman can have
+ttt_yorkshireman_dog_damage        20  // How much damage the Yorkshireman's Guard Dog should do
+ttt_yorkshireman_dog_health        100 // How much health the Yorkshireman's Guard Dog should have
+ttt_yorkshireman_pie_cooldown      30  // How long (in seconds) after the Yorkshireman eats pie before another one is ready
+ttt_yorkshireman_pie_heal          15  // How much health the Yorkshireman should gain after eating a pie
+ttt_yorkshireman_shotgun_damage    10  // How much damage the Yorkshireman's double barrel shotgun should do
+ttt_yorkshireman_tea_collect       15  // How many cups of tea should the Yorkshireman needs to collect to win
+ttt_yorkshireman_tea_spawn         20  // How many cups of tea should be spawned around the map
+ttt_yorkshireman_can_see_jesters   0   // Whether jesters are revealed (via head icons, color/icon on the scoreboard, etc.) to Yorkshiremen
+ttt_yorkshireman_update_scoreboard 0   // Whether Yorkshiremen show dead players as missing in action
+```
+
 # Special Thanks
 - [Game icons](https://game-icons.net/) for the role icons
 - [The Stig](https://steamcommunity.com/id/The-Stig-294) for the code used to shrink imperfect clones
 - [avhatar](https://sketchfab.com/avhatar) for the [original model](https://sketchfab.com/3d-models/simple-safe-2e308cb3fe1d4676beb43e75fdd27e8e) for the Safekeeper
   - Licensed as [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - [Famoso](https://steamcommunity.com/profiles/76561198308951372) for the GMod version of the [safe model](https://steamcommunity.com/sharedfiles/filedetails/?id=3030515670) for the Safekeeper
-- [GFXSounds.com](https://gfxsounds.com) for the picking and opening sounds used for the Safekeeper's safe
-  - [Safe lock, vault, opening mechanism 6](https://gfxsounds.com/sound-effect/safe-lock-vault-opening-mechanism-6/)
-  - [Safe vault, dial lock, turning click 6](https://gfxsounds.com/sound-effect/safe-vault-dial-lock-turning-click-6/)
+- [GFXSounds.com](https://gfxsounds.com) for:
+  - The picking and opening sounds used for the Safekeeper's safe:
+    - [Safe lock, vault, opening mechanism 6](https://gfxsounds.com/sound-effect/safe-lock-vault-opening-mechanism-6/)
+    - [Safe vault, dial lock, turning click 6](https://gfxsounds.com/sound-effect/safe-vault-dial-lock-turning-click-6/)
+  - The drinking and eating sounds used by the Yorkshireman:
+    - [Drinking with a swallow and ah](https://gfxsounds.com/sound-effect/drinking-with-a-swallow-and-ah/)
+    - [Eating and chewing a carrot](https://gfxsounds.com/sound-effect/eating-and-chewing-a-carrot/) by [Panda Wave](https://gfxsounds.com/blog/pandawave/)
+  - The various sounds used by the Yorkshireman's Guard Dog:
+    - [Dog eating kibble 2](https://gfxsounds.com/sound-effect/dog-eating-kibble-2/)
+    - [Dog, german sheperd, barking and snarling 2](https://gfxsounds.com/sound-effect/dog-german-sheperd-barking-and-snarling-2/)
+    - [Dog whining and whimpering](https://gfxsounds.com/sound-effect/dog-whining-and-whimpering/)
+    - [Human whistle, short, fingers, call attention](https://gfxsounds.com/sound-effect/human-whistle-short-fingers-call-attention/) by [Cesar Brasil](https://gfxsounds.com/blog/cesar-brasil/)
+    - [Human whistle, short, fingers, call attention 6](https://gfxsounds.com/sound-effect/human-whistle-short-fingers-call-attention-6/) by [Cesar Brasil](https://gfxsounds.com/blog/cesar-brasil/)
+    - [Large dog barking, single bark 2](https://gfxsounds.com/sound-effect/large-dog-barking-single-bark-2/)
+- [THE PIE GUY](https://steamcommunity.com/profiles/76561198082760562) for the [Pie Bomb](https://steamcommunity.com/sharedfiles/filedetails/?id=316765309) whose model is used by the Yorkshireman
+- [ajwuk2](https://steamcommunity.com/profiles/76561199043038286) for the [[TTT] Guard Dog](https://steamcommunity.com/sharedfiles/filedetails/?id=2120419714) which was used as the base for the Yorkshireman's Guard Dog
+- [BloodOrange1](https://steamcommunity.com/profiles/76561199164997872) for the [Dog SNPC (Reupload)](https://steamcommunity.com/sharedfiles/filedetails/?id=3513018735) whose model is used by the Yorkshireman's Guard Dog
+- [Lykrast](https://steamcommunity.com/id/Lykrast) for the code and models used to create the Yorkshireman's double barrel shotgun taken from ['Lykrast's TTT Weapon Collection'](https://steamcommunity.com/sharedfiles/filedetails/?id=337994500).
