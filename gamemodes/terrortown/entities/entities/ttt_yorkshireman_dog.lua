@@ -106,12 +106,14 @@ if SERVER then
 
     ENT.Enemy = nil
 
+    ENT.MarkedStuck = false
+
     -------------
     -- UNSTUCK --
     -------------
 
     function ENT:IsStuck()
-        return self.loco:IsStuck()
+        return self.MarkedStuck or self.loco:IsStuck()
     end
 
     function ENT:Unstuck()
@@ -189,9 +191,11 @@ if SERVER then
 
             if self:IsStuck() then
                 self:Unstuck()
+                self.MarkedStuck = true
                 if self:IsStuck() then return end
             end
             self.StuckIterations = 0
+            self.MarkedStuck = false
 
             coroutine.yield()
         end
@@ -244,26 +248,36 @@ if SERVER then
 
                     -- Start trying to follow the controller
                     local path = Path("Follow")
-                    path:SetMinLookAheadDistance(50)
-                    path:SetGoalTolerance(20)
+                    path:SetMinLookAheadDistance(100)
+                    path:SetGoalTolerance(0)
                     path:Compute(self, controllerPos)
                     if not path:IsValid() then
+                        self.MarkedStuck = true
                         continue
                     end
+                    self.MarkedStuck = false
 
                     while path:IsValid() and controllerDistSqr > self.FollowDist do
                         -- Update the path to the controller as they move
                         if path:GetAge() > 0.1 then
                             path:Compute(self, controller:GetPos())
+                            if not path:IsValid() then
+                                self.MarkedStuck = true
+                                break
+                            end
                         end
                         path:Update(self)
 
                         if self:IsStuck() then
                             self:Unstuck()
-                            if self:IsStuck() then break end
+                            if self:IsStuck() then
+                                self.MarkedStuck = true
+                                break
+                            end
                             continue
                         end
                         self.StuckIterations = 0
+                        self.MarkedStuck = false
 
                         if self:HasEnemy() then
                             self:TrackEnemy()
