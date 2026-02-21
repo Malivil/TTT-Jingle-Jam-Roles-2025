@@ -563,6 +563,7 @@ if CLIENT then
 
     AddHook("TTTPrepareRound", "MindGoblin_TTTPrepareRound", function()
         speedPlayers = {}
+        healPlayers = {}
     end)
 
     --------------
