@@ -253,6 +253,7 @@ if SERVER then
                     path:Compute(self, controllerPos)
                     if not path:IsValid() then
                         self.MarkedStuck = true
+                        coroutine.yield()
                         continue
                     end
                     self.MarkedStuck = false
