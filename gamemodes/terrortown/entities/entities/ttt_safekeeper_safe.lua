@@ -64,16 +64,11 @@ ENT.SafeModel = "models/sudisteprops/simple_safe.mdl"
 ENT.CollisionMins = Vector(-20.5, -19.2, -2.5)
 ENT.CollisionMaxs = Vector(19, 20.5, 28.7)
 
-AccessorFuncDT(ENT, "Open", "Open")
-AccessorFuncDT(ENT, "EndTime", "EndTime")
-AccessorFuncDT(ENT, "State", "State")
-AccessorFuncDT(ENT, "Placer", "Placer")
-
 function ENT:SetupDataTables()
-   self:DTVar("Bool", 0, "Open")
-   self:DTVar("Int", 0, "EndTime")
-   self:DTVar("Int", 1, "State")
-   self:DTVar("Entity", 0, "Placer")
+   self:NetworkVar("Bool", "Open")
+   self:NetworkVar("Int", "EndTime")
+   self:NetworkVar("Int", "State")
+   self:NetworkVar("Entity", "Placer")
 end
 
 function ENT:Initialize()

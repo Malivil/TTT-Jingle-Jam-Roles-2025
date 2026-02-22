@@ -39,12 +39,9 @@ if SERVER then
     CreateConVar("ttt_yorkshireman_dog_damage", "20", FCVAR_NONE, "How much damage the Yorkshireman's Guard Dog should do", 1, 200)
 end
 
-AccessorFuncDT(ENT, "Damage", "Damage")
-AccessorFuncDT(ENT, "Controller", "Controller")
-
 function ENT:SetupDataTables()
-   self:DTVar("Int", 0, "Damage")
-   self:DTVar("Entity", 0, "Controller")
+   self:NetworkVar("Int", "Damage")
+   self:NetworkVar("Entity", "Controller")
 end
 
 function ENT:Initialize()
