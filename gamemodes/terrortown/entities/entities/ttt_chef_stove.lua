@@ -102,7 +102,7 @@ function ENT:Initialize()
         self:PhysicsInit(SOLID_VPHYSICS)
     end
     self:SetMoveType(MOVETYPE_VPHYSICS)
-    self:SetSolid(SOLID_BBOX)
+    self:SetSolid(SOLID_VPHYSICS)
     self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
 
     if SERVER then
