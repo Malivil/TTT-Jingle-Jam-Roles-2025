@@ -796,7 +796,7 @@ if CLIENT then
 
     AddHook("TTTSyncEventIDs", "Thief_TTTSyncEventIDs", function()
         EVENT_THIEFSTOLEN = EVENTS_BY_ROLE[ROLE_THIEF]
-        local swap_icon = Material("icon16/money.png")
+        local steal_icon = Material("icon16/money.png")
         local Event = CLSCORE.DeclareEventDisplay
         local PT = LANG.GetParamTranslation
         Event(EVENT_THIEFSTOLEN, {
@@ -804,7 +804,7 @@ if CLIENT then
                 return PT("ev_thiefstolen", {thief = e.thf, victim = e.vic, item = e.item})
             end,
             icon = function(e)
-                return swap_icon, "Item stolen"
+                return steal_icon, "Item stolen"
             end})
     end)
 
