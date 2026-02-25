@@ -26,7 +26,7 @@ ROLE.desc = [[You are {role}
 TODO.]]
 ROLE.shortdesc = "TODO."
 
-ROLE.team = ROLE_TEAM_INNOCENT
+ROLE.team = ROLE_TEAM_INDEPENDENT
 
 ROLE.convars =
 {
@@ -268,6 +268,9 @@ if SERVER then
                     item = items[MathRandom(#items)]
                 end
 
+                -- Set the cooldown early so we try other targets if they can't hold any of the found weapons
+                target:SetProperty("TTTArmsDealerCooldownTime", curTime, ply)
+
                 -- If no valid weapons are found, set to "LOST" state for the quick reset
                 -- And tell them why it failed
                 if not item then
@@ -290,8 +293,6 @@ if SERVER then
                     net.WritePlayer(target)
                     net.WriteString(item)
                 net.Broadcast()
-
-                target:SetProperty("TTTArmsDealerCooldownTime", curTime, ply)
 
                 -- If we're dealing to a glitch and innocents aren't valid targets, just pretend
                 if target:IsGlitch() and not armsdealer_target_innocents:GetBool() then return end
