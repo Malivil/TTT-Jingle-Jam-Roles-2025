@@ -2,6 +2,7 @@ local hook = hook
 local ipairs = ipairs
 local math = math
 local player = player
+local string = string
 local surface = surface
 local table = table
 local util = util
@@ -10,6 +11,7 @@ local weapons = weapons
 local AddHook = hook.Add
 local MathRandom = math.random
 local PlayerIterator = player.Iterator
+local StringUpper = string.upper
 local TableInsert = table.insert
 
 local ROLE = {}
@@ -60,11 +62,11 @@ local armsdealer_deal_notify_delay_min = CreateConVar("ttt_armsdealer_deal_notif
 local armsdealer_deal_notify_delay_max = CreateConVar("ttt_armsdealer_deal_notify_delay_max", "30", FCVAR_REPLICATED, "The maximum delay before a player is notified a weapon has been dealt to them. Set this and \"ttt_armsdealer_deal_notify_delay_min\" to \"0\" to notify instantly", 0, 60)
 local armsdealer_deal_proximity_time = CreateConVar("ttt_armsdealer_deal_proximity_time", "15", FCVAR_REPLICATED, "How long (in seconds) it takes the Arms Dealer to deal a weapon to a target", 1, 60)
 local armsdealer_deal_to_win = CreateConVar("ttt_armsdealer_deal_to_win", "0", FCVAR_REPLICATED, "How many weapons the Arms Dealer has to deal to get a secondary win", 1, 25)
-local armsdealer_target_innocents = CreateConVar("ttt_armsdealer_target_innocents", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be an innocent role (not including detectives)", 0, 1)
+local armsdealer_target_innocents = CreateConVar("ttt_armsdealer_target_innocents", "0", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be an innocent role (not including detectives)", 0, 1)
 local armsdealer_target_detectives = CreateConVar("ttt_armsdealer_target_detectives", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a detective role", 0, 1)
 local armsdealer_target_traitors = CreateConVar("ttt_armsdealer_target_traitors", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a traitor role", 0, 1)
 local armsdealer_target_independents = CreateConVar("ttt_armsdealer_target_independents", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be an independent role", 0, 1)
-local armsdealer_target_jesters = CreateConVar("ttt_armsdealer_target_jesters", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a jester role", 0, 1)
+local armsdealer_target_jesters = CreateConVar("ttt_armsdealer_target_jesters", "0", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a jester role", 0, 1)
 local armsdealer_target_monsters = CreateConVar("ttt_armsdealer_target_monsters", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a monster role", 0, 1)
 
 if SERVER then
@@ -249,7 +251,7 @@ if SERVER then
                     if not v then continue end
 
                     -- Only allow weapons that can be bought, can be dropped, and don't spawn on their own
-                    if not v.AutoSpawnable or not v.AllowDrop then continue end
+                    if v.AutoSpawnable or not v.AllowDrop then continue end
                     if not v.CanBuy or #v.CanBuy == 0 then continue end
 
                     -- Also make sure the target can use this weapon
@@ -346,6 +348,18 @@ if CLIENT then
     -- TARGET ID --
     ---------------
 
+    local function GetRoleColor(ply)
+        local roleTeam = ply:GetRoleTeam()
+        if roleTeam == ROLE_TEAM_DETECTIVE then
+            return ROLE_COLORS[ROLE_DETECTIVE]
+        elseif roleTeam == ROLE_TEAM_INNOCENT then
+            return ROLE_COLORS[ROLE_INNOCENT]
+        elseif roleTeam == ROLE_TEAM_TRAITOR then
+            return ROLE_COLORS[ROLE_TRAITOR]
+        end
+        return GetRoleTeamColor(roleTeam)
+    end
+
     -- Show a revealed target's team info (NOT ROLE)
     AddHook("TTTTargetIDPlayerRoleIcon", "ArmsDealer_TTTTargetIDPlayerRoleIcon", function(ply, cli, role, noz, color_role, hideBeggar, showJester, hideBodysnatcher)
         -- Don't overwrite something we already know
@@ -355,8 +369,17 @@ if CLIENT then
         if not ply.TTTArmsDealerRevealed then return end
         if cli:IsRoleAbilityDisabled() then return end
 
-        local roleTeam = ply:GetRoleTeam()
-        return ROLE_NONE, false, GetRoleTeamColor(roleTeam)
+        -- Simplify the "special" colors back to normal
+        role = ply:GetRole()
+        if DETECTIVE_ROLES[role] then
+            role = ROLE_DETECTIVE
+        elseif INNOCENT_ROLES[role] then
+            role = ROLE_INNOCENT
+        elseif TRAITOR_ROLES[role] then
+            role = ROLE_TRAITOR
+        end
+
+        return ROLE_NONE, false, role
     end)
 
     AddHook("TTTTargetIDPlayerRing", "ArmsDealer_TTTTargetIDPlayerRing", function(ent, cli, ring_visible)
@@ -367,8 +390,7 @@ if CLIENT then
         if not ent.TTTArmsDealerRevealed then return end
         if cli:IsRoleAbilityDisabled() then return end
 
-        local roleTeam = ent:GetRoleTeam()
-        return true, GetRoleTeamColor(roleTeam)
+        return true, GetRoleColor(ent)
     end)
 
     AddHook("TTTTargetIDPlayerText", "ArmsDealer_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
@@ -389,18 +411,18 @@ if CLIENT then
             end
         end
 
-        -- And their team (NOT ROLE), if revealed
-        if ent.TTTArmsDealerRevealed then
+        -- And their team (NOT ROLE), if revealed and previously unknown
+        if not ent:IsDetectiveTeam() and ent.TTTArmsDealerRevealed then
             local roleTeam = ent:GetRoleTeam()
-            local teamReveal = LANG.GetParamTranslation("target_unknown_team", { targettype = GetRoleTeamName(roleTeam) })
+            local teamReveal = LANG.GetParamTranslation("target_unknown_team", { targettype = StringUpper(GetRoleTeamName(roleTeam)) })
 
+            -- Move the cooldown down below the role info
             if primary then
-                secondary = teamReveal
-                secondaryCol = ROLE_COLORS_RADAR[ROLE_ARMSDEALER]
-            else
-                primary = teamReveal
-                primaryCol = ROLE_COLORS_RADAR[ROLE_ARMSDEALER]
+                secondary = primary
+                secondaryCol = primaryCol
             end
+            primary = teamReveal
+            primaryCol = GetRoleColor(ent)
         end
 
         if not primary then return end
