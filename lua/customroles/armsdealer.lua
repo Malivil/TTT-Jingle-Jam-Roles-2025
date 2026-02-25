@@ -650,6 +650,7 @@ if CLIENT then
 
     AddHook("TTTTutorialRoleText", "ArmsDealer_TTTTutorialRoleText", function(role, titleLabel)
         if role == ROLE_ARMSDEALER then
+            local T = LANG.GetTranslation
             local roleColor = GetRoleTeamColor(ROLE_TEAM_INDEPENDENT)
             local html = "The " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " is an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent</span> role whose goal is to sneakily make arms deals while surviving the chaos they cause."
 
