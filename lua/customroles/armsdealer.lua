@@ -60,7 +60,7 @@ ROLE.convars =
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
-        cvar = "ttt_armsdealer_deal_proximity_require_los",
+        cvar = "ttt_armsdealer_deal_require_los",
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
@@ -84,12 +84,12 @@ ROLE.convars =
         decimal = 0
     },
     {
-        cvar = "ttt_armsdealer_deal_proximity_time",
+        cvar = "ttt_armsdealer_deal_time",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
     },
     {
-        cvar = "ttt_armsdealer_deal_proximity_time",
+        cvar = "ttt_armsdealer_deal_to_win",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
     },
@@ -99,12 +99,12 @@ ROLE.convars =
         decimal = 0
     },
     {
-        cvar = "ttt_armsdealer_deal_proximity_float_time",
+        cvar = "ttt_armsdealer_deal_float_time",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
     },
     {
-        cvar = "ttt_armsdealer_deal_proximity_distance",
+        cvar = "ttt_armsdealer_deal_distance",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
     }
@@ -138,7 +138,7 @@ local armsdealer_deal_target_cooldown = CreateConVar("ttt_armsdealer_deal_target
 local armsdealer_deal_success_cooldown = CreateConVar("ttt_armsdealer_deal_success_cooldown", "0", FCVAR_REPLICATED, "How long (in seconds) after the Arms Dealer deals something before they can deal with anyone again", 0, 60)
 local armsdealer_deal_notify_delay_min = CreateConVar("ttt_armsdealer_deal_notify_delay_min", "0", FCVAR_REPLICATED, "The minimum delay before a player is notified a weapon has been dealt to them. Set to \"-1\" to disable notifications. Set this and \"ttt_armsdealer_deal_notify_delay_max\" to \"0\" to notify instantly", -1, 30)
 local armsdealer_deal_notify_delay_max = CreateConVar("ttt_armsdealer_deal_notify_delay_max", "30", FCVAR_REPLICATED, "The maximum delay before a player is notified a weapon has been dealt to them. Set this and \"ttt_armsdealer_deal_notify_delay_min\" to \"0\" to notify instantly", 0, 60)
-local armsdealer_deal_proximity_time = CreateConVar("ttt_armsdealer_deal_proximity_time", "15", FCVAR_REPLICATED, "How long (in seconds) it takes the Arms Dealer to deal a weapon to a target", 1, 60)
+local armsdealer_deal_time = CreateConVar("ttt_armsdealer_deal_time", "15", FCVAR_REPLICATED, "How long (in seconds) it takes the Arms Dealer to deal a weapon to a target", 1, 60)
 local armsdealer_deal_to_win = CreateConVar("ttt_armsdealer_deal_to_win", "15", FCVAR_REPLICATED, "How many weapons the Arms Dealer has to deal to get a secondary win", 1, 25)
 local armsdealer_target_innocents = CreateConVar("ttt_armsdealer_target_innocents", "0", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be an innocent role (not including detectives)", 0, 1)
 local armsdealer_target_detectives = CreateConVar("ttt_armsdealer_target_detectives", "1", FCVAR_REPLICATED, "Whether the Arms Dealer's target can be a detective role", 0, 1)
@@ -160,9 +160,9 @@ if SERVER then
     ------------------
 
     local armsdealer_deal_failure_cooldown = CreateConVar("ttt_armsdealer_deal_failure_cooldown", "3", FCVAR_NONE, "How long (in seconds) after the Arms Dealer loses their target before they can try to deal another thing", 0, 60)
-    local armsdealer_deal_proximity_float_time = CreateConVar("ttt_armsdealer_deal_proximity_float_time", "3", FCVAR_NONE, "The amount of time (in seconds) it takes for the Arms Dealer to lose their target after getting out of range", 0, 60)
-    local armsdealer_deal_proximity_require_los = CreateConVar("ttt_armsdealer_deal_proximity_require_los", "1", FCVAR_NONE, "Whether the Arms Dealer requires line-of-sight to deal something", 0, 1)
-    local armsdealer_deal_proximity_distance = CreateConVar("ttt_armsdealer_deal_proximity_distance", "5", FCVAR_NONE, "How close (in meters) the Arms Dealer needs to be to their target to start dealing", 1, 15)
+    local armsdealer_deal_float_time = CreateConVar("ttt_armsdealer_deal_float_time", "3", FCVAR_NONE, "The amount of time (in seconds) it takes for the Arms Dealer to lose their target after getting out of range", 0, 60)
+    local armsdealer_deal_require_los = CreateConVar("ttt_armsdealer_deal_require_los", "1", FCVAR_NONE, "Whether the Arms Dealer requires line-of-sight to deal something", 0, 1)
+    local armsdealer_deal_distance = CreateConVar("ttt_armsdealer_deal_distance", "5", FCVAR_NONE, "How close (in meters) the Arms Dealer needs to be to their target to start dealing", 1, 15)
 
     function plymeta:CanArmsDealerDealTo()
         if self.TTTArmsDealerCooldownTime and CurTime() < (self.TTTArmsDealerCooldownTime + armsdealer_deal_target_cooldown:GetInt()) then return false end
@@ -243,9 +243,9 @@ if SERVER then
             return
         end
 
-        local proximity_require_los = armsdealer_deal_proximity_require_los:GetBool()
-        local proximity_distance = armsdealer_deal_proximity_distance:GetFloat() * UNITS_PER_METER
-        local proxyDistanceSqr = proximity_distance * proximity_distance
+        local require_los = armsdealer_deal_require_los:GetBool()
+        local deal_distance = armsdealer_deal_distance:GetFloat() * UNITS_PER_METER
+        local dealDistanceSqr = deal_distance * deal_distance
 
         -- If we don't already have a target, find one
         local targetSid64 = ply.TTTArmsDealerDealTarget
@@ -260,8 +260,8 @@ if SERVER then
                 if not p:CanArmsDealerDealTo() then continue end
 
                 local distance = p:GetPos():DistToSqr(ply:GetPos())
-                if distance < proxyDistanceSqr and (closestPlyDist == -1 or distance < closestPlyDist) then
-                    if proximity_require_los and not ply:IsLineOfSightClear(p) then continue end
+                if distance < dealDistanceSqr and (closestPlyDist == -1 or distance < closestPlyDist) then
+                    if require_los and not ply:IsLineOfSightClear(p) then continue end
                     closestPlyDist = distance
                     closestPly = p
                 end
@@ -290,13 +290,13 @@ if SERVER then
         end
 
         -- Handle the distance checks
-        local proxy_float_time = armsdealer_deal_proximity_float_time:GetInt()
+        local proxy_float_time = armsdealer_deal_float_time:GetInt()
         local distance = target:GetPos():DistToSqr(ply:GetPos())
         if state == ARMSDEALER_DEAL_STATE_IDLE then
             ply:SetProperty("TTTArmsDealerDealStartTime", curTime)
             ply:SetProperty("TTTArmsDealerDealState", ARMSDEALER_DEAL_STATE_DEALING, ply)
         elseif state == ARMSDEALER_DEAL_STATE_DEALING then
-            if distance > proxyDistanceSqr or (proximity_require_los and not ply:IsLineOfSightClear(target)) then
+            if distance > dealDistanceSqr or (require_los and not ply:IsLineOfSightClear(target)) then
                 ply:SetProperty("TTTArmsDealerDealState", ARMSDEALER_DEAL_STATE_LOSING, ply)
                 ply:SetProperty("TTTArmsDealerDealLostTime", curTime + proxy_float_time, ply)
             end
@@ -309,7 +309,7 @@ if SERVER then
                 else
                     ClearTracking(ply)
                 end
-            elseif distance <= proxyDistanceSqr and (not proximity_require_los or ply:IsLineOfSightClear(target)) then
+            elseif distance <= dealDistanceSqr and (not require_los or ply:IsLineOfSightClear(target)) then
                 ply:SetProperty("TTTArmsDealerDealState", ARMSDEALER_DEAL_STATE_DEALING, ply)
                 ply:ClearProperty("TTTArmsDealerDealLostTime", ply)
             end
@@ -317,10 +317,10 @@ if SERVER then
             ClearTracking(ply)
         end
 
-        local proximity_time = armsdealer_deal_proximity_time:GetInt()
+        local deal_time = armsdealer_deal_time:GetInt()
         if state == ARMSDEALER_DEAL_STATE_DEALING or state == ARMSDEALER_DEAL_STATE_LOSING then
             -- If we're done dousing, mark the target and reset the armsdealer state
-            if curTime - startTime > proximity_time then
+            if curTime - startTime > deal_time then
                 ply:ClearProperty("TTTArmsDealerDealTarget", ply)
                 ply:ClearProperty("TTTArmsDealerDealLostTime", ply)
 
@@ -604,8 +604,8 @@ if CLIENT then
         local target = player.GetBySteamID64(targetSid64)
         if not IsPlayer(target) then return end
 
-        local proximity_time = armsdealer_deal_proximity_time:GetInt()
-        local endTime = client.TTTArmsDealerDealStartTime + proximity_time
+        local deal_time = armsdealer_deal_time:GetInt()
+        local endTime = client.TTTArmsDealerDealStartTime + deal_time
 
         local x = ScrW() / 2.0
         local y = ScrH() / 2.0
@@ -628,7 +628,7 @@ if CLIENT then
                 color = Color(255, 255, 0, 155)
             end
 
-            local progress = math.min(1, 1 - ((endTime - CurTime()) / proximity_time))
+            local progress = math.min(1, 1 - ((endTime - CurTime()) / deal_time))
             CRHUD:PaintProgressBar(x, y, w, color, text, progress)
         end
     end)
@@ -840,7 +840,7 @@ if CLIENT then
                 html = html .. "</ul></span>"
             end
 
-            html = html .. "<span style='display: block; margin-top: 10px;'>To deal a weapon to a player, the " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " must <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>stay near a target of their choosing</span> for " .. armsdealer_deal_proximity_time:GetInt() .. " second(s).</span>"
+            html = html .. "<span style='display: block; margin-top: 10px;'>To deal a weapon to a player, the " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " must <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>stay near a target of their choosing</span> for " .. armsdealer_deal_time:GetInt() .. " second(s).</span>"
 
             -- Show a warning about the notification delay if its enabled
             local delay_min = armsdealer_deal_notify_delay_min:GetInt()
