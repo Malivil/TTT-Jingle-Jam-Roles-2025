@@ -285,14 +285,18 @@ if SERVER then
                 ply:SetProperty("TTTArmsDealerDealStartTime", curTime, ply)
                 ply:SetProperty("TTTArmsDealerDealt", (ply.TTTArmsDealerDealt or 0) + 1)
 
-                target:Give(item)
-                target:SetProperty("TTTArmsDealerCooldownTime", curTime, ply)
-
                 net.Start("TTT_ArmsDealerItemDealt")
                     net.WritePlayer(ply)
                     net.WritePlayer(target)
                     net.WriteString(item)
                 net.Broadcast()
+
+                target:SetProperty("TTTArmsDealerCooldownTime", curTime, ply)
+
+                -- If we're dealing to a glitch and innocents aren't valid targets, just pretend
+                if target:IsGlitch() and not armsdealer_target_innocents:GetBool() then return end
+
+                target:Give(item)
 
                 local deal_notify_delay_min = armsdealer_deal_notify_delay_min:GetInt()
                 local deal_notify_delay_max = armsdealer_deal_notify_delay_max:GetInt()
@@ -352,10 +356,10 @@ if CLIENT then
         local roleTeam = ply:GetRoleTeam()
         if roleTeam == ROLE_TEAM_DETECTIVE then
             return ROLE_COLORS[ROLE_DETECTIVE]
+        elseif ply:IsGlitch() or roleTeam == ROLE_TEAM_TRAITOR then
+            return ROLE_COLORS[ROLE_TRAITOR]
         elseif roleTeam == ROLE_TEAM_INNOCENT then
             return ROLE_COLORS[ROLE_INNOCENT]
-        elseif roleTeam == ROLE_TEAM_TRAITOR then
-            return ROLE_COLORS[ROLE_TRAITOR]
         end
         return GetRoleTeamColor(roleTeam)
     end
@@ -373,10 +377,10 @@ if CLIENT then
         role = ply:GetRole()
         if DETECTIVE_ROLES[role] then
             role = ROLE_DETECTIVE
+        elseif role == ROLE_GLITCH or TRAITOR_ROLES[role] then
+            role = ROLE_TRAITOR
         elseif INNOCENT_ROLES[role] then
             role = ROLE_INNOCENT
-        elseif TRAITOR_ROLES[role] then
-            role = ROLE_TRAITOR
         end
 
         return ROLE_NONE, false, role
@@ -414,7 +418,11 @@ if CLIENT then
         -- And their team (NOT ROLE), if revealed and previously unknown
         if not ent:IsDetectiveTeam() and ent.TTTArmsDealerRevealed then
             local roleTeam = ent:GetRoleTeam()
-            local teamReveal = LANG.GetParamTranslation("target_unknown_team", { targettype = StringUpper(GetRoleTeamName(roleTeam)) })
+            if ent:IsGlitch() then
+                roleTeam = ROLE_TEAM_TRAITOR
+            end
+            local roleTeamName = GetRoleTeamName(roleTeam)
+            local teamReveal = LANG.GetParamTranslation("target_unknown_team", { targettype = StringUpper(roleTeamName) })
 
             -- Move the cooldown down below the role info
             if primary then
