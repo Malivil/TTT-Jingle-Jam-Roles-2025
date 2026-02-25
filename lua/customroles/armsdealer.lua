@@ -22,14 +22,92 @@ ROLE.nameplural = "Arms Dealers"
 ROLE.nameext = "an Arms Dealer"
 ROLE.nameshort = "adl"
 
-ROLE.desc = [[You are {role}
-TODO.]]
-ROLE.shortdesc = "TODO."
+ROLE.desc = [[You are {role}! Make arms deals with
+the players you trust, but be sure to do
+it sneakily so their enemies don't see you
+as a threat.
+
+Successfully make {deals} deal(s) while surviving
+the chaos you cause to share the win.]]
+ROLE.shortdesc = "Makes arms deals sneakily while trying to survive the chaos they cause."
 
 ROLE.team = ROLE_TEAM_INDEPENDENT
 
 ROLE.convars =
 {
+    {
+        cvar = "ttt_armsdealer_target_innocents",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_detectives",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_traitors",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_independents",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_jesters",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_target_monsters",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_deal_proximity_require_los",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_armsdealer_deal_target_cooldown",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_armsdealer_deal_success_cooldown",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_armsdealer_deal_notify_delay_min",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_armsdealer_deal_notify_delay_max",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_armsdealer_deal_proximity_time",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_armsdealer_deal_proximity_time",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_armsdealer_deal_failure_cooldown",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_armsdealer_deal_proximity_float_time",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_armsdealer_deal_proximity_distance",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    }
 }
 
 ROLE.translations = {
@@ -58,7 +136,7 @@ ARMSDEALER_DEAL_STATE_COOLDOWN = 4
 
 local armsdealer_deal_target_cooldown = CreateConVar("ttt_armsdealer_deal_target_cooldown", "30", FCVAR_REPLICATED, "How long (in seconds) after the Arms Dealer deals something to a target before that target can be dealt to again", 0, 60)
 local armsdealer_deal_success_cooldown = CreateConVar("ttt_armsdealer_deal_success_cooldown", "0", FCVAR_REPLICATED, "How long (in seconds) after the Arms Dealer deals something before they can deal with anyone again", 0, 60)
-local armsdealer_deal_notify_delay_min = CreateConVar("ttt_armsdealer_deal_notify_delay_min", "10", FCVAR_REPLICATED, "The minimum delay before a player is notified a weapon has been dealt to them. Set to \"-1\" to disable notifications. Set this and \"ttt_armsdealer_deal_notify_delay_max\" to \"0\" to notify instantly", -1, 30)
+local armsdealer_deal_notify_delay_min = CreateConVar("ttt_armsdealer_deal_notify_delay_min", "0", FCVAR_REPLICATED, "The minimum delay before a player is notified a weapon has been dealt to them. Set to \"-1\" to disable notifications. Set this and \"ttt_armsdealer_deal_notify_delay_max\" to \"0\" to notify instantly", -1, 30)
 local armsdealer_deal_notify_delay_max = CreateConVar("ttt_armsdealer_deal_notify_delay_max", "30", FCVAR_REPLICATED, "The maximum delay before a player is notified a weapon has been dealt to them. Set this and \"ttt_armsdealer_deal_notify_delay_min\" to \"0\" to notify instantly", 0, 60)
 local armsdealer_deal_proximity_time = CreateConVar("ttt_armsdealer_deal_proximity_time", "15", FCVAR_REPLICATED, "How long (in seconds) it takes the Arms Dealer to deal a weapon to a target", 1, 60)
 local armsdealer_deal_to_win = CreateConVar("ttt_armsdealer_deal_to_win", "15", FCVAR_REPLICATED, "How many weapons the Arms Dealer has to deal to get a secondary win", 1, 25)
@@ -467,6 +545,41 @@ if CLIENT then
         return iconRing, iconRing, text
     end
 
+    ----------------
+    -- SCOREBOARD --
+    ----------------
+
+    AddHook("TTTScoreboardPlayerRole", "ArmsDealer_TTTScoreboardPlayerRole", function(ply, cli, c, roleStr)
+        -- Don't overwrite something we already know
+        if roleStr and #roleStr ~= 0 then return end
+        if not cli:IsArmsDealer() then return end
+        if not IsPlayer(ply) then return end
+        if not ply.TTTArmsDealerRevealed then return end
+        if cli:IsRoleAbilityDisabled() then return end
+
+        -- Simplify the "special" colors back to normal
+        local role = ply:GetRole()
+        if DETECTIVE_ROLES[role] then
+            role = ROLE_DETECTIVE
+        elseif role == ROLE_GLITCH or TRAITOR_ROLES[role] then
+            role = ROLE_TRAITOR
+        elseif INNOCENT_ROLES[role] then
+            role = ROLE_INNOCENT
+        end
+
+        return ROLE_COLORS_SCOREBOARD[role], ROLE_STRINGS_SHORT[ROLE_NONE]
+    end)
+
+    ROLE.isscoreboardinfooverridden = function(ply, target, showJester)
+        if not ply:IsArmsDealer() then return end
+        if not IsPlayer(target) then return end
+        if not target.TTTArmsDealerRevealed then return end
+        if ply:IsRoleAbilityDisabled() then return end
+
+        ------ name , role
+        return false, true
+    end
+
     ------------------
     -- DEALING HUD --
     ------------------
@@ -675,6 +788,16 @@ if CLIENT then
         end
     end)
 
+    ----------------
+    -- ROLE POPUP --
+    ----------------
+
+    AddHook("TTTRolePopupParams", "ArmsDealer_TTTRolePopupParams", function(cli)
+        if cli:IsArmsDealer() then
+            return { deals = armsdealer_deal_to_win:GetInt() }
+        end
+    end)
+
     --------------
     -- TUTORIAL --
     --------------
@@ -683,7 +806,7 @@ if CLIENT then
         if role == ROLE_ARMSDEALER then
             local T = LANG.GetTranslation
             local roleColor = GetRoleTeamColor(ROLE_TEAM_INDEPENDENT)
-            local html = "The " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " is an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent</span> role whose goal is to sneakily make arms deals while surviving the chaos they cause."
+            local html = "The " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " is an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent</span> role whose goal is to sneakily make " .. armsdealer_deal_to_win:GetInt() .. " arms deal(s) while surviving the chaos they cause."
 
             local target_innocents = armsdealer_target_innocents:GetBool()
             local target_detectives = armsdealer_target_detectives:GetBool()
@@ -717,7 +840,33 @@ if CLIENT then
                 html = html .. "</ul></span>"
             end
 
-            -- TODO
+            html = html .. "<span style='display: block; margin-top: 10px;'>To deal a weapon to a player, the " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " must <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>stay near a target of their choosing</span> for " .. armsdealer_deal_proximity_time:GetInt() .. " second(s).</span>"
+
+            -- Show a warning about the notification delay if its enabled
+            local delay_min = armsdealer_deal_notify_delay_min:GetInt()
+            local delay_max = armsdealer_deal_notify_delay_max:GetInt()
+            if delay_min > delay_max then
+                delay_min = delay_max
+            end
+
+            if delay_min >= 0 then
+                local time = "after a short delay"
+                if delay_min == 0 then
+                    time = "immediately"
+                end
+                html = html .. "<span style='display: block; margin-top: 10px;'>Be careful though! Players <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>are notified when they are given a weapon</span> " .. time .. ". Be sure to be sneaky or blend in with other players to disguise that you are the " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. ".</span>"
+            end
+
+            -- Cooldown
+            local deal_target_cooldown = armsdealer_deal_target_cooldown:GetInt()
+            if deal_target_cooldown > 0 then
+                html = html .. "<span style='display: block; margin-top: 10px;'>The " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " can only deal to the same target again <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>after waiting " .. deal_target_cooldown .. " second(s)</span> to encourage seeking out multiple targets.</span>"
+            end
+
+            local deal_success_cooldown = armsdealer_deal_success_cooldown:GetInt()
+            if deal_success_cooldown > 0 then
+                html = html .. "<span style='display: block; margin-top: 10px;'>After successfully dealing a weapon, the " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>must wait " .. deal_success_cooldown .. " second(s)</span> before they can deal to any player again.</span>"
+            end
 
             return html
         end
