@@ -359,6 +359,18 @@ if CLIENT then
         return ROLE_NONE, false, GetRoleTeamColor(roleTeam)
     end)
 
+    AddHook("TTTTargetIDPlayerRing", "ArmsDealer_TTTTargetIDPlayerRing", function(ent, cli, ring_visible)
+        -- Don't overwrite something we already know
+        if ring_visible then return end
+        if not cli:IsArmsDealer() then return end
+        if not IsPlayer(ent) then return end
+        if not ent.TTTArmsDealerRevealed then return end
+        if cli:IsRoleAbilityDisabled() then return end
+
+        local roleTeam = ent:GetRoleTeam()
+        return true, GetRoleTeamColor(roleTeam)
+    end)
+
     AddHook("TTTTargetIDPlayerText", "ArmsDealer_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
         -- Don't bother if something else is already showing both texts
         if text and secondary_text then return end
@@ -406,21 +418,22 @@ if CLIENT then
         if not IsPlayer(ply) then return end
         if ply:IsRoleAbilityDisabled() then return end
 
-        local textOverridden = false
+        local iconRing = false
+        local text = false
         if target.TTTArmsDealerCooldownTime then
-
             local remaining = (target.TTTArmsDealerCooldownTime + armsdealer_deal_target_cooldown:GetInt()) - CurTime()
             if remaining > 0 then
-                textOverridden = true
+                text = true
             end
         end
 
         if target.TTTArmsDealerRevealed then
-            textOverridden = true
+            iconRing = true
+            text = true
         end
 
-        ------ icon , ring , text
-        return false, false, textOverridden
+        ------ icon    , ring    , text
+        return iconRing, iconRing, text
     end
 
     ------------------
@@ -637,7 +650,44 @@ if CLIENT then
 
     AddHook("TTTTutorialRoleText", "ArmsDealer_TTTTutorialRoleText", function(role, titleLabel)
         if role == ROLE_ARMSDEALER then
+            local roleColor = GetRoleTeamColor(ROLE_TEAM_INDEPENDENT)
+            local html = "The " .. ROLE_STRINGS[ROLE_ARMSDEALER] .. " is an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent</span> role whose goal is to sneakily make arms deals while surviving the chaos they cause."
+
+            local target_innocents = armsdealer_target_innocents:GetBool()
+            local target_detectives = armsdealer_target_detectives:GetBool()
+            local target_traitors = armsdealer_target_traitors:GetBool()
+            local target_independents = armsdealer_target_independents:GetBool()
+            local target_jesters = armsdealer_target_jesters:GetBool()
+            local target_monsters = armsdealer_target_monsters:GetBool()
+            html = html .. "<span style='display: block; margin-top: 10px;'>They can deal with any role that is a member of <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>"
+            if target_innocents and target_detectives and target_traitors and target_independents and target_jesters and target_monsters then
+                html = html .. "any team</span>.</span>"
+            else
+                html = html .. "the following</span>:<ul>"
+                if target_innocents then
+                    html = html .. "<li>" .. T("innocents") .. "</li>"
+                end
+                if target_detectives then
+                    html = html .. "<li>" .. T("detectives") .. "</li>"
+                end
+                if target_traitors then
+                    html = html .. "<li>" .. T("traitors") .. "</li>"
+                end
+                if target_independents then
+                    html = html .. "<li>" .. T("independents") .. "</li>"
+                end
+                if target_jesters then
+                    html = html .. "<li>" .. T("jesters") .. "</li>"
+                end
+                if target_monsters then
+                    html = html .. "<li>" .. T("monsters") .. "</li>"
+                end
+                html = html .. "</ul></span>"
+            end
+
             -- TODO
+
+            return html
         end
     end)
 end
