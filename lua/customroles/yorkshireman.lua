@@ -216,7 +216,7 @@ if SERVER then
         dog:SetEnemy(att)
     end)
 
-    AddHook("PostPlayerDeath", "Safekeeper_PostPlayerDeath", function(ply)
+    AddHook("PostPlayerDeath", "Yorkshireman_PostPlayerDeath", function(ply)
         if not IsPlayer(ply) then return end
         SafeRemoveEntity(ply.TTTYorkshiremanDog)
         ply.TTTYorkshiremanDog = nil
