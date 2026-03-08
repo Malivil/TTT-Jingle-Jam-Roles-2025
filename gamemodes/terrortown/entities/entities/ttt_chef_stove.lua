@@ -121,7 +121,9 @@ function ENT:OnRemove()
     if SERVER then
         self:RemoveFire()
     else
-        self.SmokeEmitter:Finish()
+        if self.SmokeEmitter then
+            self.SmokeEmitter:Finish()
+        end
         self.SmokeEmitter = nil
         self.SmokeNextPart = nil
     end
