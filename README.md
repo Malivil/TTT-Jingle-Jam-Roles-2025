@@ -138,16 +138,17 @@ The Piñata is an Independent role that drops shop weapons on an interval based 
 \
 **ConVars**
 ```cpp
-ttt_pinata_enabled           0   // Whether or not a Piñata should spawn
-ttt_pinata_spawn_weight      1   // The weight assigned to spawning a Piñata
-ttt_pinata_min_players       0   // The minimum number of players required to spawn a Piñata
-ttt_pinata_starting_health   150 // The amount of health a Piñata starts with
-ttt_pinata_max_health        150 // The maximum amount of health a Piñata can have
-ttt_pinata_damage_interval   20  // How much damage the Piñata must take between weapon drops
-ttt_pinata_announce          1   // Whether to announce to everyone that there is a Piñata in the round
-ttt_pinata_blocklist         ""  // The comma-separated list of weapon IDs to not give out. For example: "ttt_m9k_harpoon,weapon_ttt_slam"
-ttt_pinata_can_see_jesters   0   // Whether jesters are revealed (via head icons, color/icon on the scoreboard, etc.) to Piñatas
-ttt_pinata_update_scoreboard 0   // Whether Piñatas show dead players as missing in action
+ttt_pinata_enabled           0    // Whether or not a Piñata should spawn
+ttt_pinata_spawn_weight      1    // The weight assigned to spawning a Piñata
+ttt_pinata_min_players       0    // The minimum number of players required to spawn a Piñata
+ttt_pinata_starting_health   150  // The amount of health a Piñata starts with
+ttt_pinata_max_health        150  // The maximum amount of health a Piñata can have
+ttt_pinata_damage_interval   20   // How much damage the Piñata must take between weapon drops
+ttt_pinata_announce          1    // Whether to announce to everyone that there is a Piñata in the round
+ttt_pinata_damage_reduction  0.25 // The percentage that damage done to the piñata by other players will be reduced by (e.g. 0.25 = 25% less damage taken)
+ttt_pinata_blocklist         ""   // The comma-separated list of weapon IDs to not give out. For example: "ttt_m9k_harpoon,weapon_ttt_slam"
+ttt_pinata_can_see_jesters   0    // Whether jesters are revealed (via head icons, color/icon on the scoreboard, etc.) to Piñatas
+ttt_pinata_update_scoreboard 0    // Whether Piñatas show dead players as missing in action
 ```
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/rsw/tab_rsw.png) Randoswapper

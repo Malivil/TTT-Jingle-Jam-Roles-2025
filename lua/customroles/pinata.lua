@@ -71,6 +71,7 @@ if SERVER then
     AddCSLuaFile()
 
     local pinata_blocklist = CreateConVar("ttt_pinata_blocklist", "", FCVAR_NONE, "The comma-separated list of weapon IDs to not give out")
+    local pinata_damage_reduction = CreateConVar("ttt_pinata_damage_reduction", "0.25", FCVAR_NONE, "The percentage that damage done to the piñata by other players will be reduced by (e.g. 0.25 = 25% less damage taken)", 0, 1)
 
     -------------------
     -- ROLE FEATURES --
@@ -144,6 +145,17 @@ if SERVER then
             TableInsert(pinatas_damaged, ent:SteamID64())
             att:SetProperty("TTTPinatasDamaged", pinatas_damaged, ent)
         end
+    end)
+
+    AddHook("EntityTakeDamage", "Pinata_ScalePlayerDamage", function(ply, dmginfo)
+        if not IsPlayer(ply) then return end
+        if not ply:IsPinata() then return end
+
+        local att = dmginfo:GetAttacker()
+        if not IsPlayer(att) then return end
+        if att == ply then return end
+
+        dmginfo:ScaleDamage(1 - pinata_damage_reduction:GetFloat())
     end)
 
     AddHook("TTTBeginRound", "Pinata_TTTBeginRound", function()
