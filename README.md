@@ -42,6 +42,26 @@ ttt_armsdealer_target_traitors_blocklist     ""  // The comma-delimited list of 
 
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/btn/tab_btn.png) Button
+_Suggested By_: Nick\
+The Button is a Jester role that can transform into a button that wants to be pressed to win, but if no one stops the countdown traitors win instead.
+\
+\
+**ConVars**
+```cpp
+ttt_button_enabled                0   // Whether or not a Button should spawn
+ttt_button_spawn_weight           1   // The weight assigned to spawning a Button
+ttt_button_min_players            0   // The minimum number of players required to spawn a Button
+ttt_button_starting_health        100 // The amount of health a Button starts with
+ttt_button_max_health             100 // The maximum amount of health a Button can have
+ttt_button_announce               1   // Whether to announce that there is a Button
+ttt_button_presses_to_win         3   // How many times the Button needs to be pressed and reset to win
+ttt_button_reset_mode             1   // Who is allowed to reset the Button's countdown. 0 - Everyone. 1 - Not the activator. 2 - Not traitors
+ttt_button_traitor_activate_only  1   // Whether only traitors are allowed to activate the Button and start the countdown
+ttt_button_countdown_length       15  // How long the Button's countdown lasts before traitors win
+ttt_button_countdown_pause        0   // If the Button's countdown should pause instead of resetting
+```
+
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/chf/tab_chf.png) Chef
 _Suggested By_: Sparth\
 The Chef is a Special Innocent role that cooks a chosen food for other players which provides a buff (or, if burnt, causes damage).

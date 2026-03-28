@@ -87,11 +87,11 @@ BUTTON_RESET_BLOCK_TRAITORS = 2
 ------------------
 
 local button_announce = CreateConVar("ttt_button_announce", "1", FCVAR_REPLICATED, "Whether to announce that there is a Button", 0, 1)
-local button_presses_to_win = CreateConVar("ttt_button_presses_to_win", "3", FCVAR_REPLICATED, "How many times the Button needs to be activated to win.", 1, 10)
-local button_reset_mode = CreateConVar("ttt_button_reset_mode", "1", FCVAR_REPLICATED, "Who is allowed to reset the Button's countdown. 0 - Everyone. 1 - Not the activator. 2 - Not traitors.", 0, 2)
-local button_traitor_activate_only = CreateConVar("ttt_button_traitor_activate_only", "1", FCVAR_REPLICATED, "Whether only traitors are allowed to activate the Button and start the countdown.", 0, 1)
-local button_countdown_length = CreateConVar("ttt_button_countdown_length", "15", FCVAR_REPLICATED, "How long the Button's countdown lasts before traitors win.", 1, 60)
-local button_countdown_pause = CreateConVar("ttt_button_countdown_pause", "0", FCVAR_REPLICATED, "If the Button's countdown should pause instead of resetting.", 0, 1)
+local button_presses_to_win = CreateConVar("ttt_button_presses_to_win", "3", FCVAR_REPLICATED, "How many times the Button needs to be pressed and reset to win", 1, 10)
+local button_reset_mode = CreateConVar("ttt_button_reset_mode", "1", FCVAR_REPLICATED, "Who is allowed to reset the Button's countdown. 0 - Everyone. 1 - Not the activator. 2 - Not traitors", 0, 2)
+local button_traitor_activate_only = CreateConVar("ttt_button_traitor_activate_only", "1", FCVAR_REPLICATED, "Whether only traitors are allowed to activate the Button and start the countdown", 0, 1)
+local button_countdown_length = CreateConVar("ttt_button_countdown_length", "15", FCVAR_REPLICATED, "How long the Button's countdown lasts before traitors win", 1, 60)
+local button_countdown_pause = CreateConVar("ttt_button_countdown_pause", "0", FCVAR_REPLICATED, "If the Button's countdown should pause instead of resetting", 0, 1)
 
 if SERVER then
     AddCSLuaFile()
