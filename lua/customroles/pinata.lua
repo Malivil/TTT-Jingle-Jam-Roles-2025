@@ -103,7 +103,7 @@ if SERVER then
         if not IsPlayer(ent) or not ent:IsActivePinata() then return end
         if ent:IsRoleAbilityDisabled() then return end
 
-        local dmg = dmginfo:GetDamage()
+        local dmg = dmginfo:GetDamageBonus()
         ent.TTTPinataDamageTaken = ent.TTTPinataDamageTaken + dmg
 
         local damage_interval = pinata_damage_interval:GetInt()
@@ -147,17 +147,6 @@ if SERVER then
         end
     end)
 
-    AddHook("EntityTakeDamage", "Pinata_ScalePlayerDamage", function(ply, dmginfo)
-        if not IsPlayer(ply) then return end
-        if not ply:IsPinata() then return end
-
-        local att = dmginfo:GetAttacker()
-        if not IsPlayer(att) then return end
-        if att == ply then return end
-
-        dmginfo:ScaleDamage(1 - pinata_damage_reduction:GetFloat())
-    end)
-
     AddHook("TTTBeginRound", "Pinata_TTTBeginRound", function()
         blocklist = {}
         for blocked_id in string.gmatch(pinata_blocklist:GetString(), "([^,]+)") do
@@ -165,16 +154,20 @@ if SERVER then
         end
     end)
 
-    -- Block damage from a piñata against a player unless they've damaged that piñata first
     AddHook("EntityTakeDamage", "Pinata_EntityTakeDamage", function(ent, dmginfo)
         if not IsPlayer(ent) then return end
 
         local att = dmginfo:GetAttacker()
         if not IsPlayer(att) then return end
-        if not att:IsActivePinata() then return end
-
-        if not ent.TTTPinatasDamaged or not TableHasValue(ent.TTTPinatasDamaged, att:SteamID64()) then
-            dmginfo:ScaleDamage(0)
+        if att:IsActivePinata() then
+            -- Block damage from a piñata against a player unless they've damaged that piñata first
+            if not ent.TTTPinatasDamaged or not TableHasValue(ent.TTTPinatasDamaged, att:SteamID64()) then
+                dmginfo:ScaleDamage(0)
+            end
+        -- Scale damage against the piñata down
+        elseif ent:IsPinata() and ent ~= att then
+            dmginfo:SetDamageBonus(dmginfo:GetDamage())
+            dmginfo:ScaleDamage(1 - pinata_damage_reduction:GetFloat())
         end
     end)
 
