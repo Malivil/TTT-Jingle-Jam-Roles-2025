@@ -117,7 +117,9 @@ if SERVER then
                 if not v then continue end
 
                 -- Only allow weapons that can be bought, can be dropped, and don't spawn on their own
-                if v.AutoSpawnable or not v.AllowDrop then continue end
+                -- Specifically check AllowDrop for `false` because weapons in this list don't have the base table
+                -- applied and the base table has AllowDrop defaulting to `true`
+                if v.AutoSpawnable or v.AllowDrop == false then continue end
                 if not v.CanBuy or #v.CanBuy == 0 then continue end
 
                 -- Also make sure the weapon isn't in the blocklist
