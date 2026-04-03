@@ -15,7 +15,7 @@ ttt_armsdealer_spawn_weight                  1   // The weight assigned to spawn
 ttt_armsdealer_min_players                   0   // The minimum number of players required to spawn an Arms Dealer
 ttt_armsdealer_starting_health               100 // The amount of health an Arms Dealer starts with
 ttt_armsdealer_max_health                    100 // The maximum amount of health an Arms Dealer can have
-ttt_armsdealer_deal_blocklist                ""  // The comma-separated list of weapon IDs to not give out
+ttt_armsdealer_deal_blocklist                ""  // The comma-separated list of weapon IDs to not give out. For example: "ttt_m9k_harpoon,weapon_ttt_slam"
 ttt_armsdealer_deal_distance                 5   // How close (in meters) the Arms Dealer needs to be to their target to start dealing
 ttt_armsdealer_deal_failure_cooldown         3   // How long (in seconds) after the Arms Dealer loses their target before they can try to deal another thing
 ttt_armsdealer_deal_float_time               3   // The amount of time (in seconds) it takes for the Arms Dealer to lose their target after getting out of range
