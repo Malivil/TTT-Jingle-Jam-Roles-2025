@@ -149,6 +149,8 @@ if SERVER then
                     -- If we are removing the active weapon, switch to something we know they'll have instead
                     if activeWep == w then
                         activeWep = nil
+                        -- Reset FOV to unscope
+                        ply:SetFOV(0, 0)
                         timer.Simple(0.25, function()
                             ply:SelectWeapon("weapon_zm_carry")
                         end)
