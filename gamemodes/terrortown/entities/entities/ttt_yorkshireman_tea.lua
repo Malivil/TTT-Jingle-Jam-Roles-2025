@@ -38,10 +38,18 @@ local function RandomizeBodygroup(ent, name)
     end
 end
 
+local function ScaleModel(mdl, amt)
+    local scale = Vector(amt, amt, amt)
+    for i=0, mdl:GetBoneCount() - 1 do
+        mdl:ManipulateBoneScale(i, scale)
+    end
+end
+
 function ENT:Initialize()
     self:SetModel("models/tea/teacup.mdl")
     RandomizeBodygroup(self, "plate")
     RandomizeBodygroup(self, "teabag")
+    ScaleModel(self, 1.5)
 
     if SERVER then
         self:PhysicsInit(SOLID_VPHYSICS)

@@ -266,6 +266,10 @@ if SERVER then
         -- Steal the weapon and set the property on the weapon so the thief can get it
         local itemClass = WEPS.GetClass(item)
         target:StripWeapon(itemClass)
+        if item == activeWep then
+            -- Reset FOV to unscope
+            target:SetFOV(0, 0)
+        end
         self.TTTThiefStolenWeapon = {
             class = itemClass,
             clip1 = item:Clip1(),
