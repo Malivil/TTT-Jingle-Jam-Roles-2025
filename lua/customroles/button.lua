@@ -413,16 +413,18 @@ if CLIENT then
     end
 
     AddHook("HUDPaint", "Button_HUDPaint", function()
-        local x = ((ScrW() - timerWidth) / 2) + timer_offset_x:GetInt();
+        local x = ((ScrW() - timerWidth) / 2) + timer_offset_x:GetInt()
         local y = timer_offset_y:GetInt();
         local remaining = MathMax(0, GetGlobalFloat("ttt_button_timer_end", -1) - CurTime())
         if GetGlobalBool("ttt_button_pressed", false) then
             surface.SetDrawColor(255, 0, 0, 192)
+            draw.NoTexture()
             DrawSevenSegmentNumber(remaining, x, y, segmentWidth, segmentLength, segmentMargin)
         elseif button_countdown_pause:GetBool() then
             local timeLeft = GetGlobalFloat("ttt_button_time_left", -1)
             if timeLeft > 0 then
                 surface.SetDrawColor(0, 255, 0, 192)
+                draw.NoTexture()
                 DrawSevenSegmentNumber(timeLeft, x, y, segmentWidth, segmentLength, segmentMargin)
             end
         end
