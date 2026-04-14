@@ -29,6 +29,17 @@ local puppeteer_debuff_pinata_count = GetConVar("ttt_puppeteer_debuff_pinata_cou
 -- ROLE FEATURES --
 -------------------
 
+surface.CreateFont("PuppeteerTitle", {
+    font = "Tahoma",
+    size = 15,
+    weight = 750
+})
+surface.CreateFont("PuppeteerDesc", {
+    font = "Tahoma",
+    size = 13,
+    weight = 550
+})
+
 local function UpdateButtonState(enabled)
     for _, btn in pairs(buttons) do
         btn:SetEnabled(enabled and (not btn.EnablePredicate or btn:EnablePredicate()))
@@ -113,6 +124,8 @@ local function CreateButton(text, tip, onclick, pred, parent, w, h)
 
     dbutton.EnablePredicate = function()
         if not IsPlayer(target) then return false end
+        if not IsPlayer(client) or not client:IsActivePuppeteer() then return false end
+        if client:GetCredits() <= 0 then return false end
         if not pred or type(pred) ~= "function" then return true end
 
         return pred()
@@ -194,6 +207,13 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     div:SetY(dtargetbox:GetTall() + (padding * 2) + tabHeight)
 
     local buttonY = 70
+    local dlabel = vgui.Create("DLabel", dform)
+    dlabel:SetText(T("puppeteer_puppet_actions"))
+    dlabel:SetFont("PuppeteerTitle")
+    dlabel:SetColor(COLOR_DGRAY)
+    dlabel:SetPos(padding, buttonY)
+
+    buttonY = buttonY + dlabel:GetTall() + padding
     local buttonWidth = ((dform:GetWide() - (padding * 4)) / 3)
     local buttonHeight = 25
 
@@ -211,13 +231,32 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
 
     buttonY = buttonY + buttonHeight + padding
 
-    local div2 = vgui.Create("DHorizontalDivider", dform)
-    div2:SetSize(dsheet:GetWide(), 2)
-    div2:SetPaintBackground(true)
-    div2:SetBackgroundColor(COLOR_LGRAY)
-    div2:SetY(buttonY)
+    div = vgui.Create("DHorizontalDivider", dform)
+    div:SetSize(dsheet:GetWide(), 2)
+    div:SetPaintBackground(true)
+    div:SetBackgroundColor(COLOR_LGRAY)
+    div:SetY(buttonY)
 
-    buttonY = buttonY + 2 + padding
+    buttonY = buttonY + div:GetTall() + padding
+
+    -- TODO: Display credits
+
+    dlabel = vgui.Create("DLabel", dform)
+    dlabel:SetText(T("puppeteer_puppet_debuffs"))
+    dlabel:SetFont("PuppeteerTitle")
+    dlabel:SetColor(COLOR_DGRAY)
+    dlabel:SetPos(padding, buttonY)
+
+    buttonY = buttonY + dlabel:GetTall() - padding
+
+    dlabel = vgui.Create("DLabel", dform)
+    dlabel:SetText(T("puppeteer_puppet_debuffs_desc"))
+    dlabel:SetFont("PuppeteerDesc")
+    dlabel:SetWide(dform:GetWide())
+    dlabel:SetColor(COLOR_DGRAY)
+    dlabel:SetPos(padding, buttonY)
+
+    buttonY = buttonY + dlabel:GetTall() + padding
 
     local pinata_count = puppeteer_debuff_pinata_count:GetInt()
     local dpinata = CreateButton(T("puppeteer_puppet_debuff_0"), PT("puppeteer_puppet_debuff_0_tip", { num = pinata_count, traitor = T("traitor") }),
@@ -278,6 +317,37 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         dform, buttonWidth, buttonHeight)
     dwanderer:MoveBelow(dpinata, padding)
     dwanderer:MoveRightOf(dredherring, padding)
+
+    local dcredits = vgui.Create("DPanel", dform)
+    dcredits:SetPaintBackground(false)
+    dcredits:SetHeight(32)
+    dcredits:SetPos(padding, dform:GetTall() - dcredits:GetTall() - padding)
+
+    dcredits.img = vgui.Create("DImage", dform)
+    dcredits.img:SetSize(32, 32)
+    dcredits.img:CopyPos(dcredits)
+    dcredits.img:SetImage("vgui/ttt/equip/coin.png")
+
+    dcredits.lbl = vgui.Create("DLabel", dform)
+    dcredits.lbl:SetFont("DermaLarge")
+    dcredits.lbl:CopyPos(dcredits)
+    dcredits.lbl:MoveRightOf(dcredits.img)
+
+    function dcredits:UpdateState()
+        local credits = client:GetCredits()
+        local result = credits > 0
+        local text = " " .. credits
+        local tooltip = PT("equip_cost", { num = credits })
+
+        self.lbl:SetTextColor(result and COLOR_WHITE or COLOR_RED)
+        self.lbl:SetText(text)
+        self.lbl:SizeToContents()
+
+        self.img:SetImageColor(result and COLOR_WHITE or COLOR_RED)
+
+        self:SetTooltip(tooltip)
+    end
+    dcredits:UpdateState()
 
     dsheet:AddSheet(LANG.GetTranslation("puppeteer_puppet_menu_name"), dform, "icon16/television.png", false, false, LANG.GetTranslation("puppeteer_puppet_menu_tip"))
     return true

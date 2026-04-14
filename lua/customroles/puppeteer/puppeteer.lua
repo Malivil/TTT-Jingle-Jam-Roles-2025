@@ -62,6 +62,7 @@ net.Receive("TTT_PuppeteerSetDebuff", function(_, ply)
 
     -- TODO: Notify the target
     -- TODO: Notify the traitors
+    -- TODO: Check and subtract credits
 
     target:SetProperty("TTTPuppeteerDebuffed", true)
     target:SetProperty("TTTPuppeteerDebuff", debuff)
