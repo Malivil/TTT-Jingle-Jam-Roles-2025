@@ -6,11 +6,12 @@ local player = player
 local AddHook = hook.Add
 local PlayerIterator = player.Iterator
 
-util.AddNetworkString("TTTPuppeteerPlayerDeath")
-util.AddNetworkString("TTTPuppeteerDeath")
-util.AddNetworkString("TTTPuppeteerRoleChange")
-util.AddNetworkString("TTTPuppeteerSetDebuff")
-util.AddNetworkString("TTTPuppeteerClearDebuff")
+util.AddNetworkString("TTT_PuppeteerPlayerDeath")
+util.AddNetworkString("TTT_PuppeteerDeath")
+util.AddNetworkString("TTT_PuppeteerRoleChange")
+util.AddNetworkString("TTT_PuppeteerSetDebuff")
+util.AddNetworkString("TTT_PuppeteerClearDebuff")
+util.AddNetworkString("TTT_PuppeteerDebuffed")
 
 -------------------
 -- ROLE FEATURES --
@@ -26,14 +27,14 @@ AddHook("PostPlayerDeath", "Puppeteer_PostPlayerDeath", function(ply)
         for _, p in PlayerIterator() do
             if not p:IsActivePuppeteer() then continue end
 
-            net.Start("TTTPuppeteerPlayerDeath")
+            net.Start("TTT_PuppeteerPlayerDeath")
                 net.WritePlayer(ply)
             net.Send(p)
         end
     end
 
     if ply:IsPuppeteer() then
-        net.Start("TTTPuppeteerDeath")
+        net.Start("TTT_PuppeteerDeath")
         net.Send(ply)
     end
 end)
@@ -46,21 +47,27 @@ AddHook("TTTPlayerRoleChanged", "Puppeteer_TTTPlayerRoleChanged", function(ply, 
     for _, p in PlayerIterator() do
         if not p:IsActivePuppeteer() then continue end
 
-        net.Start("TTTPuppeteerRoleChange")
+        net.Start("TTT_PuppeteerRoleChange")
             net.WritePlayer(ply)
         net.Send(p)
     end
 end)
 
-net.Receive("TTTPuppeteerSetDebuff", function(len, ply)
+net.Receive("TTT_PuppeteerSetDebuff", function(len, ply)
     local target = net.ReadPlayer()
+    local debuff = net.ReadString()
     if not IsPlayer(ply) or not ply:IsActivePuppeteer() then return end
     if not IsPlayer(target) or not target:Alive() or target:IsSpec() then return end
 
     target:SetProperty("TTTPuppeteerDebuffed", true)
+    net.Start("TTT_PuppeteerDebuffed")
+        net.WriteString(ply:Nick())
+        net.WriteString(target:Nick())
+        net.WriteString(debuff)
+    net.Broadcast()
 end)
 
-net.Receive("TTTPuppeteerClearDebuff", function(len, ply)
+net.Receive("TTT_PuppeteerClearDebuff", function(len, ply)
     local target = net.ReadPlayer()
     if not IsPlayer(ply) or not ply:IsActivePuppeteer() then return end
     if not IsPlayer(target) or not target:Alive() or target:IsSpec() then return end
@@ -72,4 +79,12 @@ AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     for _, v in PlayerIterator() do
         v:ClearProperty("TTTPuppeteerDebuffed")
     end
+end)
+
+------------
+-- EVENTS --
+------------
+
+AddHook("Initialize", "Puppeteer_Initialize", function()
+    EVENT_PUPPETEERDEBUFFED = GenerateNewEventID(ROLE_PUPPETEER)
 end)

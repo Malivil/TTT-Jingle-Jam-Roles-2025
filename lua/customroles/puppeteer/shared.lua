@@ -25,6 +25,7 @@ ROLE.convars =
 
 ROLE.translations = {
     ["english"] = {
+        ["ev_puppeteerdebuffed"] = "{attacker} gave {victim} the '{debuff}' debuff",
         ["puppeteer_puppet_menu_name"] = "Puppet",
         ["puppeteer_puppet_menu_tip"] = "Manipulate a chosen player's actions",
         ["puppeteer_puppet_target_label"] = "Control Target",

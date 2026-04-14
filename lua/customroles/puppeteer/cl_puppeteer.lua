@@ -79,15 +79,16 @@ local function SetTarget(ply)
     CreateCamera()
 end
 
-local function DebuffTarget()
-    net.Start("TTTPuppeteerSetDebuff")
+local function DebuffTarget(debuff)
+    net.Start("TTT_PuppeteerSetDebuff")
         net.WritePlayer(target)
+        net.WriteString(debuff)
     net.SendToServer()
 end
 
 local function ClearTarget()
     -- TODO: Clear debuff effect
-    net.Start("TTTPuppeteerClearDebuff")
+    net.Start("TTT_PuppeteerClearDebuff")
         net.WritePlayer(target)
     net.SendToServer()
 
@@ -206,7 +207,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- DoClick
         function()
             -- TODO
-            DebuffTarget()
+            DebuffTarget("pinata")
         end,
         -- EnablePredicate
         DebuffPredicate,
@@ -218,7 +219,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- DoClick
         function()
             -- TODO
-            DebuffTarget()
+            DebuffTarget("spoilsport")
         end,
         -- EnablePredicate
         DebuffPredicate,
@@ -230,7 +231,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- DoClick
         function()
             -- TODO
-            DebuffTarget()
+            DebuffTarget("copycat")
         end,
         -- EnablePredicate
         DebuffPredicate,
@@ -242,7 +243,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- DoClick
         function()
             -- TODO
-            DebuffTarget()
+            DebuffTarget("redherring")
         end,
         -- EnablePredicate
         DebuffPredicate,
@@ -254,7 +255,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- DoClick
         function()
             -- TODO
-            DebuffTarget()
+            DebuffTarget("wanderer")
         end,
         -- EnablePredicate
         DebuffPredicate,
@@ -274,7 +275,7 @@ AddHook("ShouldDrawLocalPlayer", "Puppeteer_ShouldDrawLocalPlayer", function(ply
     if renderingCamView then return true end
 end)
 
-net.Receive("TTTPuppeteerPlayerDeath", function()
+net.Receive("TTT_PuppeteerPlayerDeath", function()
     local ply = net.ReadPlayer()
     if IsPlayer(ply) and target == ply then
         client:QueueMessage(MSG_PRINTBOTH, "Your target (\"" .. ply:Nick() .. "\") has died!")
@@ -283,8 +284,8 @@ net.Receive("TTTPuppeteerPlayerDeath", function()
     UpdateTargetsList(ply)
 end)
 
-net.Receive("TTTPuppeteerDeath", ClearTarget)
-net.Receive("TTTPuppeteerRoleChange", function()
+net.Receive("TTT_PuppeteerDeath", ClearTarget)
+net.Receive("TTT_PuppeteerRoleChange", function()
     local ply = net.ReadPlayer()
     if IsPlayer(ply) and target == ply then
         client:QueueMessage(MSG_PRINTBOTH, "Your target (\"" .. ply:Nick() .. "\") is no longer a viable target!")
@@ -296,4 +297,44 @@ end)
 AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     target = nil
     ClearCamera()
+end)
+
+------------
+-- EVENTS --
+------------
+
+AddHook("TTTSyncEventIDs", "Puppeteer_TTTSyncEventIDs", function()
+    EVENT_PUPPETEERDEBUFFED = EVENTS_BY_ROLE[ROLE_PUPPETEER]
+    local debuff_icon = Material("icon16/emoticon_unhappy.png")
+    local Event = CLSCORE.DeclareEventDisplay
+    local PT = LANG.GetParamTranslation
+    Event(EVENT_PUPPETEERDEBUFFED, {
+        text = function(e)
+            return PT("ev_puppeteerdebuffed", {victim = e.vic, attacker = e.att, debuff = e.deb})
+        end,
+        icon = function(e)
+            return debuff_icon, "Debuffed"
+        end})
+end)
+
+net.Receive("TTT_PuppeteerDebuffed", function(len)
+    local victim = net.ReadString()
+    local attacker = net.ReadString()
+    local debuff = net.ReadString()
+    CLSCORE:AddEvent({
+        id = EVENT_PUPPETEERDEBUFFED,
+        vic = victim,
+        att = attacker,
+        deb = LANG.GetTranslation("puppeteer_puppet_debuff_" .. debuff)
+    })
+end)
+
+--------------
+-- TUTORIAL --
+--------------
+
+AddHook("TTTTutorialRoleText", "Puppeteer_TTTTutorialRoleText", function(role, titleLabel)
+    if role == ROLE_PUPPETEER then
+        -- TODO
+    end
 end)
