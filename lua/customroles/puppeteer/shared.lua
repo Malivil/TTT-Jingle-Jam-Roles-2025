@@ -30,7 +30,17 @@ ROLE.translations = {
         ["puppeteer_puppet_target_label"] = "Control Target",
         ["puppeteer_puppet_target_placeholder"] = "- Select Target Player -",
         ["puppeteer_puppet_target_window"] = "View of {target}",
-        ["puppeteer_puppet_fire_weapon"] = "Fire Weapon for {time}s"
+        ["puppeteer_puppet_fire_weapon"] = "Fire Weapon for {time}s",
+        ["puppeteer_puppet_debuff_pinata"] = "Piñata",
+        ["puppeteer_puppet_debuff_pinata_tip"] = "When the target dies, they drop {num} random {traitor} items",
+        ["puppeteer_puppet_debuff_spoilsport"] = "Spoilsport",
+        ["puppeteer_puppet_debuff_spoilsport_tip"] = "TODO",
+        ["puppeteer_puppet_debuff_copycat"] = "Copycat",
+        ["puppeteer_puppet_debuff_copycat_tip"] = "Target becomes the role of the next player they kill",
+        ["puppeteer_puppet_debuff_redherring"] = "Red Herring",
+        ["puppeteer_puppet_debuff_redherring_tip"] = "TODO",
+        ["puppeteer_puppet_debuff_wanderer"] = "Wanderer",
+        ["puppeteer_puppet_debuff_wanderer_tip"] = "Forces the target to move to specific locations around the map or they die"
     }
 }
 
