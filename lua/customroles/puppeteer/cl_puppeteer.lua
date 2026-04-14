@@ -28,26 +28,12 @@ local puppeteer_command_fire_duration = GetConVar("ttt_puppeteer_command_fire_du
 -- ROLE FEATURES --
 -------------------
 
-local function UpdateButtonState(disabled)
+local function UpdateButtonState(enabled)
     for _, btn in pairs(buttons) do
-        local enabled = not disabled and (not btn.EnablePredicate or btn:EnablePredicate())
-        btn:SetEnabled(enabled)
+        btn:SetEnabled(enabled and (not btn.EnablePredicate or btn:EnablePredicate()))
     end
 end
 
-local function ClearCamera()
-    if cameraFrame then
-        cameraFrame:Remove()
-        cameraFrame = nil
-    end
-end
-
-local function ClearTarget()
-    -- TODO: Clear debuff
-    target = nil
-    UpdateButtonState(true)
-    ClearCamera()
-end
 
 local function CreateCamera()
     if not IsValid(cameraFrame) then
@@ -81,6 +67,35 @@ local function CreateCamera()
     cameraFrame:SetTitle(LANG.GetParamTranslation("puppeteer_puppet_target_window", { target = target:Nick() }))
 end
 
+local function ClearCamera()
+    if cameraFrame then
+        cameraFrame:Remove()
+        cameraFrame = nil
+    end
+end
+
+local function SetTarget(ply)
+    -- TODO: Start debuff effect
+    net.Start("TTTPuppeteerSetDebuff")
+        net.WritePlayer(ply)
+    net.SendToServer()
+
+    target = ply
+    UpdateButtonState(true)
+    CreateCamera()
+end
+
+local function ClearTarget()
+    -- TODO: Clear debuff effect
+    net.Start("TTTPuppeteerClearDebuff")
+        net.WritePlayer(target)
+    net.SendToServer()
+
+    target = nil
+    UpdateButtonState(false)
+    ClearCamera()
+end
+
 local function CreateButton(text, tip, onclick, pred, parent, w, h)
     local dbutton = vgui.Create("DButton", parent)
     dbutton:SetText(text)
@@ -88,7 +103,13 @@ local function CreateButton(text, tip, onclick, pred, parent, w, h)
     dbutton:SetSize(w, h)
     dbutton:SetEnabled(false)
 
-    dbutton.EnablePredicate = pred
+    dbutton.EnablePredicate = function()
+        if not IsPlayer(target) then return false end
+        if target.TTTPuppeteerDebuffed then return false end
+        if not pred or type(pred) ~= "function" then return true end
+
+        return pred()
+    end
     dbutton.DoClick = onclick
 
     TableInsert(buttons, dbutton)
@@ -136,14 +157,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     function dtargetbox:OnSelect(idx, val, data)
         local tgt = player.GetBySteamID64(data)
         local disabled = (not data or #data == 0) or not IsPlayer(tgt)
-        UpdateButtonState(disabled)
-
         if disabled then
-            target = nil
-            ClearCamera()
+            ClearTarget()
         else
-            target = tgt
-            CreateCamera()
+            SetTarget(tgt)
         end
     end
     dform:AddItem(dtargetbox)
