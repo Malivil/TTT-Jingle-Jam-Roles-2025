@@ -80,6 +80,11 @@ local function SetTarget(ply)
 end
 
 local function DebuffTarget(debuff)
+    -- Set this property immediately on the client so we can disable the buttons
+    target.TTTPuppeteerDebuffed = true
+    UpdateButtonState(true)
+
+    -- Tell the server so everyone gets notified about the debuff
     net.Start("TTT_PuppeteerSetDebuff")
         net.WritePlayer(target)
         net.WriteString(debuff)
@@ -267,10 +272,6 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     return true
 end)
 
-AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
-    ClearCamera()
-end)
-
 AddHook("ShouldDrawLocalPlayer", "Puppeteer_ShouldDrawLocalPlayer", function(ply)
     if renderingCamView then return true end
 end)
@@ -327,6 +328,11 @@ net.Receive("TTT_PuppeteerDebuffed", function(len)
         att = attacker,
         deb = LANG.GetTranslation("puppeteer_puppet_debuff_" .. debuff)
     })
+
+    -- Update the button state if we have a target, just in case someone else debuffed them
+    if IsPlayer(target) then
+        UpdateButtonState(true)
+    end
 end)
 
 --------------

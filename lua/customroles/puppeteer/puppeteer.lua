@@ -59,6 +59,8 @@ net.Receive("TTT_PuppeteerSetDebuff", function(len, ply)
     if not IsPlayer(ply) or not ply:IsActivePuppeteer() then return end
     if not IsPlayer(target) or not target:Alive() or target:IsSpec() then return end
 
+    -- TODO: Notify the target
+
     target:SetProperty("TTTPuppeteerDebuffed", true)
     net.Start("TTT_PuppeteerDebuffed")
         net.WriteString(ply:Nick())
