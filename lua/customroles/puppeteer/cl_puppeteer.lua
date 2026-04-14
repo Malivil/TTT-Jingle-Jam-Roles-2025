@@ -23,6 +23,7 @@ local buttons = {}
 ------------------
 
 local puppeteer_command_fire_duration = GetConVar("ttt_puppeteer_command_fire_duration")
+local puppeteer_debuff_pinata_count = GetConVar("ttt_puppeteer_debuff_pinata_count")
 
 -------------------
 -- ROLE FEATURES --
@@ -80,14 +81,15 @@ local function SetTarget(ply)
 end
 
 local function DebuffTarget(debuff)
-    -- Set this property immediately on the client so we can disable the buttons
+    -- Set these properties immediately on the client so we can disable the buttons
     target.TTTPuppeteerDebuffed = true
+    target.TTTPuppeteerDebuff = debuff
     UpdateButtonState(true)
 
     -- Tell the server so everyone gets notified about the debuff
     net.Start("TTT_PuppeteerSetDebuff")
         net.WritePlayer(target)
-        net.WriteString(debuff)
+        net.WriteUInt(debuff, 3)
     net.SendToServer()
 end
 
@@ -124,6 +126,7 @@ end
 
 local function DebuffPredicate()
     if target.TTTPuppeteerDebuffed then return false end
+    return true
 end
 
 local function UpdateTargetsList(skip)
@@ -132,10 +135,10 @@ local function UpdateTargetsList(skip)
     dtargetbox:Clear()
     dtargetbox:SetValue(LANG.GetTranslation("puppeteer_puppet_target_placeholder"))
     for _, p in PlayerIterator() do
-        if p == client or p == skip then continue end
+        if --[[p == client or]] p == skip then continue end
         if not IsPlayer(p) then continue end
         if not p:Alive() or p:IsSpec() then continue end
-        if p:IsDetectiveTeam() or p:IsTraitorTeam() or p:IsGlitch() or p:IsJesterTeam() then continue end
+        if p:IsDetectiveTeam() --[[or p:IsTraitorTeam()]] or p:IsGlitch() or p:IsJesterTeam() then continue end
 
         local sid64 = p:SteamID64()
         dtargetbox:AddChoice(p:Nick(), sid64, sid64 == selected)
@@ -208,11 +211,12 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     -- MoveBelow doesn't seem to be working for this, so do it manually
     dfire:SetPos(padding, buttonY)
 
-    local dpinata = CreateButton(T("puppeteer_puppet_debuff_pinata"), T("puppeteer_puppet_debuff_pinata_tip"),
+    local pinata_count = puppeteer_debuff_pinata_count:GetInt()
+    local dpinata = CreateButton(T("puppeteer_puppet_debuff_0"), PT("puppeteer_puppet_debuff_0_tip", { num = pinata_count, traitor = T("traitor") }),
         -- DoClick
         function()
             -- TODO
-            DebuffTarget("pinata")
+            DebuffTarget(PUPPETEER_DEBUFF_TYPE_PINATA)
         end,
         -- EnablePredicate
         DebuffPredicate,
@@ -220,11 +224,11 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     dpinata:SetY(buttonY)
     dpinata:MoveRightOf(dfire, padding)
 
-    local dspoilsport = CreateButton(T("puppeteer_puppet_debuff_spoilsport"), T("puppeteer_puppet_debuff_spoilsport_tip"),
+    local dspoilsport = CreateButton(T("puppeteer_puppet_debuff_1"), T("puppeteer_puppet_debuff_1_tip"),
         -- DoClick
         function()
             -- TODO
-            DebuffTarget("spoilsport")
+            DebuffTarget(PUPPETEER_DEBUFF_TYPE_SPOILSPORT)
         end,
         -- EnablePredicate
         DebuffPredicate,
@@ -232,11 +236,11 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     dspoilsport:SetY(buttonY)
     dspoilsport:MoveRightOf(dpinata, padding)
 
-    local dcopycat = CreateButton(T("puppeteer_puppet_debuff_copycat"), T("puppeteer_puppet_debuff_copycat_tip"),
+    local dcopycat = CreateButton(T("puppeteer_puppet_debuff_2"), PT("puppeteer_puppet_debuff_2_tip", { atraitor = ROLE_STRINGS_EXT[ROLE_TRAITOR] }),
         -- DoClick
         function()
             -- TODO
-            DebuffTarget("copycat")
+            DebuffTarget(PUPPETEER_DEBUFF_TYPE_COPYCAT)
         end,
         -- EnablePredicate
         DebuffPredicate,
@@ -244,11 +248,11 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     dcopycat:MoveBelow(dfire, padding)
     dcopycat:SetX(padding)
 
-    local dredherring = CreateButton(T("puppeteer_puppet_debuff_redherring"), T("puppeteer_puppet_debuff_redherring_tip"),
+    local dredherring = CreateButton(T("puppeteer_puppet_debuff_3"), T("puppeteer_puppet_debuff_3_tip"),
         -- DoClick
         function()
             -- TODO
-            DebuffTarget("redherring")
+            DebuffTarget(PUPPETEER_DEBUFF_TYPE_REDHERRING)
         end,
         -- EnablePredicate
         DebuffPredicate,
@@ -256,11 +260,11 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     dredherring:MoveBelow(dfire, padding)
     dredherring:MoveRightOf(dcopycat, padding)
 
-    local dwanderer = CreateButton(T("puppeteer_puppet_debuff_wanderer"), T("puppeteer_puppet_debuff_wanderer_tip"),
+    local dwanderer = CreateButton(T("puppeteer_puppet_debuff_4"), T("puppeteer_puppet_debuff_4_tip"),
         -- DoClick
         function()
             -- TODO
-            DebuffTarget("wanderer")
+            DebuffTarget(PUPPETEER_DEBUFF_TYPE_WANDERER)
         end,
         -- EnablePredicate
         DebuffPredicate,
@@ -300,6 +304,23 @@ AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     ClearCamera()
 end)
 
+-- TODO: Display debuff on target's UI
+
+-- Red Herring --
+
+AddHook("TTTShowSearchScreen", "Puppeteer_TTTShowSearchScreen", function(search)
+    if not IsPlayer(search.owner) then return end
+    if search.owner.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_REDHERRING then return end
+
+    if search.role == ROLE_INNOCENT then
+        search.role = ROLE_PUPPETEER
+    else
+        search.role = ROLE_TRAITOR
+    end
+
+    search.team = player.GetRoleTeam(search.role)
+end)
+
 ------------
 -- EVENTS --
 ------------
@@ -321,7 +342,7 @@ end)
 net.Receive("TTT_PuppeteerDebuffed", function(len)
     local victim = net.ReadString()
     local attacker = net.ReadString()
-    local debuff = net.ReadString()
+    local debuff = net.ReadUInt(3)
     CLSCORE:AddEvent({
         id = EVENT_PUPPETEERDEBUFFED,
         vic = victim,

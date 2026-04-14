@@ -12,6 +12,7 @@ util.AddNetworkString("TTT_PuppeteerRoleChange")
 util.AddNetworkString("TTT_PuppeteerSetDebuff")
 util.AddNetworkString("TTT_PuppeteerClearDebuff")
 util.AddNetworkString("TTT_PuppeteerDebuffed")
+util.AddNetworkString("TTT_PuppeteerDebuffRedHerring")
 
 -------------------
 -- ROLE FEATURES --
@@ -53,34 +54,63 @@ AddHook("TTTPlayerRoleChanged", "Puppeteer_TTTPlayerRoleChanged", function(ply, 
     end
 end)
 
-net.Receive("TTT_PuppeteerSetDebuff", function(len, ply)
+net.Receive("TTT_PuppeteerSetDebuff", function(_, ply)
     local target = net.ReadPlayer()
-    local debuff = net.ReadString()
+    local debuff = net.ReadUInt(3)
     if not IsPlayer(ply) or not ply:IsActivePuppeteer() then return end
     if not IsPlayer(target) or not target:Alive() or target:IsSpec() then return end
 
     -- TODO: Notify the target
 
     target:SetProperty("TTTPuppeteerDebuffed", true)
+    target:SetProperty("TTTPuppeteerDebuff", debuff)
     net.Start("TTT_PuppeteerDebuffed")
         net.WriteString(ply:Nick())
         net.WriteString(target:Nick())
-        net.WriteString(debuff)
+        net.WriteUInt(debuff, 3)
     net.Broadcast()
 end)
 
-net.Receive("TTT_PuppeteerClearDebuff", function(len, ply)
+net.Receive("TTT_PuppeteerClearDebuff", function(_, ply)
     local target = net.ReadPlayer()
     if not IsPlayer(ply) or not ply:IsActivePuppeteer() then return end
     if not IsPlayer(target) or not target:Alive() or target:IsSpec() then return end
 
     target:ClearProperty("TTTPuppeteerDebuffed")
+    target:ClearProperty("TTTPuppeteerDebuff")
 end)
 
 AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     for _, v in PlayerIterator() do
         v:ClearProperty("TTTPuppeteerDebuffed")
+        v:ClearProperty("TTTPuppeteerDebuff")
     end
+end)
+
+-- Red Herring --
+
+AddHook("TTTCanIdentifyCorpse", "Puppeteer_RedHerring_TTTCanIdentifyCorpse", function(ply, rag, was_traitor)
+    if not IsPlayer(ply) then return end
+    if ply.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_REDHERRING then return end
+
+    if rag.was_role == ROLE_INNOCENT then
+        rag.was_role = ROLE_PUPPETEER
+    else
+        rag.was_role = ROLE_TRAITOR
+    end
+end)
+
+AddHook("TTTPlayerPassesTraitorCheck", "Puppeteer_RedHerring_TTTPlayerPassesTraitorCheck", function(ply, ent)
+    if not IsPlayer(ply) then return end
+    if ply.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_REDHERRING then return end
+
+    if ent:GetClass() == "ttt_traitor_check" then
+        return true
+    end
+
+    -- The other traitor checks have a Role property
+    -- If they are checking for traitors, the Red Herring passes the check
+    return ent.Role == ROLE_TRAITOR
 end)
 
 ------------
