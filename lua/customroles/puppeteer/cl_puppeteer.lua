@@ -34,7 +34,6 @@ local function UpdateButtonState(enabled)
     end
 end
 
-
 local function CreateCamera()
     if not IsValid(cameraFrame) then
         cameraFrame = vgui.Create("DFrame")
@@ -75,14 +74,15 @@ local function ClearCamera()
 end
 
 local function SetTarget(ply)
-    -- TODO: Start debuff effect
-    net.Start("TTTPuppeteerSetDebuff")
-        net.WritePlayer(ply)
-    net.SendToServer()
-
     target = ply
     UpdateButtonState(true)
     CreateCamera()
+end
+
+local function DebuffTarget()
+    net.Start("TTTPuppeteerSetDebuff")
+        net.WritePlayer(target)
+    net.SendToServer()
 end
 
 local function ClearTarget()
@@ -105,7 +105,6 @@ local function CreateButton(text, tip, onclick, pred, parent, w, h)
 
     dbutton.EnablePredicate = function()
         if not IsPlayer(target) then return false end
-        if target.TTTPuppeteerDebuffed then return false end
         if not pred or type(pred) ~= "function" then return true end
 
         return pred()
@@ -115,6 +114,10 @@ local function CreateButton(text, tip, onclick, pred, parent, w, h)
     TableInsert(buttons, dbutton)
 
     return dbutton
+end
+
+local function DebuffPredicate()
+    if target.TTTPuppeteerDebuffed then return false end
 end
 
 local function UpdateTargetsList(skip)
@@ -194,10 +197,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
             -- TODO
         end,
         -- EnablePredicate
-        function()
-            -- TODO: Cooldown
-            return true
-        end,
+        nil,
         dform, buttonWidth, buttonHeight)
     -- MoveBelow doesn't seem to be working for this, so do it manually
     dfire:SetPos(padding, buttonY)
@@ -206,12 +206,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- DoClick
         function()
             -- TODO
+            DebuffTarget()
         end,
         -- EnablePredicate
-        function()
-            -- TODO: Cooldown
-            return true
-        end,
+        DebuffPredicate,
         dform, buttonWidth, buttonHeight)
     dpinata:SetY(buttonY)
     dpinata:MoveRightOf(dfire, padding)
@@ -220,12 +218,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- DoClick
         function()
             -- TODO
+            DebuffTarget()
         end,
         -- EnablePredicate
-        function()
-            -- TODO: Cooldown
-            return true
-        end,
+        DebuffPredicate,
         dform, buttonWidth, buttonHeight)
     dspoilsport:SetY(buttonY)
     dspoilsport:MoveRightOf(dpinata, padding)
@@ -234,12 +230,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- DoClick
         function()
             -- TODO
+            DebuffTarget()
         end,
         -- EnablePredicate
-        function()
-            -- TODO: Cooldown
-            return true
-        end,
+        DebuffPredicate,
         dform, buttonWidth, buttonHeight)
     dcopycat:MoveBelow(dfire, padding)
     dcopycat:SetX(padding)
@@ -248,12 +242,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- DoClick
         function()
             -- TODO
+            DebuffTarget()
         end,
         -- EnablePredicate
-        function()
-            -- TODO: Cooldown
-            return true
-        end,
+        DebuffPredicate,
         dform, buttonWidth, buttonHeight)
     dredherring:MoveBelow(dfire, padding)
     dredherring:MoveRightOf(dcopycat, padding)
@@ -262,12 +254,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- DoClick
         function()
             -- TODO
+            DebuffTarget()
         end,
         -- EnablePredicate
-        function()
-            -- TODO: Cooldown
-            return true
-        end,
+        DebuffPredicate,
         dform, buttonWidth, buttonHeight)
     dwanderer:MoveBelow(dfire, padding)
     dwanderer:MoveRightOf(dredherring, padding)
@@ -297,8 +287,13 @@ net.Receive("TTTPuppeteerDeath", ClearTarget)
 net.Receive("TTTPuppeteerRoleChange", function()
     local ply = net.ReadPlayer()
     if IsPlayer(ply) and target == ply then
-        client:QueueMessage(MSG_PRINTBOTH, "Your target (\"" .. ply:Nick() .. "\") is not longer a viable target!")
+        client:QueueMessage(MSG_PRINTBOTH, "Your target (\"" .. ply:Nick() .. "\") is no longer a viable target!")
         ClearTarget()
     end
     UpdateTargetsList()
+end)
+
+AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
+    target = nil
+    ClearCamera()
 end)
