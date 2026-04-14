@@ -27,8 +27,8 @@ ROLE.translations = {
     ["english"] = {
         ["puppeteer_puppet_menu_name"] = "Puppet",
         ["puppeteer_puppet_menu_tip"] = "Manipulate a chosen player's actions",
-        ["puppeteer_puppet_target_label"] = "Target",
-        ["puppeteer_puppet_target_placeholder"] = "- Select Player -",
+        ["puppeteer_puppet_target_label"] = "Control Target",
+        ["puppeteer_puppet_target_placeholder"] = "- Select Target Player -",
         ["puppeteer_puppet_target_window"] = "View of {target}",
         ["puppeteer_puppet_fire_weapon"] = "Fire Weapon for {time}s"
     }

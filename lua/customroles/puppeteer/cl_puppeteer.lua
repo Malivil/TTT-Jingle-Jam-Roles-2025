@@ -87,63 +87,57 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     local T = LANG.GetTranslation
     local PT = LANG.GetParamTranslation
 
-    local dpanel = vgui.Create("DPanel", dsheet)
-    dpanel:SetBackgroundColor(Color(0, 0, 0, 0))
-    dpanel:StretchToParent(padding, padding + tabHeight, padding, padding)
+    local dform = vgui.Create("DForm", dsheet)
+    dform:SetName(T("puppeteer_puppet_target_label"))
+    dform:StretchToParent(padding, padding + tabHeight, padding, padding)
+    dform:SetAutoSize(false)
 
-    local dtargetlbl = vgui.Create("DLabel", dpanel)
-    dtargetlbl:SetText(T("puppeteer_puppet_target_label"))
-
-    local dtarget = vgui.Create("DComboBox", dpanel)
-    -- TODO: Position
-    dtarget:MoveBelow(dtargetlbl)
-    -- TODO: Size
-    dtarget:SetSize(200, 20)
+    local dtarget = vgui.Create("DComboBox", dform)
     dtarget:SetValue(T("puppeteer_puppet_target_placeholder"))
+    dtarget:SetEnabled(true)
     for _, p in PlayerIterator() do
-        print(p)
         if not IsPlayer(p) then continue end
-        print("A")
         if not p:Alive() or p:IsSpec() then continue end
-        print("B")
         if p == client then continue end
-        print("C")
         if p:IsDetectiveTeam() then continue end
-        print("D")
         if p:IsTraitorTeam() or p:IsGlitch() then continue end
-        print("E")
         if p:IsJesterTeam() then continue end
-        print("F")
         dtarget:AddChoice(p:Nick(), p:SteamID64())
     end
-    --dtarget.OnSelect = function(idx, val, data)
-    --    local tgt = player.GetBySteamID64(data)
-    --    local disabled = (not data or #data == 0) and IsPlayer(tgt)
-    --    UpdateButtonState(disabled)
---
-    --    if disabled then
-    --        target = nil
-    --        ClearCamera()
-    --    else
-    --        target = tgt
-    --        CreateCamera()
-    --    end
-    --end
+    function dtarget:OnSelect(idx, val, data)
+        local tgt = player.GetBySteamID64(data)
+        local disabled = (not data or #data == 0) and IsPlayer(tgt)
+        UpdateButtonState(disabled)
+
+        if disabled then
+            target = nil
+            ClearCamera()
+        else
+            target = tgt
+            CreateCamera()
+        end
+    end
+    dform:AddItem(dtarget)
+
     local oldFrameClose = dframe.OnClose
-    dframe.OnClose = function(...)
+    function dframe:OnClose(...)
         if oldFrameClose then
-            oldFrameClose(dframe, ...)
+            oldFrameClose(self, ...)
         end
 
         ClearTarget()
         buttons = {}
     end
 
-    local div = vgui.Create("DHorizontalDivider", dpanel)
+    local div = vgui.Create("DHorizontalDivider", dform)
+    div:SetHeight(2)
     div:MoveBelow(dtarget)
     div:Dock(FILL)
+    div:SetPaintBackground(true)
+    div:SetBackgroundColor(COLOR_LGRAY)
+    dform:AddItem(div)
 
-    local dfire = vgui.Create("DButton", dpanel)
+    local dfire = vgui.Create("DButton", dform)
     local fire_duration = puppeteer_command_fire_duration:GetFloat()
     dfire:SetText(PT("puppeteer_puppet_fire_weapon", { time = fire_duration }))
     -- TODO: Position
@@ -155,11 +149,13 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     dfire.DoClick = function()
         -- TODO
     end
+    dfire:SetEnabled(false)
     TableInsert(buttons, dfire)
+    dform:AddItem(dfire)
 
     -- TODO: Debuff buttons
 
-    dsheet:AddSheet(LANG.GetTranslation("puppeteer_puppet_menu_name"), dpanel, "icon16/television.png", false, false, LANG.GetTranslation("puppeteer_puppet_menu_tip"))
+    dsheet:AddSheet(LANG.GetTranslation("puppeteer_puppet_menu_name"), dform, "icon16/television.png", false, false, LANG.GetTranslation("puppeteer_puppet_menu_tip"))
     return true
 end)
 
