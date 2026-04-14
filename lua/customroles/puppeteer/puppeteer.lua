@@ -61,6 +61,7 @@ net.Receive("TTT_PuppeteerSetDebuff", function(_, ply)
     if not IsPlayer(target) or not target:Alive() or target:IsSpec() then return end
 
     -- TODO: Notify the target
+    -- TODO: Notify the traitors
 
     target:SetProperty("TTTPuppeteerDebuffed", true)
     target:SetProperty("TTTPuppeteerDebuff", debuff)

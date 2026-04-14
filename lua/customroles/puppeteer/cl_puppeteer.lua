@@ -188,12 +188,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     end
 
     local div = vgui.Create("DHorizontalDivider", dform)
-    div:SetHeight(2)
-    div:MoveBelow(dtargetbox)
-    div:Dock(FILL)
+    div:SetSize(dsheet:GetWide(), 2)
     div:SetPaintBackground(true)
     div:SetBackgroundColor(COLOR_LGRAY)
-    dform:AddItem(div)
+    div:SetY(dtargetbox:GetTall() + (padding * 2) + tabHeight)
 
     local buttonY = 70
     local buttonWidth = ((dform:GetWide() - (padding * 4)) / 3)
@@ -211,6 +209,16 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     -- MoveBelow doesn't seem to be working for this, so do it manually
     dfire:SetPos(padding, buttonY)
 
+    buttonY = buttonY + buttonHeight + padding
+
+    local div2 = vgui.Create("DHorizontalDivider", dform)
+    div2:SetSize(dsheet:GetWide(), 2)
+    div2:SetPaintBackground(true)
+    div2:SetBackgroundColor(COLOR_LGRAY)
+    div2:SetY(buttonY)
+
+    buttonY = buttonY + 2 + padding
+
     local pinata_count = puppeteer_debuff_pinata_count:GetInt()
     local dpinata = CreateButton(T("puppeteer_puppet_debuff_0"), PT("puppeteer_puppet_debuff_0_tip", { num = pinata_count, traitor = T("traitor") }),
         -- DoClick
@@ -221,8 +229,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- EnablePredicate
         DebuffPredicate,
         dform, buttonWidth, buttonHeight)
-    dpinata:SetY(buttonY)
-    dpinata:MoveRightOf(dfire, padding)
+    dpinata:SetPos(padding, buttonY)
 
     local dspoilsport = CreateButton(T("puppeteer_puppet_debuff_1"), T("puppeteer_puppet_debuff_1_tip"),
         -- DoClick
@@ -236,7 +243,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     dspoilsport:SetY(buttonY)
     dspoilsport:MoveRightOf(dpinata, padding)
 
-    local dcopycat = CreateButton(T("puppeteer_puppet_debuff_2"), PT("puppeteer_puppet_debuff_2_tip", { atraitor = ROLE_STRINGS_EXT[ROLE_TRAITOR] }),
+    local dcopycat = CreateButton(T("puppeteer_puppet_debuff_2"), T("puppeteer_puppet_debuff_2_tip"),
         -- DoClick
         function()
             -- TODO
@@ -245,10 +252,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- EnablePredicate
         DebuffPredicate,
         dform, buttonWidth, buttonHeight)
-    dcopycat:MoveBelow(dfire, padding)
-    dcopycat:SetX(padding)
+    dcopycat:SetY(buttonY)
+    dcopycat:MoveRightOf(dspoilsport, padding)
 
-    local dredherring = CreateButton(T("puppeteer_puppet_debuff_3"), T("puppeteer_puppet_debuff_3_tip"),
+    local dredherring = CreateButton(T("puppeteer_puppet_debuff_3"), PT("puppeteer_puppet_debuff_3_tip", { atraitor = ROLE_STRINGS_EXT[ROLE_TRAITOR] }),
         -- DoClick
         function()
             -- TODO
@@ -257,8 +264,8 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- EnablePredicate
         DebuffPredicate,
         dform, buttonWidth, buttonHeight)
-    dredherring:MoveBelow(dfire, padding)
-    dredherring:MoveRightOf(dcopycat, padding)
+    dredherring:MoveBelow(dpinata, padding)
+    dredherring:SetX((buttonWidth / 2) + (padding * 2))
 
     local dwanderer = CreateButton(T("puppeteer_puppet_debuff_4"), T("puppeteer_puppet_debuff_4_tip"),
         -- DoClick
@@ -269,7 +276,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         -- EnablePredicate
         DebuffPredicate,
         dform, buttonWidth, buttonHeight)
-    dwanderer:MoveBelow(dfire, padding)
+    dwanderer:MoveBelow(dpinata, padding)
     dwanderer:MoveRightOf(dredherring, padding)
 
     dsheet:AddSheet(LANG.GetTranslation("puppeteer_puppet_menu_name"), dform, "icon16/television.png", false, false, LANG.GetTranslation("puppeteer_puppet_menu_tip"))
