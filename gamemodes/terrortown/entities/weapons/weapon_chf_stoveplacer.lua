@@ -183,7 +183,7 @@ function SWEP:SecondaryAttack()
     local owner = self:GetOwner()
     if not IsPlayer(owner) then return end
 
-    net.Start("TTTChefFoodChanged")
+    net.Start("TTT_ChefFoodChanged")
         net.WriteUInt(self.SelectedFoodType, 3)
     net.Send(owner)
 end
