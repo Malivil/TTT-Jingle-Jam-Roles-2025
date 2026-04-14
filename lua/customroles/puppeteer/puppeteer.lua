@@ -8,22 +8,41 @@ local PlayerIterator = player.Iterator
 
 util.AddNetworkString("TTTPuppeteerPlayerDeath")
 util.AddNetworkString("TTTPuppeteerDeath")
+util.AddNetworkString("TTTPuppeteerRoleChange")
 
 -------------------
 -- ROLE FEATURES --
 -------------------
 
-AddHook("PostPlayerDeath", "Puppeteer_PostPlayerDeath", function(ply)
-    for _, p in PlayerIterator() do
-        if not p:IsActivePuppeteer() then continue end
+local function ValidTarget(role)
+    return DETECTIVE_ROLES[role] or TRAITOR_ROLES[role] or role == ROLE_GLITCH or JESTER_ROLES[role]
+end
 
-        net.Start("TTTPuppeteerPlayerDeath")
-            net.WritePlayer(ply)
-        net.Send(p)
+-- Update the client if a viable target or a puppeteer has died
+AddHook("PostPlayerDeath", "Puppeteer_PostPlayerDeath", function(ply)
+    if ValidTarget(ply:GetRole()) then
+        for _, p in PlayerIterator() do
+            if not p:IsActivePuppeteer() then continue end
+
+            net.Start("TTTPuppeteerPlayerDeath")
+                net.WritePlayer(ply)
+            net.Send(p)
+        end
     end
 
     if ply:IsPuppeteer() then
         net.Start("TTTPuppeteerDeath")
         net.Send(ply)
+    end
+end)
+
+-- Update the client if a player has been changed to or from a viable target role
+AddHook("TTTPlayerRoleChanged", "Puppeteer_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
+    if not ValidTarget(oldRole) and not ValidTarget(newRole) then return end
+    for _, p in PlayerIterator() do
+        if not p:IsActivePuppeteer() then continue end
+
+        net.Start("TTTPuppeteerRoleChange")
+        net.Send(p)
     end
 end)

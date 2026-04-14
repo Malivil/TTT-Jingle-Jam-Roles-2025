@@ -275,6 +275,5 @@ net.Receive("TTTPuppeteerPlayerDeath", function()
     UpdateTargetsList(ply)
 end)
 
-net.Receive("TTTPuppeteerDeath", function()
-    ClearTarget()
-end)
+net.Receive("TTTPuppeteerDeath", ClearTarget)
+net.Receive("TTTPuppeteerRoleChange", UpdateTargetsList)
