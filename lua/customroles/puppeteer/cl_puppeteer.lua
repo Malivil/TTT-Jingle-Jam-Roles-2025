@@ -43,6 +43,7 @@ local function ClearCamera()
 end
 
 local function ClearTarget()
+    -- TODO: Clear debuff
     target = nil
     UpdateButtonState(true)
     ClearCamera()
@@ -276,4 +277,11 @@ net.Receive("TTTPuppeteerPlayerDeath", function()
 end)
 
 net.Receive("TTTPuppeteerDeath", ClearTarget)
-net.Receive("TTTPuppeteerRoleChange", UpdateTargetsList)
+net.Receive("TTTPuppeteerRoleChange", function()
+    local ply = net.ReadPlayer()
+    if IsPlayer(ply) and target == ply then
+        client:QueueMessage(MSG_PRINTBOTH, "Your target (\"" .. ply:Nick() .. "\") is not longer a viable target!")
+        ClearTarget()
+    end
+    UpdateTargetsList()
+end)

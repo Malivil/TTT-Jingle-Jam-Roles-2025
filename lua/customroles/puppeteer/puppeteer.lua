@@ -38,11 +38,14 @@ end)
 
 -- Update the client if a player has been changed to or from a viable target role
 AddHook("TTTPlayerRoleChanged", "Puppeteer_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
-    if not ValidTarget(oldRole) and not ValidTarget(newRole) then return end
+    -- If their viability hasn't changed then the client doesn't need to update
+    if ValidTarget(oldRole) == ValidTarget(newRole) then return end
+
     for _, p in PlayerIterator() do
         if not p:IsActivePuppeteer() then continue end
 
         net.Start("TTTPuppeteerRoleChange")
+            net.WritePlayer(ply)
         net.Send(p)
     end
 end)
