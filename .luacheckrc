@@ -894,6 +894,7 @@ globals = {
     "vgui",
     "weapons",
     "DButton",
+    "DImage",
     "AWARDS",
     "CORPSE",
     "DISGUISE",
