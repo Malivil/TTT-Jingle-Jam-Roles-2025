@@ -202,7 +202,7 @@ AddHook("DoPlayerDeath", "Puppeteer_Spoilsport_DoPlayerDeath", function(ply, att
 
     if not IsPlayer(attacker) then return end
 
-    ply:QueueMessage(MSG_PRINTCHAT, "You've decided to spoil " .. attacker:Nick() .. "'s fun by coming back as " .. ROLE_STRINGS_EXT[ROLE_VINDICATOR])
+    ply:QueueMessage(MSG_PRINTTALK, "You've decided to spoil " .. attacker:Nick() .. "'s fun by coming back as " .. ROLE_STRINGS_EXT[ROLE_VINDICATOR])
     ply:SetRole(ROLE_VINDICATOR)
     ply:StripRoleWeapons()
     RunHook("PlayerLoadout", ply)
