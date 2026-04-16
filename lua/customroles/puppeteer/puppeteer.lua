@@ -4,6 +4,7 @@ local ents = ents
 local hook = hook
 local math = math
 local net = net
+local pairs = pairs
 local player = player
 local table = table
 local timer = timer
@@ -122,6 +123,16 @@ AddHook("PostPlayerDeath", "Puppeteer_Pinata_PostPlayerDeath", function(ply)
                 -- applied and the base table has AllowDrop defaulting to `true`
                 if v.AutoSpawnable or v.AllowDrop == false then continue end
                 if not v.CanBuy or #v.CanBuy == 0 then continue end
+
+                -- Only allow weapons that a traitor role can buy
+                local hasTraitor = false
+                for _, r in pairs(v.CanBuy) do
+                    if TRAITOR_ROLES[r] then
+                        hasTraitor = true
+                        break
+                    end
+                end
+                if not hasTraitor then continue end
 
                 TableInsert(lootTable, WEPS.GetClass(v))
             end
