@@ -1,6 +1,7 @@
 AddCSLuaFile()
 
 local hook = hook
+local net = net
 local player = player
 
 local AddHook = hook.Add
@@ -57,18 +58,17 @@ end)
 net.Receive("TTT_PuppeteerSetDebuff", function(_, ply)
     local target = net.ReadPlayer()
     local debuff = net.ReadUInt(3)
+
     if not IsPlayer(ply) or not ply:IsActivePuppeteer() then return end
     if not IsPlayer(target) or not target:Alive() or target:IsSpec() then return end
+    if ply:GetCredits() < 1 then return end
 
-    -- TODO: Notify the target
-    -- TODO: Notify the traitors
-    -- TODO: Check and subtract credits
-
+    ply:SubtractCredits(1)
     target:SetProperty("TTTPuppeteerDebuffed", true)
     target:SetProperty("TTTPuppeteerDebuff", debuff)
     net.Start("TTT_PuppeteerDebuffed")
-        net.WriteString(ply:Nick())
-        net.WriteString(target:Nick())
+        net.WritePlayer(ply)
+        net.WritePlayer(target)
         net.WriteUInt(debuff, 3)
     net.Broadcast()
 end)

@@ -14,6 +14,7 @@ local TableInsert = table.insert
 local client
 local target
 local dtargetbox
+local dcredits
 local cameraFrame
 local renderingCamView = false
 local buttons = {}
@@ -40,7 +41,10 @@ surface.CreateFont("PuppeteerDesc", {
     weight = 550
 })
 
-local function UpdateButtonState(enabled)
+local function UpdateState(enabled)
+    if not IsPlayer(client) then return end
+    if not client:IsActivePuppeteer() then return end
+
     for _, btn in pairs(buttons) do
         local btnEnabled = enabled and (not btn.EnablePredicate or btn:EnablePredicate())
         btn:SetEnabled(btnEnabled)
@@ -50,6 +54,10 @@ local function UpdateButtonState(enabled)
             btn:SetColor(color)
             btn.label:SetTextColor(color)
         end
+    end
+
+    if IsValid(dcredits) then
+        dcredits:UpdateState()
     end
 end
 
@@ -94,7 +102,7 @@ end
 
 local function SetTarget(ply)
     target = ply
-    UpdateButtonState(true)
+    UpdateState(true)
     CreateCamera()
 end
 
@@ -102,7 +110,7 @@ local function DebuffTarget(debuff)
     -- Set these properties immediately on the client so we can disable the buttons
     target.TTTPuppeteerDebuffed = true
     target.TTTPuppeteerDebuff = debuff
-    UpdateButtonState(true)
+    UpdateState(true)
 
     -- Tell the server so everyone gets notified about the debuff
     net.Start("TTT_PuppeteerSetDebuff")
@@ -112,13 +120,12 @@ local function DebuffTarget(debuff)
 end
 
 local function ClearTarget()
-    -- TODO: Clear debuff effect
     net.Start("TTT_PuppeteerClearDebuff")
         net.WritePlayer(target)
     net.SendToServer()
 
     target = nil
-    UpdateButtonState(false)
+    UpdateState(false)
     ClearCamera()
 end
 
@@ -158,7 +165,13 @@ local function CreateDebuffButton(text, tip, onclick, pred, parent, w, h, image,
 
         return pred()
     end
-    dbutton.DoClick = onclick
+    dbutton.DoClick = function()
+        if not IsPlayer(target) then return end
+        if not IsPlayer(client) or not client:IsActivePuppeteer() then return end
+        if client:GetCredits() <= 0 then return end
+
+        onclick()
+    end
 
     TableInsert(buttons, dbutton)
 
@@ -176,6 +189,7 @@ local function UpdateTargetsList(skip)
     dtargetbox:Clear()
     dtargetbox:SetValue(LANG.GetTranslation("puppeteer_puppet_target_placeholder"))
     for _, p in PlayerIterator() do
+        -- TODO: Undo this
         if --[[p == client or]] p == skip then continue end
         if not IsPlayer(p) then continue end
         if not p:Alive() or p:IsSpec() then continue end
@@ -273,8 +287,6 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
 
     buttonY = buttonY + div:GetTall() + padding
 
-    -- TODO: Display credits
-
     dlabel = vgui.Create("DLabel", dform)
     dlabel:SetText(T("puppeteer_puppet_debuffs"))
     dlabel:SetFont("PuppeteerTitle")
@@ -352,7 +364,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     dwanderer:MoveBelow(dpinata, padding)
     dwanderer:MoveRightOf(dredherring, padding)
 
-    local dcredits = vgui.Create("DPanel", dform)
+    dcredits = vgui.Create("DPanel", dform)
     dcredits:SetPaintBackground(false)
     dcredits:SetHeight(32)
     dcredits:SetPos(padding, dform:GetTall() - dcredits:GetTall() - padding)
@@ -393,6 +405,10 @@ AddHook("ShouldDrawLocalPlayer", "Puppeteer_ShouldDrawLocalPlayer", function(ply
 end)
 
 net.Receive("TTT_PuppeteerPlayerDeath", function()
+    if not client then
+        client = LocalPlayer()
+    end
+
     local ply = net.ReadPlayer()
     if IsPlayer(ply) and target == ply then
         client:QueueMessage(MSG_PRINTBOTH, "Your target (\"" .. ply:Nick() .. "\") has died!")
@@ -403,6 +419,10 @@ end)
 
 net.Receive("TTT_PuppeteerDeath", ClearTarget)
 net.Receive("TTT_PuppeteerRoleChange", function()
+    if not client then
+        client = LocalPlayer()
+    end
+
     local ply = net.ReadPlayer()
     if IsPlayer(ply) and target == ply then
         client:QueueMessage(MSG_PRINTBOTH, "Your target (\"" .. ply:Nick() .. "\") is no longer a viable target!")
@@ -416,7 +436,50 @@ AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     ClearCamera()
 end)
 
--- TODO: Display debuff on target's UI
+---------
+-- HUD --
+---------
+
+local icon_tex = {
+    [PUPPETEER_DEBUFF_TYPE_PINATA] = Material("vgui/ttt/roles/pup/16_pinata.png"),
+    [PUPPETEER_DEBUFF_TYPE_SPOILSPORT] = Material("vgui/ttt/roles/pup/16_spoilsport.png"),
+    [PUPPETEER_DEBUFF_TYPE_COPYCAT] = Material("vgui/ttt/roles/pup/16_copycat.png"),
+    [PUPPETEER_DEBUFF_TYPE_REDHERRING] = Material("vgui/ttt/roles/pup/16_redherring.png"),
+    [PUPPETEER_DEBUFF_TYPE_WANDERER] = Material("vgui/ttt/roles/pup/16_wanderer.png")
+}
+
+AddHook("TTTHUDInfoPaint", "Puppeteer_TTTHUDInfoPaint", function(cli, label_left, label_top, active_labels)
+    if not cli.TTTPuppeteerDebuffed then return end
+
+    surface.SetFont("TabLarge")
+    surface.SetTextColor(255, 255, 255, 230)
+
+    local text = LANG.GetParamTranslation("puppeteer_hud", { debuff = LANG.GetTranslation("puppeteer_puppet_debuff_" .. cli.TTTPuppeteerDebuff), puppeteer = ROLE_STRINGS[ROLE_PUPPETEER] })
+    local _, h = surface.GetTextSize(text)
+
+    -- Move this up based on how many other labels there are
+    label_top = label_top + (20 * #active_labels)
+
+    local icon_x, icon_y = 16, 16
+    surface.SetMaterial(icon_tex[cli.TTTPuppeteerDebuff])
+    surface.SetDrawColor(255, 255, 255, 255)
+    surface.DrawTexturedRect(label_left, ScrH() - label_top - icon_y, icon_x, icon_y)
+
+    label_left = label_left + 20
+
+    surface.SetTextPos(label_left, ScrH() - label_top - h)
+    surface.DrawText(text)
+
+    -- Reset this back to where it was
+    label_left = label_left - 20
+
+    -- Track that the label was added so others can position accurately
+    TableInsert(active_labels, "puppeteer")
+end)
+
+-------------
+-- DEBUFFS --
+-------------
 
 -- Red Herring --
 
@@ -452,19 +515,35 @@ AddHook("TTTSyncEventIDs", "Puppeteer_TTTSyncEventIDs", function()
 end)
 
 net.Receive("TTT_PuppeteerDebuffed", function(len)
-    local victim = net.ReadString()
-    local attacker = net.ReadString()
+    local attacker = net.ReadPlayer()
+    local victim = net.ReadPlayer()
     local debuff = net.ReadUInt(3)
-    CLSCORE:AddEvent({
+
+    if not IsPlayer(victim) or not IsPlayer(attacker) then return end
+
+    local eventData = {
         id = EVENT_PUPPETEERDEBUFFED,
-        vic = victim,
-        att = attacker,
+        vic = victim:Nick(),
+        att = attacker:Nick(),
         deb = LANG.GetTranslation("puppeteer_puppet_debuff_" .. debuff)
-    })
+    }
+    CLSCORE:AddEvent(eventData)
+
+    if not client then
+        client = LocalPlayer()
+    end
+
+    if victim == client then
+        local message = LANG.GetParamTranslation("ev_puppeteerdebuffed", { attacker = string.Capitalize(ROLE_STRINGS_EXT[ROLE_PUPPETEER]), victim = LANG.GetTranslation("puppeteer_puppet_target_you"), debuff = eventData.deb })
+        client:QueueMessage(MSG_PRINTBOTH, message)
+    elseif client ~= attacker and client:IsTraitorTeam() then
+        local message = LANG.GetParamTranslation("ev_puppeteerdebuffed", { attacker = eventData.att, victim = eventData.vic, debuff = eventData.deb })
+        client:QueueMessage(MSG_PRINTBOTH, message)
+    end
 
     -- Update the button state if we have a target, just in case someone else debuffed them
-    if IsPlayer(target) then
-        UpdateButtonState(true)
+    if client:IsActivePuppeteer() and IsPlayer(target) then
+        UpdateState(true)
     end
 end)
 
