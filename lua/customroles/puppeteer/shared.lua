@@ -99,4 +99,4 @@ CreateConVar("ttt_puppeteer_command_fire_duration", 2, FCVAR_REPLICATED, "How lo
 CreateConVar("ttt_puppeteer_debuff_pinata_count", 3, FCVAR_REPLICATED, "How many shop items a player with the Piñata debuff will drop when they are killed", 1, 10)
 CreateConVar("ttt_puppeteer_debuff_wanderer_delay", 10, FCVAR_REPLICATED, "How long (in seconds) before each Wanderer location is sent to the Puppeteer debuff target", 1, 60)
 CreateConVar("ttt_puppeteer_debuff_wanderer_timer", 45, FCVAR_REPLICATED, "How long (in seconds) the Puppeteer debuff target has to find the Wanderer location", 1, 120)
-CreateConVar("ttt_puppeteer_debuff_wanderer_distance", 6, FCVAR_REPLICATED, "The radius (in meters) that the Puppeteer debuff target must be to their Wanderer target when the time runs out", 1, 20)
+CreateConVar("ttt_puppeteer_debuff_wanderer_distance", 6, FCVAR_REPLICATED, "The radius (in meters) that the Puppeteer debuff target must be to their Wanderer location when the time runs out", 1, 20)
