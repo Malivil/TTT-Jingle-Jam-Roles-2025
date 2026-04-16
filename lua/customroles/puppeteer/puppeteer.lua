@@ -23,12 +23,14 @@ util.AddNetworkString("TTT_PuppeteerDeath")
 util.AddNetworkString("TTT_PuppeteerRoleChange")
 util.AddNetworkString("TTT_PuppeteerSetDebuff")
 util.AddNetworkString("TTT_PuppeteerDebuffed")
-util.AddNetworkString("TTT_PuppeteerDebuffRedHerring")
+util.AddNetworkString("TTT_PuppeteerFireWeapon")
+util.AddNetworkString("TTT_PuppeteerFireWeaponEnd")
 
 ------------------
 -- ROLE CONVARS --
 ------------------
 
+local puppeteer_command_fire_duration = GetConVar("ttt_puppeteer_command_fire_duration")
 local puppeteer_debuff_pinata_count = GetConVar("ttt_puppeteer_debuff_pinata_count")
 
 -------------------
@@ -44,13 +46,9 @@ AddHook("PostPlayerDeath", "Puppeteer_PostPlayerDeath", function(ply)
     if not IsPlayer(ply) then return end
 
     if ValidTarget(ply:GetRole()) then
-        for _, p in PlayerIterator() do
-            if not p:IsActivePuppeteer() then continue end
-
-            net.Start("TTT_PuppeteerPlayerDeath")
-                net.WritePlayer(ply)
-            net.Send(p)
-        end
+        net.Start("TTT_PuppeteerPlayerDeath")
+            net.WritePlayer(ply)
+        net.Send(GetRoleFilter(ROLE_PUPPETEER, true))
     end
 
     if ply:IsPuppeteer() then
@@ -73,13 +71,9 @@ AddHook("TTTPlayerRoleChanged", "Puppeteer_TTTPlayerRoleChanged", function(ply, 
         ply:ClearProperty("TTTPuppeteerDebuff")
     end
 
-    for _, p in PlayerIterator() do
-        if not p:IsActivePuppeteer() then continue end
-
-        net.Start("TTT_PuppeteerRoleChange")
-            net.WritePlayer(ply)
-        net.Send(p)
-    end
+    net.Start("TTT_PuppeteerRoleChange")
+        net.WritePlayer(ply)
+    net.Send(GetRoleFilter(ROLE_PUPPETEER, true))
 end)
 
 net.Receive("TTT_PuppeteerSetDebuff", function(_, ply)
@@ -98,6 +92,43 @@ net.Receive("TTT_PuppeteerSetDebuff", function(_, ply)
         net.WritePlayer(target)
         net.WriteUInt(debuff, 3)
     net.Broadcast()
+end)
+
+-----------------
+-- FIRE WEAPON --
+-----------------
+
+net.Receive("TTT_PuppeteerFireWeapon", function(len, ply)
+    local target = net.ReadPlayer()
+
+    if not IsPlayer(ply) or not ply:IsActivePuppeteer() then return end
+    if not IsPlayer(target) or not target:Alive() or target:IsSpec() then return end
+
+    net.Start("TTT_PuppeteerFireWeapon")
+        net.WritePlayer(target)
+    net.Send(GetRoleFilter(ROLE_PUPPETEER, true))
+
+    local wep = target.GetActiveWeapon and target:GetActiveWeapon() or nil
+    if not IsValid(wep) then return end
+    if not wep.Primary or not wep.Primary.Delay then return end
+
+    local dur = puppeteer_command_fire_duration:GetInt()
+    local repeats = math.floor(dur/wep.Primary.Delay) + 1
+    local timerId = "Puppeteer_FireWeapon_" .. ply:SteamID64()
+    timer.Create(timerId, wep.Primary.Delay, repeats, function()
+        if timer.RepsLeft(timerId) == 0 and IsPlayer(target) then
+            net.Start("TTT_PuppeteerFireWeaponEnd")
+                net.WritePlayer(target)
+            net.Send(GetRoleFilter(ROLE_PUPPETEER, true))
+        end
+
+        if not IsValid(wep) then return end
+
+        if wep:Clip1() ~= 0 then
+            wep:PrimaryAttack()
+            wep:SetNextPrimaryFire(CurTime() + wep.Primary.Delay)
+        end
+    end)
 end)
 
 -------------
@@ -226,5 +257,6 @@ AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
         v:ClearProperty("TTTPuppeteerDebuffed")
         v:ClearProperty("TTTPuppeteerDebuff")
         timer.Remove("Puppeteer_PinataWeaponDrop_" .. v:SteamID64())
+        timer.Remove("Puppeteer_FireWeapon_" .. v:SteamID64())
     end
 end)

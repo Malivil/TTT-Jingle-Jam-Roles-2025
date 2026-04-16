@@ -13,6 +13,7 @@ local TableInsert = table.insert
 
 local client
 local target
+local dfire
 local dtargetbox
 local dcredits
 local cameraFrame
@@ -257,7 +258,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
 
     local fire_duration = puppeteer_command_fire_duration:GetFloat()
 
-    local dfire = vgui.Create("DButton", dform)
+    dfire = vgui.Create("DButton", dform)
     dfire:SetText(PT("puppeteer_puppet_fire_weapon", { time = fire_duration }))
     dfire:SetSize(buttonWidth, buttonHeight)
     dfire:SetEnabled(false)
@@ -267,7 +268,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         return true
     end
     dfire.DoClick = function()
-        -- TODO
+        dfire:SetEnabled(false)
+        net.Start("TTT_PuppeteerFireWeapon")
+            net.WritePlayer(target)
+        net.SendToServer()
     end
     -- MoveBelow doesn't seem to be working for this, so do it manually
     dfire:SetPos(padding, buttonY)
@@ -424,7 +428,12 @@ end)
 
 AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     target = nil
+    dtargetbox = nil
+    dfire = nil
+    dcredits = nil
+    renderingCamView = false
     ClearCamera()
+    buttons = {}
 end)
 
 ---------
@@ -479,6 +488,38 @@ AddHook("TTTHUDInfoPaint", "Puppeteer_TTTHUDInfoPaint", function(cli, label_left
 
     -- Track that the label was added so others can position accurately
     TableInsert(active_labels, "puppeteerDebuff")
+end)
+
+-----------------
+-- FIRE WEAPON --
+-----------------
+
+net.Receive("TTT_PuppeteerFireWeapon", function()
+    local tgt = net.ReadPlayer()
+    if not IsPlayer(tgt) or not tgt:Alive() or tgt:IsSpec() then return end
+
+    if not client then
+        client = LocalPlayer()
+    end
+    if not IsPlayer(client) or not client:IsActivePuppeteer() then return end
+
+    if tgt == target then
+        dfire:SetEnabled(false)
+    end
+end)
+
+net.Receive("TTT_PuppeteerFireWeaponEnd", function()
+    local tgt = net.ReadPlayer()
+    if not IsPlayer(tgt) or not tgt:Alive() or tgt:IsSpec() then return end
+
+    if not client then
+        client = LocalPlayer()
+    end
+    if not IsPlayer(client) or not client:IsActivePuppeteer() then return end
+
+    if tgt == target then
+        dfire:SetEnabled(true)
+    end
 end)
 
 -------------
