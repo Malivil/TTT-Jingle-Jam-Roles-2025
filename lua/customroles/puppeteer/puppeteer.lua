@@ -63,7 +63,14 @@ AddHook("TTTPlayerRoleChanged", "Puppeteer_TTTPlayerRoleChanged", function(ply, 
     if not IsPlayer(ply) then return end
 
     -- If their viability hasn't changed then the client doesn't need to update
-    if ValidTarget(oldRole) == ValidTarget(newRole) then return end
+    local isValidTarget = ValidTarget(newRole)
+    if ValidTarget(oldRole) == isValidTarget then return end
+
+    -- If they were a valid target but they aren't now and they are debuffed, clear their debuff
+    if not isValidTarget and ply.TTTPuppeteerDebuffed then
+        ply:ClearProperty("TTTPuppeteerDebuffed")
+        ply:ClearProperty("TTTPuppeteerDebuff")
+    end
 
     for _, p in PlayerIterator() do
         if not p:IsActivePuppeteer() then continue end
