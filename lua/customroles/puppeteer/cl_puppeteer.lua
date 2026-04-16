@@ -448,11 +448,27 @@ AddHook("TTTHUDInfoPaint", "Puppeteer_TTTHUDInfoPaint", function(cli, label_left
     surface.SetFont("TabLarge")
     surface.SetTextColor(255, 255, 255, 230)
 
-    local text = LANG.GetParamTranslation("puppeteer_hud", { debuff = LANG.GetTranslation("puppeteer_puppet_debuff_" .. cli.TTTPuppeteerDebuff), puppeteer = ROLE_STRINGS[ROLE_PUPPETEER] })
+    local text = LANG.GetParamTranslation("puppeteer_puppet_debuff_" .. cli.TTTPuppeteerDebuff .. "_desc", { atraitor = ROLE_STRINGS_EXT[ROLE_TRAITOR] })
     local _, h = surface.GetTextSize(text)
 
     -- Move this up based on how many other labels there are
     label_top = label_top + (20 * #active_labels)
+    label_left = label_left + 20
+
+    surface.SetTextPos(label_left, ScrH() - label_top - h)
+    surface.DrawText(text)
+
+    -- Track that the label was added so others can position accurately
+    TableInsert(active_labels, "puppeteerDebuffDesc")
+
+    text = LANG.GetParamTranslation("puppeteer_hud", { debuff = LANG.GetTranslation("puppeteer_puppet_debuff_" .. cli.TTTPuppeteerDebuff), puppeteer = ROLE_STRINGS[ROLE_PUPPETEER] })
+    _, h = surface.GetTextSize(text)
+
+    -- Move this up based on how many other labels there are
+    label_top = label_top + (20 * #active_labels)
+
+    -- Move this back over for the icon
+    label_left = label_left - 20
 
     local icon_x, icon_y = 16, 16
     surface.SetMaterial(icon_tex[cli.TTTPuppeteerDebuff])
@@ -465,7 +481,7 @@ AddHook("TTTHUDInfoPaint", "Puppeteer_TTTHUDInfoPaint", function(cli, label_left
     surface.DrawText(text)
 
     -- Track that the label was added so others can position accurately
-    TableInsert(active_labels, "puppeteer")
+    TableInsert(active_labels, "puppeteerDebuff")
 end)
 
 -------------

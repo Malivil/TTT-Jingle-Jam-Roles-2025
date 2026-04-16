@@ -44,14 +44,19 @@ ROLE.translations = {
         ["puppeteer_puppet_debuffs_desc"] = "Costs 1 credit per use",
         ["puppeteer_puppet_debuff_0"] = "Piñata",
         ["puppeteer_puppet_debuff_0_tip"] = "When the target dies, they drop {num} random {traitor} items",
+        ["puppeteer_puppet_debuff_0_desc"] = "Drop random shop items on death",
         ["puppeteer_puppet_debuff_1"] = "Spoilsport",
         ["puppeteer_puppet_debuff_1_tip"] = "TODO",
+        ["puppeteer_puppet_debuff_1_desc"] = "TODO",
         ["puppeteer_puppet_debuff_2"] = "Copycat",
         ["puppeteer_puppet_debuff_2_tip"] = "Target becomes the role of the next player they kill",
+        ["puppeteer_puppet_debuff_2_desc"] = "You take your next victim's role",
         ["puppeteer_puppet_debuff_3"] = "Red Herring",
         ["puppeteer_puppet_debuff_3_tip"] = "Disguises the target as {atraitor} in testers and when their corpse is searched",
+        ["puppeteer_puppet_debuff_3_desc"] = "You show as {atraitor} when tested/searched",
         ["puppeteer_puppet_debuff_4"] = "Wanderer",
-        ["puppeteer_puppet_debuff_4_tip"] = "Forces the target to move to specific locations around the map or they die"
+        ["puppeteer_puppet_debuff_4_tip"] = "Forces the target to move to specific locations around the map or they die",
+        ["puppeteer_puppet_debuff_4_desc"] = "Move to each target place or die"
     }
 }
 
