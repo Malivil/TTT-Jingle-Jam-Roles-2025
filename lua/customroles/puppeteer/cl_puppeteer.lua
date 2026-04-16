@@ -1,5 +1,6 @@
 local Angle = Angle
 local hook = hook
+local math = math
 local net = net
 local pairs = pairs
 local player = player
@@ -8,6 +9,11 @@ local table = table
 local vgui = vgui
 
 local AddHook = hook.Add
+local MathCos = math.cos
+local MathMax = math.max
+local MathPi = math.pi
+local MathRand = math.Rand
+local MathSin = math.sin
 local PlayerIterator = player.Iterator
 local TableInsert = table.insert
 
@@ -26,6 +32,9 @@ local buttons = {}
 
 local puppeteer_command_fire_duration = GetConVar("ttt_puppeteer_command_fire_duration")
 local puppeteer_debuff_pinata_count = GetConVar("ttt_puppeteer_debuff_pinata_count")
+local puppeteer_debuff_wanderer_delay = GetConVar("ttt_puppeteer_debuff_wanderer_delay")
+local puppeteer_debuff_wanderer_timer = GetConVar("ttt_puppeteer_debuff_wanderer_timer")
+local puppeteer_debuff_wanderer_distance = GetConVar("ttt_puppeteer_debuff_wanderer_distance")
 
 -------------------
 -- ROLE FEATURES --
@@ -95,6 +104,7 @@ local function CreateCamera()
 end
 
 local function ClearCamera()
+    renderingCamView = false
     if cameraFrame then
         cameraFrame:Remove()
         cameraFrame = nil
@@ -426,16 +436,6 @@ net.Receive("TTT_PuppeteerRoleChange", function()
     UpdateTargetsList()
 end)
 
-AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
-    target = nil
-    dtargetbox = nil
-    dfire = nil
-    dcredits = nil
-    renderingCamView = false
-    ClearCamera()
-    buttons = {}
-end)
-
 ---------
 -- HUD --
 ---------
@@ -541,6 +541,148 @@ AddHook("TTTShowSearchScreen", "Puppeteer_TTTShowSearchScreen", function(search)
     search.team = player.GetRoleTeam(search.role)
 end)
 
+-- Wanderer --
+
+local radiusVelocity = Vector(0, 0, 80)
+local function DrawRadius(pos, radius)
+    if not client.PuppetRadiusEmitter then client.PuppetRadiusEmitter = ParticleEmitter(pos) end
+    if not client.PuppetRadiusNextPart then client.PuppetRadiusNextPart = CurTime() end
+    if not client.PuppetRadiusDir then client.PuppetRadiusDir = 0 end
+    pos = pos + Vector(0, 0, 30)
+    local radiusSqr = radius * radius
+
+    -- Use DistToSqr as it's more efficient and this is called very frequently
+    -- 9000000 = 3000^2
+    if client.PuppetRadiusNextPart < CurTime() and client:GetPos():DistToSqr(pos) <= 9000000 then
+        for _ = 1, 24 do
+            client.PuppetRadiusEmitter:SetPos(pos)
+            client.PuppetRadiusNextPart = CurTime() + 0.02
+            client.PuppetRadiusDir = client.PuppetRadiusDir + MathPi / 12
+            local vec = Vector(MathSin(client.PuppetRadiusDir) * radius, MathCos(client.PuppetRadiusDir) * radius, 10)
+            local particle = client.PuppetRadiusEmitter:Add("particle/wisp.vmt", pos + vec)
+            particle:SetVelocity(radiusVelocity)
+            particle:SetDieTime(0.5)
+            particle:SetStartAlpha(200)
+            particle:SetEndAlpha(0)
+            particle:SetStartSize(3)
+            particle:SetEndSize(2)
+            particle:SetRoll(MathRand(0, MathPi))
+            particle:SetRollDelta(0)
+            local color = ROLE_COLORS[ROLE_TRAITOR]
+            if pos:DistToSqr(client:GetPos()) <= radiusSqr then
+                color = ROLE_COLORS[ROLE_INNOCENT]
+            end
+            particle:SetColor(color.r, color.g, color.b)
+        end
+        client.PuppetRadiusDir = client.PuppetRadiusDir + 0.02
+    end
+end
+
+local function RemoveRadius()
+    if client.PuppetRadiusEmitter then
+        client.PuppetRadiusEmitter:Finish()
+        client.PuppetRadiusEmitter = nil
+        client.PuppetRadiusDir = nil
+        client.PuppetRadiusNextPart = nil
+    end
+end
+
+local function DrawLink(pos)
+    if not client.PuppetLinkEmitter then client.PuppetLinkEmitter = ParticleEmitter(client:GetPos()) end
+    if not client.PuppetLinkNextPart then client.PuppetLinkNextPart = CurTime() end
+    if not client.PuppetLinkOffset then client.PuppetLinkOffset = 0 end
+    local startPos = client:GetPos() + Vector(0, 0, 30)
+    local endPos = pos + Vector(0, 0, 30)
+    local dir = endPos - startPos
+    dir = dir:GetNormalized() * 50
+    if client.PuppetLinkNextPart < CurTime() then
+        local linkPos = startPos + (dir * client.PuppetLinkOffset)
+        -- Use DistToSqr as it's more efficient and this is called very frequently
+        -- 9000000 = 3000^2
+        while startPos:DistToSqr(linkPos) <= 9000000 and startPos:DistToSqr(linkPos) <= startPos:DistToSqr(endPos) do
+            client.PuppetLinkEmitter:SetPos(linkPos)
+            client.PuppetLinkNextPart = CurTime() + 0.02
+            local particle = client.PuppetLinkEmitter:Add("particle/wisp.vmt", linkPos)
+            particle:SetVelocity(vector_origin)
+            particle:SetDieTime(0.25)
+            particle:SetStartAlpha(200)
+            particle:SetEndAlpha(0)
+            particle:SetStartSize(3)
+            particle:SetEndSize(2)
+            particle:SetRoll(MathRand(0, MathPi))
+            particle:SetRollDelta(0)
+            local color = ROLE_COLORS[ROLE_TRAITOR]
+            particle:SetColor(color.r, color.g, color.b)
+            linkPos:Add(dir)
+        end
+        client.PuppetLinkOffset = client.PuppetLinkOffset + 0.04
+        if client.PuppetLinkOffset > 1 then
+            client.PuppetLinkOffset = 0
+        end
+    end
+end
+
+local function RemoveLink()
+    if client.PuppetLinkEmitter then
+        client.PuppetLinkEmitter:Finish()
+        client.PuppetLinkEmitter = nil
+        client.PuppetLinkNextPart = nil
+        client.PuppetLinkOffset = nil
+    end
+end
+
+local function TargetCleanup()
+    RemoveRadius()
+    RemoveLink()
+end
+
+AddHook("Think", "Puppeteer_Wanderer_Think", function()
+    if not IsPlayer(client) then
+        client = LocalPlayer()
+    end
+
+    if client.TTTPuppeteerWandererTarget then
+        local distance = puppeteer_debuff_wanderer_distance:GetFloat() * UNITS_PER_METER
+        local distSqr = distance * distance
+        DrawRadius(client.TTTPuppeteerWandererTarget, distance)
+        if client:GetPos():DistToSqr(client.TTTPuppeteerWandererTarget) > distSqr then
+            DrawLink(client.TTTPuppeteerWandererTarget)
+        end
+    else
+        TargetCleanup()
+    end
+end)
+
+AddHook("HUDPaint", "Puppeteer_Wanderer_HUDPaint", function()
+    if not IsPlayer(client) then
+        client = LocalPlayer()
+    end
+
+    if not IsValid(client) or client:IsSpec() or GetRoundState() ~= ROUND_ACTIVE then return end
+    if not client.TTTPuppeteerWandererEnd then return end
+
+    local remaining = MathMax(0, client.TTTPuppeteerWandererEnd - CurTime())
+    if remaining <= 0 then return end
+
+    local PT = LANG.GetParamTranslation
+    local message = PT("puppeteer_puppet_debuff_wanderer_hud", { time = util.SimpleTime(remaining, "%02i:%02i") })
+
+    local x = ScrW() / 2.0
+    local y = ScrH() / 2.0
+    y = y + (y / 3)
+
+    local w = 300
+    local progress = 1 - (remaining / puppeteer_debuff_wanderer_timer:GetInt())
+
+    local distance = puppeteer_debuff_wanderer_distance:GetFloat() * UNITS_PER_METER
+    local distSqr = distance * distance
+    local color = ROLE_COLORS[ROLE_TRAITOR]
+    if client.TTTPuppeteerWandererTarget:DistToSqr(client:GetPos()) <= distSqr then
+        color = ROLE_COLORS[ROLE_INNOCENT]
+    end
+    CRHUD:PaintProgressBar(x, y, w, color, message, progress)
+end)
+
 ------------
 -- EVENTS --
 ------------
@@ -590,6 +732,22 @@ net.Receive("TTT_PuppeteerDebuffed", function(len)
     if client:IsActivePuppeteer() and IsPlayer(target) then
         UpdateState(true)
     end
+end)
+
+-------------
+-- CLEANUP --
+-------------
+
+AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
+    target = nil
+    dtargetbox = nil
+    dfire = nil
+    dcredits = nil
+
+    ClearCamera()
+    TargetCleanup()
+
+    buttons = {}
 end)
 
 --------------

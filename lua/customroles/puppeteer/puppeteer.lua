@@ -32,6 +32,9 @@ util.AddNetworkString("TTT_PuppeteerFireWeaponEnd")
 
 local puppeteer_command_fire_duration = GetConVar("ttt_puppeteer_command_fire_duration")
 local puppeteer_debuff_pinata_count = GetConVar("ttt_puppeteer_debuff_pinata_count")
+local puppeteer_debuff_wanderer_delay = GetConVar("ttt_puppeteer_debuff_wanderer_delay")
+local puppeteer_debuff_wanderer_timer = GetConVar("ttt_puppeteer_debuff_wanderer_timer")
+local puppeteer_debuff_wanderer_distance = GetConVar("ttt_puppeteer_debuff_wanderer_distance")
 
 -------------------
 -- ROLE FEATURES --
@@ -76,6 +79,7 @@ AddHook("TTTPlayerRoleChanged", "Puppeteer_TTTPlayerRoleChanged", function(ply, 
     net.Send(GetRoleFilter(ROLE_PUPPETEER, true))
 end)
 
+local StartWandererDebuff
 net.Receive("TTT_PuppeteerSetDebuff", function(_, ply)
     local target = net.ReadPlayer()
     local debuff = net.ReadUInt(3)
@@ -92,6 +96,8 @@ net.Receive("TTT_PuppeteerSetDebuff", function(_, ply)
         net.WritePlayer(target)
         net.WriteUInt(debuff, 3)
     net.Broadcast()
+
+    StartWandererDebuff(ply, target)
 end)
 
 -----------------
@@ -240,7 +246,62 @@ end)
 
 -- Wanderer --
 
--- TODO
+local function GetWandererPosition()
+    local spawns = GetSpawnEnts(true, false)
+    for _, e in ents.Iterator() do
+        local entity_class = e:GetClass()
+        if (string.StartsWith(entity_class, "weapon_") or string.StartsWith(entity_class, "item_")) and not IsValid(e:GetParent()) then
+            table.insert(spawns, e)
+        end
+    end
+    local spawn = spawns[math.random(#spawns)]
+    return spawn:GetPos()
+end
+
+StartWandererDebuff = function(ply, target)
+    local delay = puppeteer_debuff_wanderer_delay:GetInt()
+    local time = puppeteer_debuff_wanderer_timer:GetInt()
+    local distance = puppeteer_debuff_wanderer_distance:GetFloat() * UNITS_PER_METER
+    local distSqr = distance * distance
+    local timerId = "Puppeteer_Wanderer_" .. target:SteamID64()
+    local phase = true
+    timer.Create(timerId, delay, 0, function()
+        if not IsPlayer(target) or not target:IsActive() or target.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_WANDERER then
+            timer.Remove(timerId)
+            return
+        end
+
+        -- First phase is the delay
+        if phase then
+            local pos = GetWandererPosition()
+            target:SetProperty("TTTPuppeteerWandererTarget", pos, target)
+            local endTime = CurTime() + time
+            target:SetProperty("TTTPuppeteerWandererEnd", endTime, target)
+            target:QueueMessage(MSG_PRINTBOTH, "You have " .. time .. " second(s) to get to the target location!")
+            timer.Adjust(timerId, time)
+        -- Second phase is the hunt
+        else
+            -- If the player is close enough to the target then they are safe. Start the delay over again
+            if target:GetPos():DistToSqr(target.TTTPuppeteerWandererTarget) <= distSqr then
+                target:QueueMessage(MSG_PRINTBOTH, "You are safe... for now")
+                timer.Adjust(timerId, delay)
+            -- Otherwise, they die
+            else
+                local dmginfo = DamageInfo()
+                dmginfo:SetDamage(1000)
+                dmginfo:SetAttacker(ply or game.GetWorld())
+                dmginfo:SetInflictor(ply or game.GetWorld())
+                dmginfo:SetDamageType(DMG_SLASH)
+                target:TakeDamageInfo(dmginfo)
+                timer.Remove(timerId)
+            end
+
+            target:ClearProperty("TTTPuppeteerWandererTarget", target)
+            target:ClearProperty("TTTPuppeteerWandererEnd", target)
+        end
+        phase = not phase
+    end)
+end
 
 ------------
 -- EVENTS --
@@ -258,7 +319,10 @@ AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     for _, v in PlayerIterator() do
         v:ClearProperty("TTTPuppeteerDebuffed")
         v:ClearProperty("TTTPuppeteerDebuff")
+        v:ClearProperty("TTTPuppeteerWandererTarget", v)
+        v:ClearProperty("TTTPuppeteerWandererEnd", v)
         timer.Remove("Puppeteer_PinataWeaponDrop_" .. v:SteamID64())
+        timer.Remove("Puppeteer_Wanderer_" .. v:SteamID64())
         timer.Remove("Puppeteer_FireWeapon_" .. v:SteamID64())
     end
 end)

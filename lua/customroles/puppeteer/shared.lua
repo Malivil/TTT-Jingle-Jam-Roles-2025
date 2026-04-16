@@ -25,6 +25,21 @@ ROLE.convars =
         cvar = "ttt_puppeteer_debuff_pinata_count",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
+    },
+    {
+        cvar = "ttt_puppeteer_debuff_wanderer_delay",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_puppeteer_debuff_wanderer_distance",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 1
+    },
+    {
+        cvar = "ttt_puppeteer_debuff_wanderer_timer",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
     }
 }
 
@@ -56,7 +71,8 @@ ROLE.translations = {
         ["puppeteer_puppet_debuff_3_desc"] = "You show as {atraitor} when tested/searched",
         ["puppeteer_puppet_debuff_4"] = "Wanderer",
         ["puppeteer_puppet_debuff_4_tip"] = "Forces the target to move to specific locations around the map or they die",
-        ["puppeteer_puppet_debuff_4_desc"] = "Move to each target place or die"
+        ["puppeteer_puppet_debuff_4_desc"] = "Move to each target place or die",
+        ["puppeteer_puppet_debuff_wanderer_hud"] = "TIME REMAINING: {time}",
     }
 }
 
@@ -78,3 +94,6 @@ PUPPETEER_DEBUFF_TYPE_WANDERER = 4
 
 CreateConVar("ttt_puppeteer_command_fire_duration", 2, FCVAR_REPLICATED, "How long (in seconds) the target's weapon should be fired for when the Puppeteer commands it", 0.25, 10)
 CreateConVar("ttt_puppeteer_debuff_pinata_count", 3, FCVAR_REPLICATED, "How many shop items a player with the Piñata debuff will drop when they are killed", 1, 10)
+CreateConVar("ttt_puppeteer_debuff_wanderer_delay", 10, FCVAR_REPLICATED, "How long (in seconds) before each Wanderer location is sent to the Puppeteer debuff target", 1, 60)
+CreateConVar("ttt_puppeteer_debuff_wanderer_timer", 30, FCVAR_REPLICATED, "How long (in seconds) the Puppeteer debuff target has to find the Wanderer location", 1, 120)
+CreateConVar("ttt_puppeteer_debuff_wanderer_distance", 6, FCVAR_REPLICATED, "The radius (in meters) that the Puppeteer debuff target must be to their Wanderer target when the time runs out", 1, 20)
