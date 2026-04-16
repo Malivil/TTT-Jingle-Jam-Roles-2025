@@ -120,10 +120,6 @@ local function DebuffTarget(debuff)
 end
 
 local function ClearTarget()
-    net.Start("TTT_PuppeteerClearDebuff")
-        net.WritePlayer(target)
-    net.SendToServer()
-
     target = nil
     UpdateState(false)
     ClearCamera()
@@ -308,7 +304,6 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     local dpinata = CreateDebuffButton(T("puppeteer_puppet_debuff_0"), PT("puppeteer_puppet_debuff_0_tip", { num = pinata_count, traitor = T("traitor") }),
         -- DoClick
         function()
-            -- TODO
             DebuffTarget(PUPPETEER_DEBUFF_TYPE_PINATA)
         end,
         -- EnablePredicate
@@ -343,7 +338,6 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     local dredherring = CreateDebuffButton(T("puppeteer_puppet_debuff_3"), PT("puppeteer_puppet_debuff_3_tip", { atraitor = ROLE_STRINGS_EXT[ROLE_TRAITOR] }),
         -- DoClick
         function()
-            -- TODO
             DebuffTarget(PUPPETEER_DEBUFF_TYPE_REDHERRING)
         end,
         -- EnablePredicate
