@@ -112,6 +112,8 @@ net.Receive("TTT_PuppeteerFireWeapon", function(len, ply)
     if not IsValid(wep) then return end
     if not wep.Primary or not wep.Primary.Delay then return end
 
+    target:QueueMessage(MSG_PRINTBOTH, string.Capitalize(ROLE_STRINGS_EXT[ROLE_PUPPETEER]) .. " is forcing you to use your weapon!")
+
     local dur = puppeteer_command_fire_duration:GetInt()
     local repeats = math.floor(dur/wep.Primary.Delay) + 1
     local timerId = "Puppeteer_FireWeapon_" .. ply:SteamID64()
