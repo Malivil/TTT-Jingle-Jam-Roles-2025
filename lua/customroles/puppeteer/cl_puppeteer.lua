@@ -470,9 +470,6 @@ AddHook("TTTHUDInfoPaint", "Puppeteer_TTTHUDInfoPaint", function(cli, label_left
     surface.SetTextPos(label_left, ScrH() - label_top - h)
     surface.DrawText(text)
 
-    -- Reset this back to where it was
-    label_left = label_left - 20
-
     -- Track that the label was added so others can position accurately
     TableInsert(active_labels, "puppeteer")
 end)
