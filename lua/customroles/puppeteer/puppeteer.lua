@@ -14,6 +14,7 @@ local AddHook = hook.Add
 local CreateEntity = ents.Create
 local MathRandom = math.random
 local PlayerIterator = player.Iterator
+local RunHook = hook.Run
 local TableInsert = table.insert
 local TableRemove = table.remove
 
@@ -154,6 +155,30 @@ AddHook("PostPlayerDeath", "Puppeteer_Pinata_PostPlayerDeath", function(ply)
     end)
 end)
 
+-- Spoilsport --
+
+-- TODO
+
+-- Copycat --
+
+AddHook("PlayerDeath", "Puppeteer_Copycat_PlayerDeath", function(victim, inflictor, attacker)
+    if not IsPlayer(attacker) then return end
+    if attacker.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_COPYCAT then return end
+
+    local traitors = player.GetTeamPlayers(ROLE_TEAM_TRAITOR, true, true)
+    if #traitors > 0 then
+        attacker:QueueMessage(MSG_PRINTBOTH, "You've taken " .. victim:Nick() .. "'s role and become " .. ROLE_STRINGS_EXT[victim:GetRole()])
+        attacker:SetRole(victim:GetRole())
+        attacker:StripRoleWeapons()
+        RunHook("PlayerLoadout", attacker)
+        victim:MoveRoleState(attacker)
+        SendFullStateUpdate()
+
+        attacker:ClearProperty("TTTPuppeteerDebuffed")
+        attacker:ClearProperty("TTTPuppeteerDebuff")
+    end
+end)
+
 -- Red Herring --
 
 AddHook("TTTCanIdentifyCorpse", "Puppeteer_RedHerring_TTTCanIdentifyCorpse", function(ply, rag, was_traitor)
@@ -179,6 +204,10 @@ AddHook("TTTPlayerPassesTraitorCheck", "Puppeteer_RedHerring_TTTPlayerPassesTrai
     -- If they are checking for traitors, the Red Herring passes the check
     return ent.Role == ROLE_TRAITOR
 end)
+
+-- Wanderer --
+
+-- TODO
 
 ------------
 -- EVENTS --

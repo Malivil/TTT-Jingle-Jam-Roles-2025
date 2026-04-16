@@ -314,7 +314,6 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     local dspoilsport = CreateDebuffButton(T("puppeteer_puppet_debuff_1"), T("puppeteer_puppet_debuff_1_tip"),
         -- DoClick
         function()
-            -- TODO
             DebuffTarget(PUPPETEER_DEBUFF_TYPE_SPOILSPORT)
         end,
         -- EnablePredicate
@@ -326,7 +325,6 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     local dcopycat = CreateDebuffButton(T("puppeteer_puppet_debuff_2"), T("puppeteer_puppet_debuff_2_tip"),
         -- DoClick
         function()
-            -- TODO
             DebuffTarget(PUPPETEER_DEBUFF_TYPE_COPYCAT)
         end,
         -- EnablePredicate
@@ -349,7 +347,6 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     local dwanderer = CreateDebuffButton(T("puppeteer_puppet_debuff_4"), T("puppeteer_puppet_debuff_4_tip"),
         -- DoClick
         function()
-            -- TODO
             DebuffTarget(PUPPETEER_DEBUFF_TYPE_WANDERER)
         end,
         -- EnablePredicate
