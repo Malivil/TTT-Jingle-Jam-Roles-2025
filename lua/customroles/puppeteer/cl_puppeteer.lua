@@ -32,9 +32,24 @@ local buttons = {}
 
 local puppeteer_command_fire_duration = GetConVar("ttt_puppeteer_command_fire_duration")
 local puppeteer_debuff_pinata_count = GetConVar("ttt_puppeteer_debuff_pinata_count")
-local puppeteer_debuff_wanderer_delay = GetConVar("ttt_puppeteer_debuff_wanderer_delay")
 local puppeteer_debuff_wanderer_timer = GetConVar("ttt_puppeteer_debuff_wanderer_timer")
 local puppeteer_debuff_wanderer_distance = GetConVar("ttt_puppeteer_debuff_wanderer_distance")
+
+local icon_tex = {
+    [PUPPETEER_DEBUFF_TYPE_PINATA] = Material("vgui/ttt/roles/pup/16_pinata.png"),
+    [PUPPETEER_DEBUFF_TYPE_SPOILSPORT] = Material("vgui/ttt/roles/pup/16_spoilsport.png"),
+    [PUPPETEER_DEBUFF_TYPE_COPYCAT] = Material("vgui/ttt/roles/pup/16_copycat.png"),
+    [PUPPETEER_DEBUFF_TYPE_REDHERRING] = Material("vgui/ttt/roles/pup/16_redherring.png"),
+    [PUPPETEER_DEBUFF_TYPE_WANDERER] = Material("vgui/ttt/roles/pup/16_wanderer.png")
+}
+
+local function GetDebuffInfo(debuff)
+    local T = LANG.GetTranslation
+    local pinata_count = puppeteer_debuff_pinata_count:GetInt()
+    local name = T("puppeteer_puppet_debuff_" .. debuff)
+    local desc = LANG.GetParamTranslation("puppeteer_puppet_debuff_" .. debuff .. "_tip", { num = pinata_count, traitor = T("traitor"), atraitor = ROLE_STRINGS_EXT[ROLE_TRAITOR], avindicator = ROLE_STRINGS_EXT[ROLE_VINDICATOR] })
+    return icon_tex[debuff], name, desc
+end
 
 -------------------
 -- ROLE FEATURES --
@@ -439,14 +454,6 @@ end)
 -- HUD --
 ---------
 
-local icon_tex = {
-    [PUPPETEER_DEBUFF_TYPE_PINATA] = Material("vgui/ttt/roles/pup/16_pinata.png"),
-    [PUPPETEER_DEBUFF_TYPE_SPOILSPORT] = Material("vgui/ttt/roles/pup/16_spoilsport.png"),
-    [PUPPETEER_DEBUFF_TYPE_COPYCAT] = Material("vgui/ttt/roles/pup/16_copycat.png"),
-    [PUPPETEER_DEBUFF_TYPE_REDHERRING] = Material("vgui/ttt/roles/pup/16_redherring.png"),
-    [PUPPETEER_DEBUFF_TYPE_WANDERER] = Material("vgui/ttt/roles/pup/16_wanderer.png")
-}
-
 AddHook("TTTHUDInfoPaint", "Puppeteer_TTTHUDInfoPaint", function(cli, label_left, label_top, active_labels)
     if not cli.TTTPuppeteerDebuffed then return end
 
@@ -758,7 +765,17 @@ AddHook("TTTTutorialRoleText", "Puppeteer_TTTTutorialRoleText", function(role, t
         local roleColor = ROLE_COLORS[ROLE_TRAITOR]
         local html = "The " .. ROLE_STRINGS[ROLE_PUPPETEER] .. " is a a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>traitor team</span whose goal is to control a targeted player, watching their movements and applying negative effects."
 
-        -- TODO
+        html = html .. "<span style='display: block; margin-top: 10px;'>Each target can only have <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>one debuff</span> active on them.</span>"
+
+        html = html .. "<span style='display: block; margin-top: 10px;'>The debuffs to choose from include:<ul>"
+        for i=PUPPETEER_DEBUFF_TYPE_PINATA,PUPPETEER_DEBUFF_TYPE_WANDERER do
+            local icon, name, desc = GetDebuffInfo(i)
+            html = html .. "<li><img src=\"asset://garrysmod/gamemodes/terrortown/content/materials/" .. icon:GetName() .. ".png\" /> " .. name .. " - " .. desc .. "</li>"
+        end
+        html = html .. "</ul></span>"
+
+        local fire_duration = puppeteer_command_fire_duration:GetInt()
+        html = html .. "<span style='display: block; margin-top: 10px;'>The " .. ROLE_STRINGS[ROLE_PUPPETEER] .. " can also force their target to <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>fire their weapon</span> for " .. fire_duration .. " second(s).</span>"
 
         return html
     end
