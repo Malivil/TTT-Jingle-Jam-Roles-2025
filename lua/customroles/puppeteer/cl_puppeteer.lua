@@ -196,11 +196,10 @@ local function UpdateTargetsList(skip)
     dtargetbox:Clear()
     dtargetbox:SetValue(LANG.GetTranslation("puppeteer_puppet_target_placeholder"))
     for _, p in PlayerIterator() do
-        -- TODO: Undo this
-        if --[[p == client or]] p == skip then continue end
+        if p == client or p == skip then continue end
         if not IsPlayer(p) then continue end
         if not p:Alive() or p:IsSpec() then continue end
-        if p:IsDetectiveTeam() --[[or p:IsTraitorTeam()]] or p:IsGlitch() or p:IsJesterTeam() then continue end
+        if p:IsDetectiveTeam() or p:IsTraitorTeam() or p:IsGlitch() or p:IsJesterTeam() then continue end
 
         local sid64 = p:SteamID64()
         dtargetbox:AddChoice(p:Nick(), sid64, sid64 == selected)
@@ -325,7 +324,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         dform, buttonWidth, buttonHeight, "pinata", padding)
     dpinata:SetPos(padding, buttonY)
 
-    local dspoilsport = CreateDebuffButton(T("puppeteer_puppet_debuff_1"), T("puppeteer_puppet_debuff_1_tip"),
+    local dspoilsport = CreateDebuffButton(T("puppeteer_puppet_debuff_1"), PT("puppeteer_puppet_debuff_1_tip", { avindicator = ROLE_STRINGS_EXT[ROLE_VINDICATOR] }),
         -- DoClick
         function()
             DebuffTarget(PUPPETEER_DEBUFF_TYPE_SPOILSPORT)

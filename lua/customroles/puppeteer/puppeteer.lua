@@ -196,7 +196,18 @@ end)
 
 -- Spoilsport --
 
--- TODO
+AddHook("DoPlayerDeath", "Puppeteer_Spoilsport_DoPlayerDeath", function(ply, attacker, dmg)
+    if not IsPlayer(ply) then return end
+    if ply.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_SPOILSPORT then return end
+
+    if not IsPlayer(attacker) then return end
+
+    ply:QueueMessage(MSG_PRINTCHAT, "You've decided to spoil " .. attacker:Nick() .. "'s fun by coming back as " .. ROLE_STRINGS_EXT[ROLE_VINDICATOR])
+    ply:SetRole(ROLE_VINDICATOR)
+    ply:StripRoleWeapons()
+    RunHook("PlayerLoadout", ply)
+    SendFullStateUpdate()
+end)
 
 -- Copycat --
 
