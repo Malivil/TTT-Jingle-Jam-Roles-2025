@@ -52,9 +52,8 @@ local function ClearState(ply)
 end
 
 local function ValidTarget(role)
-    return DETECTIVE_ROLES[role] or TRAITOR_ROLES[role] or role == ROLE_GLITCH or JESTER_ROLES[role]
+    return not DETECTIVE_ROLES[role] and not TRAITOR_ROLES[role] and not role == ROLE_GLITCH and not JESTER_ROLES[role]
 end
-
 
 local StartPinataDrop
 AddHook("PostPlayerDeath", "Puppeteer_PostPlayerDeath", function(ply)
