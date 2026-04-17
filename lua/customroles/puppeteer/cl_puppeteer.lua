@@ -536,8 +536,10 @@ end)
 
 AddHook("TTTShowSearchScreen", "Puppeteer_TTTShowSearchScreen", function(search)
     if not IsPlayer(search.owner) then return end
-    if search.owner.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_REDHERRING then return end
+    if search.TTTPuppeteerRedHerring then return end
+    if search.puppet_role then return end
 
+    search.puppet_role = search.role
     if search.role == ROLE_INNOCENT then
         search.role = ROLE_PUPPETEER
     else

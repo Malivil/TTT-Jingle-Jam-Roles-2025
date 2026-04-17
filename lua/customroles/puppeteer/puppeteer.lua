@@ -40,23 +40,43 @@ local puppeteer_debuff_wanderer_distance = GetConVar("ttt_puppeteer_debuff_wande
 -- ROLE FEATURES --
 -------------------
 
+local function ClearState(ply)
+    ply:ClearProperty("TTTPuppeteerDebuffed")
+    ply:ClearProperty("TTTPuppeteerDebuff")
+    ply:ClearProperty("TTTPuppeteerRedHerring")
+    ply:ClearProperty("TTTPuppeteerWandererTarget", ply)
+    ply:ClearProperty("TTTPuppeteerWandererEnd", ply)
+    timer.Remove("Puppeteer_PinataWeaponDrop_" .. ply:SteamID64())
+    timer.Remove("Puppeteer_Wanderer_" .. ply:SteamID64())
+    timer.Remove("Puppeteer_FireWeapon_" .. ply:SteamID64())
+end
+
 local function ValidTarget(role)
     return DETECTIVE_ROLES[role] or TRAITOR_ROLES[role] or role == ROLE_GLITCH or JESTER_ROLES[role]
 end
 
--- Update the client if a viable target or a puppeteer has died
+
+local StartPinataDrop
 AddHook("PostPlayerDeath", "Puppeteer_PostPlayerDeath", function(ply)
     if not IsPlayer(ply) then return end
 
+    -- Update the client if a viable target or a puppeteer has died
     if ValidTarget(ply:GetRole()) then
         net.Start("TTT_PuppeteerPlayerDeath")
             net.WritePlayer(ply)
         net.Send(GetRoleFilter(ROLE_PUPPETEER, true))
     end
-
     if ply:IsPuppeteer() then
         net.Start("TTT_PuppeteerDeath")
         net.Send(ply)
+    end
+
+    local debuff = ply.TTTPuppeteerDebuff
+    ClearState(ply)
+
+    -- Start Piñata logic before clearing state
+    if debuff == PUPPETEER_DEBUFF_TYPE_PINATA then
+        StartPinataDrop(ply)
     end
 end)
 
@@ -155,10 +175,7 @@ local function DropWeapon(wep, source_pos)
     if phys:IsValid() then phys:ApplyForceCenter(Vector(math.Rand(-100, 100), math.Rand(-100, 100), 300) * phys:GetMass()) end
 end
 
-AddHook("PostPlayerDeath", "Puppeteer_Pinata_PostPlayerDeath", function(ply)
-    if not IsPlayer(ply) then return end
-    if ply.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_PINATA then return end
-
+StartPinataDrop = function(ply)
     local lootTable = {}
     timer.Create("Puppeteer_PinataWeaponDrop_" .. ply:SteamID64(), 0.05, puppeteer_debuff_pinata_count:GetInt(), function()
         if #lootTable == 0 then -- Rebuild the loot table if we run out
@@ -192,10 +209,11 @@ AddHook("PostPlayerDeath", "Puppeteer_Pinata_PostPlayerDeath", function(ply)
 
         DropWeapon(wep, ragdoll:GetPos())
     end)
-end)
+end
 
 -- Spoilsport --
 
+-- Do this in "DoPlayerDeath" so the Vindicator logic in "PlayerDeath" happens after
 AddHook("DoPlayerDeath", "Puppeteer_Spoilsport_DoPlayerDeath", function(ply, attacker, dmg)
     if not IsPlayer(ply) then return end
     if ply.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_SPOILSPORT then return end
@@ -231,10 +249,13 @@ end)
 
 -- Red Herring --
 
-AddHook("TTTCanIdentifyCorpse", "Puppeteer_RedHerring_TTTCanIdentifyCorpse", function(ply, rag, was_traitor)
+AddHook("TTTOnCorpseCreated", "Puppeteer_RedHerring_TTTOnCorpseCreated", function(rag, ply)
     if not IsPlayer(ply) then return end
     if ply.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_REDHERRING then return end
+    if rag.puppet_role then return end
 
+    ply:SetProperty("TTTPuppeteerRedHerring", true)
+    rag.puppet_role = rag.was_role
     if rag.was_role == ROLE_INNOCENT then
         rag.was_role = ROLE_PUPPETEER
     else
@@ -253,6 +274,12 @@ AddHook("TTTPlayerPassesTraitorCheck", "Puppeteer_RedHerring_TTTPlayerPassesTrai
     -- The other traitor checks have a Role property
     -- If they are checking for traitors, the Red Herring passes the check
     return ent.Role == ROLE_TRAITOR
+end)
+
+AddHook("PlayerSpawn", "Puppeteer_RedHerring_PlayerSpawn", function(ply)
+    if not IsPlayer(ply) then return end
+    if not ply.TTTPuppeteerRedHerring then return end
+    ply:ClearProperty("TTTPuppeteerRedHerring")
 end)
 
 -- Wanderer --
@@ -330,6 +357,7 @@ AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     for _, v in PlayerIterator() do
         v:ClearProperty("TTTPuppeteerDebuffed")
         v:ClearProperty("TTTPuppeteerDebuff")
+        v:ClearProperty("TTTPuppeteerRedHerring")
         v:ClearProperty("TTTPuppeteerWandererTarget", v)
         v:ClearProperty("TTTPuppeteerWandererEnd", v)
         timer.Remove("Puppeteer_PinataWeaponDrop_" .. v:SteamID64())
