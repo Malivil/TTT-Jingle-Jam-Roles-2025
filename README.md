@@ -171,6 +171,29 @@ ttt_pinata_can_see_jesters   0    // Whether jesters are revealed (via head icon
 ttt_pinata_update_scoreboard 0    // Whether Piñatas show dead players as missing in action
 ```
 
+## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/pup/tab_pup.png) Puppeteer
+_Suggested By_: Spaazington\
+The Puppeteer is a Special Traitor role that is controls a targeted player, watching their movements and applying negative effects.
+\
+\
+**ConVars**
+```cpp
+ttt_puppeteer_enabled                  0   // Whether or not a Puppeteer should spawn
+ttt_puppeteer_spawn_weight             1   // The weight assigned to spawning a Puppeteer
+ttt_puppeteer_min_players              0   // The minimum number of players required to spawn a Puppeteer
+ttt_puppeteer_starting_health          100 // The amount of health a Puppeteer starts with
+ttt_puppeteer_max_health               100 // The maximum amount of health a Puppeteer can have
+ttt_puppeteer_command_fire_duration    2   // How long (in seconds) the target's weapon should be fired for when the Puppeteer commands it
+ttt_puppeteer_debuff_pinata_count      3   // How many shop items a player with the Piñata debuff will drop when they are killed
+ttt_puppeteer_debuff_wanderer_delay    10  // How long (in seconds) before each Wanderer location is sent to the Puppeteer debuff target
+ttt_puppeteer_debuff_wanderer_timer    45  // How long (in seconds) the Puppeteer debuff target has to find the Wanderer location
+ttt_puppeteer_debuff_wanderer_distance 6   // The radius (in meters) that the Puppeteer debuff target must be to their Wanderer location when the time runs out
+ttt_puppeteer_credits_starting         2   // The number of credits a Puppeteer should start with
+ttt_puppeteer_shop_sync                0   // Whether Puppeteers should have all weapons that vanilla Traitors have in their weapon shop
+ttt_puppeteer_shop_random_percent      0   // The percent chance that a weapon in the shop will not be shown for the Puppeteer
+ttt_puppeteer_shop_random_enabled      0   // Whether shop randomization should run for the Puppeteer
+```
+
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/rsw/tab_rsw.png) Randoswapper
 _Suggested By_: CamelChip\
 The Randoswapper is a Jester role that swaps roles with their killer and triggers a Randomat event instead of dying.
@@ -330,4 +353,5 @@ ttt_yorkshireman_update_scoreboard 0   // Whether Yorkshiremen show dead players
 - [THE PIE GUY](https://steamcommunity.com/profiles/76561198082760562) for the [Pie Bomb](https://steamcommunity.com/sharedfiles/filedetails/?id=316765309) whose model is used by the Yorkshireman
 - [ajwuk2](https://steamcommunity.com/profiles/76561199043038286) for the [[TTT] Guard Dog](https://steamcommunity.com/sharedfiles/filedetails/?id=2120419714) which was used as the base for the Yorkshireman's Guard Dog
 - [BloodOrange1](https://steamcommunity.com/profiles/76561199164997872) for the [Dog SNPC (Reupload)](https://steamcommunity.com/sharedfiles/filedetails/?id=3513018735) whose model is used by the Yorkshireman's Guard Dog
-- [Lykrast](https://steamcommunity.com/id/Lykrast) for the code and models used to create the Yorkshireman's double barrel shotgun taken from ['Lykrast's TTT Weapon Collection'](https://steamcommunity.com/sharedfiles/filedetails/?id=337994500).
+- [Lykrast](https://steamcommunity.com/id/Lykrast) for the code and models used to create the Yorkshireman's double barrel shotgun taken from ['Lykrast's TTT Weapon Collection'](https://steamcommunity.com/sharedfiles/filedetails/?id=337994500)
+- [Fresh Garry](https://steamcommunity.com/id/Fresh_Garry) for the code for the Puppeteer's target camera view taken from [TTT Detective Playercam](https://steamcommunity.com/sharedfiles/filedetails/?id=942402787)

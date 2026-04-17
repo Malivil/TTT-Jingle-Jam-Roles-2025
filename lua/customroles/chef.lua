@@ -196,7 +196,7 @@ local function RemoveBuffs(ply)
 
     if ply.TTTChefHooks then
         if SERVER then
-            net.Start("TTTChefFoodRemoveHooks")
+            net.Start("TTT_ChefFoodRemoveHooks")
             net.Send(ply)
         end
 
@@ -226,8 +226,8 @@ AddHook("TTTUpdateRoleState", "Chef_TTTUpdateRoleState", function()
 end)
 
 if SERVER then
-    util.AddNetworkString("TTTChefFoodRemoveHooks")
-    util.AddNetworkString("TTTChefFoodChanged")
+    util.AddNetworkString("TTT_ChefFoodRemoveHooks")
+    util.AddNetworkString("TTT_ChefFoodChanged")
 
     -------------------
     -- ROLE FEATURES --
@@ -307,14 +307,14 @@ if CLIENT then
     -------------------
 
     local client
-    net.Receive("TTTChefFoodRemoveHooks", function()
+    net.Receive("TTT_ChefFoodRemoveHooks", function()
         if not IsValid(client) then
             client = LocalPlayer()
         end
         RemoveBuffs(client)
     end)
 
-    net.Receive("TTTChefFoodChanged", function()
+    net.Receive("TTT_ChefFoodChanged", function()
         if not IsValid(client) then
             client = LocalPlayer()
         end

@@ -57,7 +57,7 @@ local function AddBuffHook(ply, entIndex, foodType, amount)
     if not IsPlayer(ply) then return end
 
     if SERVER then
-        net.Start("TTTChefFoodAddHook")
+        net.Start("TTT_ChefFoodAddHook")
             net.WriteUInt(entIndex, 16)
             net.WriteUInt(foodType, 2)
             net.WriteFloat(amount)
@@ -99,7 +99,7 @@ local function RemoveBuffHook(ply, entIndex, foodType)
     if not ply.TTTChefHooks then return end
 
     if SERVER then
-        net.Start("TTTChefFoodRemoveHook")
+        net.Start("TTT_ChefFoodRemoveHook")
             net.WriteUInt(entIndex, 16)
             net.WriteUInt(foodType, 2)
         net.Send(ply)
@@ -120,7 +120,7 @@ end
 
 if CLIENT then
     local client = nil
-    net.Receive("TTTChefFoodAddHook", function()
+    net.Receive("TTT_ChefFoodAddHook", function()
         if not IsValid(client) then
             client = LocalPlayer()
         end
@@ -131,7 +131,7 @@ if CLIENT then
         AddBuffHook(client, entIndex, foodType, amount)
     end)
 
-    net.Receive("TTTChefFoodRemoveHook", function()
+    net.Receive("TTT_ChefFoodRemoveHook", function()
         if not IsValid(client) then
             client = LocalPlayer()
         end
@@ -143,8 +143,8 @@ if CLIENT then
 end
 
 if SERVER then
-    util.AddNetworkString("TTTChefFoodAddHook")
-    util.AddNetworkString("TTTChefFoodRemoveHook")
+    util.AddNetworkString("TTT_ChefFoodAddHook")
+    util.AddNetworkString("TTT_ChefFoodRemoveHook")
 
     local function GetFoodName(foodType, isBurnt)
         local name = isBurnt and "burnt " or ""
