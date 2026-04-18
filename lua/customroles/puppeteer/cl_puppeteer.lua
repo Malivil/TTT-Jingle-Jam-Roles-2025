@@ -751,6 +751,10 @@ end)
 -------------
 
 AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
+    if not client then
+        client = LocalPlayer()
+    end
+
     target = nil
     dtargetbox = nil
     dfire = nil
