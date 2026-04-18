@@ -100,9 +100,17 @@ local function CreateCamera()
             local x, y, w, h = self:GetBounds()
             local eyeAngles = target:EyeAngles()
 
+            local pos
+            local head = target:LookupBone("ValveBiped.Bip01_Head1")
+            if head then
+                pos = target:GetBonePosition(head)
+            else
+                pos = target:EyePos()
+            end
+
             renderingCamView = true
             render.RenderView({
-                origin = target:GetBonePosition(target:LookupBone("ValveBiped.Bip01_Head1")),
+                origin = pos,
                 znear = 7,
                 fov = 65,
                 angles = Angle(eyeAngles.pitch, eyeAngles.yaw, 0),
