@@ -714,6 +714,14 @@ net.Receive("TTT_PuppeteerDebuffed", function(len)
     local victim = net.ReadPlayer()
     local debuff = net.ReadUInt(3)
 
+    if not client then
+        client = LocalPlayer()
+    end
+
+    if client == victim then
+        surface.PlaySound("puppeteer/debuff.mp3")
+    end
+
     if not IsPlayer(victim) or not IsPlayer(attacker) then return end
 
     local eventData = {
@@ -723,10 +731,6 @@ net.Receive("TTT_PuppeteerDebuffed", function(len)
         deb = LANG.GetTranslation("puppeteer_puppet_debuff_" .. debuff)
     }
     CLSCORE:AddEvent(eventData)
-
-    if not client then
-        client = LocalPlayer()
-    end
 
     if victim == client then
         local message = LANG.GetParamTranslation("ev_puppeteerdebuffed", { attacker = string.Capitalize(ROLE_STRINGS_EXT[ROLE_PUPPETEER]), victim = LANG.GetTranslation("puppeteer_puppet_target_you"), debuff = eventData.deb })
