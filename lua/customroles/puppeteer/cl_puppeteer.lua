@@ -15,6 +15,7 @@ local MathPi = math.pi
 local MathRand = math.Rand
 local MathSin = math.sin
 local PlayerIterator = player.Iterator
+local TableHasValue = table.HasValue
 local TableInsert = table.insert
 
 local client
@@ -141,11 +142,6 @@ local function SetTarget(ply)
 end
 
 local function DebuffTarget(debuff)
-    -- Set these properties immediately on the client so we can disable the buttons
-    target.TTTPuppeteerDebuffed = true
-    target.TTTPuppeteerDebuff = debuff
-    UpdateState(true)
-
     -- Tell the server so everyone gets notified about the debuff
     net.Start("TTT_PuppeteerSetDebuff")
         net.WritePlayer(target)
@@ -159,7 +155,7 @@ local function ClearTarget()
     ClearCamera()
 end
 
-local function CreateDebuffButton(text, tip, onclick, pred, parent, w, h, image, padding)
+local function CreateDebuffButton(text, tip, debuff, parent, w, h, image, padding)
     local dbutton = vgui.Create("DImageButton", parent)
     dbutton:SetTooltip(tip)
     dbutton:SetSize(w, 32 + h + padding)
@@ -174,6 +170,7 @@ local function CreateDebuffButton(text, tip, onclick, pred, parent, w, h, image,
     dbutton:SetImage("vgui/ttt/roles/pup/32_" .. image .. ".png")
     dbutton:SetPaintBackground(true)
     dbutton:SetDrawBorder(true)
+    dbutton.debuff = debuff
 
     local btnSkin = dbutton:GetSkin()
     dbutton:SetColor(btnSkin.Colours.Button.Disabled)
@@ -187,30 +184,23 @@ local function CreateDebuffButton(text, tip, onclick, pred, parent, w, h, image,
     dlabel:SetY(h + (padding * 2))
     dbutton.label = dlabel
 
-    dbutton.EnablePredicate = function()
+    function dbutton:EnablePredicate()
         if not IsPlayer(target) then return false end
+        if target.TTTPuppeteerDebuffed then return false end
         if not IsPlayer(client) or not client:IsActivePuppeteer() then return false end
+        if client.TTTPuppeteerDebuffsUsed and TableHasValue(client.TTTPuppeteerDebuffsUsed, self.debuff) then return false end
         if client:GetCredits() <= 0 then return false end
-        if not pred or type(pred) ~= "function" then return true end
-
-        return pred()
+        return true
     end
-    dbutton.DoClick = function()
+    function dbutton:DoClick()
         if not IsPlayer(target) then return end
         if not IsPlayer(client) or not client:IsActivePuppeteer() then return end
         if client:GetCredits() <= 0 then return end
-
-        onclick()
+        DebuffTarget(self.debuff)
     end
 
     TableInsert(buttons, dbutton)
-
     return dbutton
-end
-
-local function DebuffPredicate()
-    if target.TTTPuppeteerDebuffed then return false end
-    return true
 end
 
 local function UpdateTargetsList(skip)
@@ -294,12 +284,12 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     dfire:SetText(PT("puppeteer_puppet_fire_weapon", { time = fire_duration }))
     dfire:SetSize(buttonWidth, buttonHeight)
     dfire:SetEnabled(false)
-    dfire.EnablePredicate = function()
+    function dfire:EnablePredicate()
         if not IsPlayer(target) then return false end
         if not IsPlayer(client) or not client:IsActivePuppeteer() then return false end
         return true
     end
-    dfire.DoClick = function()
+    function dfire:DoClick()
         dfire:SetEnabled(false)
         net.Start("TTT_PuppeteerFireWeapon")
             net.WritePlayer(target)
@@ -338,56 +328,26 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
 
     local pinata_count = puppeteer_debuff_pinata_count:GetInt()
     local dpinata = CreateDebuffButton(T("puppeteer_puppet_debuff_0"), PT("puppeteer_puppet_debuff_0_tip", { num = pinata_count, traitor = T("traitor") }),
-        -- DoClick
-        function()
-            DebuffTarget(PUPPETEER_DEBUFF_TYPE_PINATA)
-        end,
-        -- EnablePredicate
-        DebuffPredicate,
-        dform, buttonWidth, buttonHeight, "pinata", padding)
+        PUPPETEER_DEBUFF_TYPE_PINATA, dform, buttonWidth, buttonHeight, "pinata", padding)
     dpinata:SetPos(padding, buttonY)
 
     local dspoilsport = CreateDebuffButton(T("puppeteer_puppet_debuff_1"), PT("puppeteer_puppet_debuff_1_tip", { avindicator = ROLE_STRINGS_EXT[ROLE_VINDICATOR] }),
-        -- DoClick
-        function()
-            DebuffTarget(PUPPETEER_DEBUFF_TYPE_SPOILSPORT)
-        end,
-        -- EnablePredicate
-        DebuffPredicate,
-        dform, buttonWidth, buttonHeight, "spoilsport", padding)
+        PUPPETEER_DEBUFF_TYPE_SPOILSPORT, dform, buttonWidth, buttonHeight, "spoilsport", padding)
     dspoilsport:SetY(buttonY)
     dspoilsport:MoveRightOf(dpinata, padding)
 
     local dcopycat = CreateDebuffButton(T("puppeteer_puppet_debuff_2"), T("puppeteer_puppet_debuff_2_tip"),
-        -- DoClick
-        function()
-            DebuffTarget(PUPPETEER_DEBUFF_TYPE_COPYCAT)
-        end,
-        -- EnablePredicate
-        DebuffPredicate,
-        dform, buttonWidth, buttonHeight, "copycat", padding)
+        PUPPETEER_DEBUFF_TYPE_COPYCAT, dform, buttonWidth, buttonHeight, "copycat", padding)
     dcopycat:SetY(buttonY)
     dcopycat:MoveRightOf(dspoilsport, padding)
 
     local dredherring = CreateDebuffButton(T("puppeteer_puppet_debuff_3"), PT("puppeteer_puppet_debuff_3_tip", { atraitor = ROLE_STRINGS_EXT[ROLE_TRAITOR] }),
-        -- DoClick
-        function()
-            DebuffTarget(PUPPETEER_DEBUFF_TYPE_REDHERRING)
-        end,
-        -- EnablePredicate
-        DebuffPredicate,
-        dform, buttonWidth, buttonHeight, "redherring", padding)
+        PUPPETEER_DEBUFF_TYPE_REDHERRING, dform, buttonWidth, buttonHeight, "redherring", padding)
     dredherring:MoveBelow(dpinata, padding)
     dredherring:SetX((buttonWidth / 2) + (padding * 2))
 
     local dwanderer = CreateDebuffButton(T("puppeteer_puppet_debuff_4"), T("puppeteer_puppet_debuff_4_tip"),
-        -- DoClick
-        function()
-            DebuffTarget(PUPPETEER_DEBUFF_TYPE_WANDERER)
-        end,
-        -- EnablePredicate
-        DebuffPredicate,
-        dform, buttonWidth, buttonHeight, "wanderer", padding)
+        PUPPETEER_DEBUFF_TYPE_WANDERER, dform, buttonWidth, buttonHeight, "wanderer", padding)
     dwanderer:MoveBelow(dpinata, padding)
     dwanderer:MoveRightOf(dredherring, padding)
 
