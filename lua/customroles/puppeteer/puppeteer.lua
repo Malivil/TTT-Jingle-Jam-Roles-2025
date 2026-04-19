@@ -286,12 +286,14 @@ end)
 local function GetWandererPosition()
     local spawns = GetSpawnEnts(true, false)
     for _, e in ents.Iterator() do
+        if IsValid(e:GetParent()) then continue end
+        if e:WaterLevel() ~= 0 then continue end
         local entity_class = e:GetClass()
-        if (string.StartsWith(entity_class, "weapon_") or string.StartsWith(entity_class, "item_")) and not IsValid(e:GetParent()) then
-            table.insert(spawns, e)
+        if string.StartsWith(entity_class, "weapon_") or string.StartsWith(entity_class, "item_") then
+            TableInsert(spawns, e)
         end
     end
-    local spawn = spawns[math.random(#spawns)]
+    local spawn = spawns[MathRandom(#spawns)]
     return spawn:GetPos()
 end
 
