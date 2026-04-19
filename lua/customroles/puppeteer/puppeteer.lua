@@ -108,15 +108,22 @@ net.Receive("TTT_PuppeteerSetDebuff", function(_, ply)
     if ply:GetCredits() < 1 then return end
 
     ply:SubtractCredits(1)
+
+    local debuffsUsed = ply.TTTPuppeteerDebuffsUsed or {}
+    TableInsert(debuffsUsed, debuff)
+    ply:SetProperty("TTTPuppeteerDebuffsUsed", debuffsUsed, ply)
     target:SetProperty("TTTPuppeteerDebuffed", true)
     target:SetProperty("TTTPuppeteerDebuff", debuff)
+
     net.Start("TTT_PuppeteerDebuffed")
         net.WritePlayer(ply)
         net.WritePlayer(target)
         net.WriteUInt(debuff, 3)
     net.Broadcast()
 
-    StartWandererDebuff(ply, target)
+    if debuff == PUPPETEER_DEBUFF_TYPE_WANDERER then
+        StartWandererDebuff(ply, target)
+    end
 end)
 
 -----------------
@@ -286,12 +293,14 @@ end)
 local function GetWandererPosition()
     local spawns = GetSpawnEnts(true, false)
     for _, e in ents.Iterator() do
+        if IsValid(e:GetParent()) then continue end
+        if e:WaterLevel() ~= 0 then continue end
         local entity_class = e:GetClass()
-        if (string.StartsWith(entity_class, "weapon_") or string.StartsWith(entity_class, "item_")) and not IsValid(e:GetParent()) then
-            table.insert(spawns, e)
+        if string.StartsWith(entity_class, "weapon_") or string.StartsWith(entity_class, "item_") then
+            TableInsert(spawns, e)
         end
     end
-    local spawn = spawns[math.random(#spawns)]
+    local spawn = spawns[MathRandom(#spawns)]
     return spawn:GetPos()
 end
 
@@ -356,6 +365,7 @@ AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     for _, v in PlayerIterator() do
         v:ClearProperty("TTTPuppeteerDebuffed")
         v:ClearProperty("TTTPuppeteerDebuff")
+        v:ClearProperty("TTTPuppeteerDebuffsUsed", v)
         v:ClearProperty("TTTPuppeteerRedHerring")
         v:ClearProperty("TTTPuppeteerWandererTarget", v)
         v:ClearProperty("TTTPuppeteerWandererEnd", v)
