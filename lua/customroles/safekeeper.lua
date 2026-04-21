@@ -203,7 +203,7 @@ if SERVER then
         local wep = ply:GetWeapon("weapon_sfk_safeplacer")
         if not IsValid(wep) then return end
 
-        wep:PrimaryAttack()
+        wep:PrimaryAttack(true)
     end)
 
     -- Automatically switch to the safe placers when they player gets it and
