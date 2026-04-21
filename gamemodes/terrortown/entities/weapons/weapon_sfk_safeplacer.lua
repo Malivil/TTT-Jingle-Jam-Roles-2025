@@ -112,7 +112,7 @@ if CLIENT then
     end
 end
 
-function SWEP:PrimaryAttack()
+function SWEP:PrimaryAttack(force)
     if CLIENT then return end
 	if not IsFirstTimePredicted() then return end
 
@@ -141,9 +141,14 @@ function SWEP:PrimaryAttack()
 
     local safePos
     -- Make sure the hit isn't at the end of the length because that seems to mean it actually hasn't hit anything
-    if tr.Hit and tr.HitPos:Distance(startPos) < length then
+    if tr.Hit and tr.HitPos:Distance(startPos) < length and not tr.StartSolid then
         safePos = tr.HitPos
         safePos.z = safePos.z + 5
+    -- If we're force-dropping it, put it where the player is because we know that's a safe location
+    -- We can't assume anywhere around the player is safe so we can't move them
+    -- If they get stuck, that's their problem unfortunately
+    elseif force then
+        safePos = owner:GetPos()
     -- If we didn't find a place, let the user know and don't actually place the safe
     else
         owner:ClearQueuedMessage("sfkInvalidDrop")
