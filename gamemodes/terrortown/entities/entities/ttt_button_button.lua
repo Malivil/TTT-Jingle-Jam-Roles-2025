@@ -131,10 +131,26 @@ function ENT:Initialize()
 end
 
 if SERVER then
+    ENT.TimerElapsed = false
+
+    function ENT:Think()
+        local curTime = CurTime()
+        local timerEnd = GetGlobalFloat("ttt_button_timer_end", -1)
+        if timerEnd ~= -1 and curTime > timerEnd then
+            self.TimerElapsed = true
+            return
+        end
+
+        self:NextThink(curTime + 0.1)
+        return true
+    end
+
     function ENT:Use(activator)
+        if self.TimerElapsed then return end
+        if self.PressCooldown > CurTime() then return end
+
         local buttonPly = self:GetPlayer()
         if activator == buttonPly then return end
-        if self.PressCooldown > CurTime() then return end
 
         if self:GetPressed() then
             local resetMode = button_reset_mode:GetInt()
