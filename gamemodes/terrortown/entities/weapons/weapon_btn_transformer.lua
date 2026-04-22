@@ -99,7 +99,7 @@ function SWEP:PrimaryAttack()
 
     ent:SetHeight(height)
 
-    ent.ButtonPly = owner
+    ent:SetPlayer(owner)
     ent:Spawn()
 
     owner:SetParent(ent)

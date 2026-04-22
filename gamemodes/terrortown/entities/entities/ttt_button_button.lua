@@ -22,6 +22,7 @@ if CLIENT then
             hint = "but_button_hint",
             fmt  = function(ent, txt)
                 if not IsValid(button) then return nil end
+                if client == button:GetPlayer() then return nil end
                 if not client:Alive() or client:IsSpec() then return nil end
 
                 local hint = txt
@@ -62,6 +63,7 @@ ENT.PressCooldown = -1
 function ENT:SetupDataTables()
     self:NetworkVar("Bool", "Pressed")
     self:NetworkVar("Entity", "Presser")
+    self:NetworkVar("Entity", "Player")
     self:NetworkVar("Float", "Height")
 end
 
@@ -130,6 +132,8 @@ end
 
 if SERVER then
     function ENT:Use(activator)
+        local buttonPly = self:GetPlayer()
+        if activator == buttonPly then return end
         if self.PressCooldown > CurTime() then return end
 
         if self:GetPressed() then
@@ -151,12 +155,12 @@ if SERVER then
                     net.Broadcast()
                 end
 
-                if self.ButtonPly.TTTButtonPresses then
-                    self.ButtonPly:SetProperty("TTTButtonPresses", self.ButtonPly.TTTButtonPresses + 1)
+                if buttonPly.TTTButtonPresses then
+                    buttonPly:SetProperty("TTTButtonPresses", buttonPly.TTTButtonPresses + 1)
                 else
-                    self.ButtonPly:SetProperty("TTTButtonPresses", 1)
+                    buttonPly:SetProperty("TTTButtonPresses", 1)
                 end
-                if self.ButtonPly.TTTButtonPresses == button_presses_to_win:GetInt() then
+                if buttonPly.TTTButtonPresses >= button_presses_to_win:GetInt() then
                     net.Start("TTT_UpdateButtonWins")
                     net.Broadcast()
                 end
