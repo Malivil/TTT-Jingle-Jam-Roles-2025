@@ -349,7 +349,7 @@ if SERVER then
 end
 
 if CLIENT then
-    function ENT:Draw()
-        self:DrawModel()
+    function ENT:Draw(flags)
+        self:DrawModel(flags)
     end
 end

@@ -112,7 +112,7 @@ if CLIENT then
             self.ClientWorldModel:SetAngles(self:GetAngles())
         end
 
-        self.ClientWorldModel:DrawModel()
+        self.ClientWorldModel:DrawModel(flags)
     end
 
     function SWEP:ShouldDrawViewModel()
