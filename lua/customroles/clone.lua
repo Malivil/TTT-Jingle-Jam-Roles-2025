@@ -95,7 +95,7 @@ if SERVER then
             if not p:Alive() or p:IsSpec() then continue end
 
             if p.TTTCloneTarget == sid64 then
-                p:QueueMessage(MSG_PRINTBOTH, "The player you cloned has died and took you with them")
+                p:QueueMessage(MSG_PRINTBOTH, "The player you cloned died and took you with them")
                 p:Kill()
             end
         end
