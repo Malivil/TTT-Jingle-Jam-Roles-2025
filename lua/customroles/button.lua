@@ -74,7 +74,10 @@ ROLE.translations = {
         ["but_button_hint_start"] = "Press {usekey} to start the countdown",
         ["but_button_hint_stop"] = "Press {usekey} to stop the countdown",
         ["but_button_hint_blocked"] = "Someone else has to stop the countdown",
-        ["but_button_hint_double"] = "Only one button can be active at a time"
+        ["but_button_hint_double"] = "Only one button can be active at a time",
+        ["button_config_timer_offset_x"] = "Timer position, X-axis offset",
+        ["button_config_timer_offset_y"] = "Timer position, Y-axis offset",
+        ["button_config_timer_offset_reset"] = "Reset timer position to default"
     }
 }
 
