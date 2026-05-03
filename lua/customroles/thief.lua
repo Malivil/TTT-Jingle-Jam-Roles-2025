@@ -326,6 +326,12 @@ if SERVER then
         end
     end
 
+    AddHook("PostPlayerDeath", "Thief_PostPlayerDeath", function(ply)
+        if not IsPlayer(ply) then return end
+        if not ply:IsThief() then return end
+        ClearTracking(ply)
+    end)
+
     AddHook("TTTPlayerRoleChanged", "Thief_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
         if oldRole == newRole then return end
         if ply:CanThiefStealFrom() then return end

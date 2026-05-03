@@ -282,6 +282,12 @@ if SERVER then
         end
     end
 
+    AddHook("PostPlayerDeath", "ArmsDealer_PostPlayerDeath", function(ply)
+        if not IsPlayer(ply) then return end
+        if not ply:IsArmsDealer() then return end
+        ClearTracking(ply)
+    end)
+
     AddHook("TTTPlayerRoleChanged", "ArmsDealer_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
         if oldRole == newRole then return end
         if ply:CanArmsDealerDealTo() then return end
