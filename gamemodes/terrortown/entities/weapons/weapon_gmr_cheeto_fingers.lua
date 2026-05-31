@@ -37,18 +37,36 @@ SWEP.Primary.ClipMax        = -1
 SWEP.Primary.DefaultClip    = 0
 SWEP.Primary.Sound          = ""
 
+SWEP.HandColor              = Color(255, 137, 40)
+
 function SWEP:Initialize()
     self:SendWeaponAnim(ACT_VM_IDLE)
-    -- TODO: Color the hand orange?
     return self.BaseClass.Initialize(self)
+end
+
+function SWEP:SetVMColor(col)
+    local owner = self:GetOwner()
+    if IsValid(owner) then
+        local vm = owner:GetViewModel()
+        if IsValid(vm) then
+            vm:SetColor(col)
+        end
+    end
 end
 
 function SWEP:Deploy()
     self:SendWeaponAnim(ACT_VM_IDLE)
+    self:SetVMColor(self.HandColor)
+    return true
+end
+
+function SWEP:Holster()
+    self:SetVMColor(COLOR_WHITE)
     return true
 end
 
 function SWEP:OnRemove()
+    self:SetVMColor(COLOR_WHITE)
     if CLIENT and IsValid(self:GetOwner()) and self:GetOwner() == LocalPlayer() and self:GetOwner():Alive() then
         RunConsoleCommand("lastinv")
     end
