@@ -1,7 +1,9 @@
 local concommand = concommand
 local draw = draw
+local halo = halo
 local hook = hook
 local ipairs = ipairs
+local player = player
 local surface = surface
 local string = string
 local table = table
@@ -19,6 +21,9 @@ local MathPi = math.pi
 local MathSin = math.sin
 local MathCos = math.cos
 local MathAtan2 = math.atan2
+local PlayerIterator = player.Iterator
+
+local client
 
 ----------------
 -- GACHA SIM --
@@ -460,6 +465,28 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
 
     -- Cover
     DrawOutlinedRect(boxMaxX - (ballRadius * 4), boxMaxY + bodyHeight - bodyOverlap - (ballRadius * 4), ballRadius * 3, (ballRadius * 4) * outputHeight, 200, 200, 200)
+end)
+
+---------------------
+-- CHEETO TRACKING --
+---------------------
+
+hook.Add("PreDrawHalos", "Gamer_Highlight_PreDrawHalos", function()
+    if not client then
+        client = LocalPlayer()
+    end
+
+    local targets = {}
+    for _, v in PlayerIterator() do
+        if IsPlayer(v) and v:IsActive() and v ~= client and v.TTTGamerCheetoMarked then
+            TableInsert(targets, v)
+        end
+    end
+
+    if #targets == 0 then return end
+
+    -- Highlight the gamer's marked targets as orange
+    halo.Add(targets, GAMER.Config.CheetoColor, 1, 1, 1, true, true)
 end)
 
 -------------

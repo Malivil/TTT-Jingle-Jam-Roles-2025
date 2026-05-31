@@ -64,6 +64,7 @@ local function Cleanup()
     for _, p in PlayerIterator() do
         timer.Remove("TTTGmrGachaPrize_" .. p:SteamID64())
         p:ClearProperty("TTTGamerHasUniquePrize", p)
+        p:ClearProperty("TTTGamerCheetoMarked")
     end
 end
 

@@ -127,6 +127,7 @@ GAMER.Rarities = GAMER.Rarities or {
     Legendary = 5
 }
 GAMER.Config = GAMER.Config or {
+    CheetoColor = Color(255, 137, 40),
     Rarities = {
         [GAMER.Rarities.Common] = { Name = "gamer_rarity_common", Color = Color(166, 166, 166), Chance = 0.50 },
         [GAMER.Rarities.Uncommon] = { Name = "gamer_rarity_uncommon", Color = Color(0, 182, 33), Chance = 0.20 },

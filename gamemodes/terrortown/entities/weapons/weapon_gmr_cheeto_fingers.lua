@@ -37,8 +37,6 @@ SWEP.Primary.ClipMax        = -1
 SWEP.Primary.DefaultClip    = 0
 SWEP.Primary.Sound          = ""
 
-SWEP.HandColor              = Color(255, 137, 40)
-
 function SWEP:Initialize()
     self:SendWeaponAnim(ACT_VM_IDLE)
     return self.BaseClass.Initialize(self)
@@ -56,7 +54,7 @@ end
 
 function SWEP:Deploy()
     self:SendWeaponAnim(ACT_VM_IDLE)
-    self:SetVMColor(self.HandColor)
+    self:SetVMColor(GAMER.Config.CheetoColor)
     return true
 end
 
@@ -112,7 +110,7 @@ function SWEP:PrimaryAttack()
 
     if SERVER then
         if IsPlayer(hitEnt) then
-            -- TODO: Mark someone as tracked (via halo?)
+            hitEnt:SetProperty("TTTGamerCheetoMarked", true, owner)
         end
 
         if self:Clip1() == 0 then
