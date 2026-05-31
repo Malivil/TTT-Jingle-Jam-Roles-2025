@@ -6,4 +6,8 @@ local PRIZE = {
     Icon = Material("vgui/ttt/gamer/doritos.png")
 }
 
+function PRIZE:Start(ply)
+    print("Doritos!", ply)
+end
+
 GAMER.AddPrize(PRIZE)

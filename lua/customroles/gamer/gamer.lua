@@ -1,9 +1,15 @@
 local hook = hook
+local player = player
 local util = util
 
 local AddHook = hook.Add
+local PlayerIterator = player.Iterator
 
 util.AddNetworkString("TTTGamerGachaStart")
+
+----------------
+-- ROLE LOGIC --
+----------------
 
 AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, isequip)
     if not isequip then return end
@@ -49,3 +55,17 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
         -- TODO: ??
     end
 end)
+
+-------------
+-- CLEANUP --
+-------------
+
+local function Cleanup()
+    for _, p in PlayerIterator() do
+        timer.Remove("TTTGmrGachaPrize_" .. p:SteamID64())
+        p:ClearProperty("TTTGamerHasUniquePrize", p)
+    end
+end
+
+AddHook("TTTPrepareRound", "Gamer_TTTPrepareRound", Cleanup)
+AddHook("TTTEndRound", "Gamer_TTTPrepareRound", Cleanup)

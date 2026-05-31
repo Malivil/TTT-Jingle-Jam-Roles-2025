@@ -36,7 +36,6 @@ SWEP.UseHands               = true
 SWEP.LimitedStock           = true
 SWEP.AmmoEnt                = nil
 
--- TODO: Set this to the roll time + some delay
 SWEP.Primary.Delay          = 1
 SWEP.Primary.Automatic      = false
 SWEP.Primary.Cone           = 0
@@ -47,6 +46,7 @@ SWEP.Primary.DefaultClip    = 0
 SWEP.Primary.Sound          = ""
 
 function SWEP:Initialize()
+    self.Primary.Delay = GAMER.Config.Timing.Animations.Reset + 1
     self:SendWeaponAnim(ACT_SLAM_DETONATOR_DRAW)
     return self.BaseClass.Initialize(self)
 end
@@ -77,7 +77,8 @@ local function ChooseRandomPrize(ply)
 
     local prizes = {}
     for _, prize in pairs(GAMER.Prizes) do
-        -- TODO: Check if this player already has a unique prize. If so, skip other unique prizes
+        if prize.IsUnique and ply.TTTGamerHasUniquePrize then continue end
+
         -- TODO: What happens if a player gets a duplicate?
         if prize.Rarity == targetRarity then
             TableInsert(prizes, prize)
@@ -117,7 +118,14 @@ function SWEP:PrimaryAttack()
             net.WriteString(prize.Id)
         net.Send(owner)
 
-        -- TODO: Start the prize's effect after the display timer elapses
+        timer.Create("TTTGmrGachaPrize_" .. owner:SteamID64(), GAMER.Config.Timing.Effect, 1, function()
+            if not IsPlayer(owner) then return end
+            prize:Start(owner)
+
+            if prize.IsUnique then
+                owner:SetProperty("TTTGamerHasUniquePrize", true, owner)
+            end
+        end)
 
         if ammo == 1 then
             self:Remove()

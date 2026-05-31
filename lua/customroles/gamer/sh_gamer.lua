@@ -133,10 +133,37 @@ GAMER.Config = GAMER.Config or {
         [GAMER.Rarities.Rare] = { Name = "gamer_rarity_rare", Color = Color(0, 146, 240), Chance = 0.15 },
         [GAMER.Rarities.Epic] = { Name = "gamer_rarity_epic", Color = Color(143, 21, 185), Chance = 0.10 },
         [GAMER.Rarities.Legendary] = { Name = "gamer_rarity_legendary", Color = Color(255, 192, 0), Chance = 0.05 }
+    },
+    Timing = {
+        Animations = {
+            -- Move the balls around and rotate the handle
+            Step1 = 1,
+            Step2 = 1.5,
+            Step3 = 2,
+            -- Draw the prize ball
+            Step4 = 2.5,
+            -- Move the prize ball to the center of the screen
+            Step5 = 3,
+            -- Open the prize ball and draw the prize
+            Step6 = 4,
+            -- Fade in the prize text and image
+            Step7 = 4.5,
+            -- Fade out the prize ball, text, and image
+            Step8 = 8,
+            -- Reset
+            Reset = 10
+        }
     }
-    -- TODO: Timing?
 }
+-- The effect should happen at the same time the animation resets
+GAMER.Config.Timing.Effect = GAMER.Config.Timing.Animations.Reset
+
 GAMER.Prizes = GAMER.Prizes or {}
+
+local prize_meta =  {}
+prize_meta.__index = prize_meta
+
+function prize_meta:Start() end
 
 function GAMER.AddPrize(prize)
     if GAMER.Prizes[prize.Id] then return end
@@ -145,6 +172,10 @@ function GAMER.AddPrize(prize)
         ErrorNoHaltWithStack("Invalid rarity ('" .. prize.Rarity .. "') for prize with ID: " .. prize.Id)
         return
     end
+
+    prize.IsUnique = prize.IsUnique or false
+    prize.__index = prize
+    setmetatable(prize, prize_meta)
 
     GAMER.Prizes[prize.Id] = prize
 end

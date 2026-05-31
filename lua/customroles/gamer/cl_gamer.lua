@@ -105,6 +105,25 @@ local function RemoveBall()
     TableRemove(gachaBalls, closestIndex)
 end
 
+local function ResetGacha()
+    handleAngle = 0
+    handleAngleTarget = 0
+    outputHeight = 1
+    outputHeightTarget = 1
+    prizePath = 0
+    prizePathTarget = 0
+    prizeOpen = 0
+    prizeOpenTarget = 0
+    prizeAlpha = 255
+    prizeAlphaTarget = 255
+    prizeTextAlpha = 0
+    prizeTextAlphaTarget = 0
+    gachaBalls = {}
+    isAnimating = false
+    drawPrizeBall = false
+    drawPrize = false
+end
+
 local function AnimateGacha()
     isAnimating = true
     for x = boxMinX + ballRadius, boxMaxX - ballRadius, ballRadius * 2 do
@@ -129,25 +148,28 @@ local function AnimateGacha()
     end
     xOffsetTarget = 0
 
-    timer.Simple(1, function()
+    -- Move the balls around and rotate the handle
+    timer.Create("TTTGmrGacha_Step1", GAMER.Config.Timing.Animations.Step1, 1, function()
         RemoveBall()
         handleAngleTarget = (MathPi / 3)
     end)
-    timer.Simple(1.5, function()
+    timer.Create("TTTGmrGacha_Step2", GAMER.Config.Timing.Animations.Step2, 1, function()
         RemoveBall()
         handleAngleTarget = (MathPi / 3) * 2
     end)
-    timer.Simple(2, function()
+    timer.Create("TTTGmrGacha_Step3", GAMER.Config.Timing.Animations.Step3, 1, function()
         RemoveBall()
         handleAngleTarget = MathPi
     end)
 
-    timer.Simple(2.5, function()
+    -- Draw the prize ball
+    timer.Create("TTTGmrGacha_Step4", GAMER.Config.Timing.Animations.Step4, 1, function()
         outputHeightTarget = 0.2
         drawPrizeBall = true
     end)
 
-    timer.Simple(3, function()
+    -- Move the prize ball to the center of the screen
+    timer.Create("TTTGmrGacha_Step5", GAMER.Config.Timing.Animations.Step5, 1, function()
         prizePathTarget = 1
 
         leftSide = gacha_offset_x:GetInt() + (gachaWidth / 2) <= ScrW() / 2
@@ -159,38 +181,25 @@ local function AnimateGacha()
         end
     end)
 
-    timer.Simple(4, function()
+    -- Open the prize ball and draw the prize
+    timer.Create("TTTGmrGacha_Step6", GAMER.Config.Timing.Animations.Step6, 1, function()
         prizeOpenTarget = 1
         drawPrize = true
     end)
 
-    timer.Simple(4.5, function()
+    -- Fade in the prize text and image
+    timer.Create("TTTGmrGacha_Step7", GAMER.Config.Timing.Animations.Step7, 1, function()
         prizeTextAlphaTarget = 255
     end)
 
-    timer.Simple(8, function()
+    -- Fade out the prize ball, text, and image
+    timer.Create("TTTGmrGacha_Step8", GAMER.Config.Timing.Animations.Step8, 1, function()
         prizeAlphaTarget = 0
         prizeTextAlphaTarget = 0
     end)
 
-    timer.Simple(10, function()
-        handleAngle = 0
-        handleAngleTarget = 0
-        outputHeight = 1
-        outputHeightTarget = 1
-        prizePath = 0
-        prizePathTarget = 0
-        prizeOpen = 0
-        prizeOpenTarget = 0
-        prizeAlpha = 255
-        prizeAlphaTarget = 255
-        prizeTextAlpha = 0
-        prizeTextAlphaTarget = 0
-        gachaBalls = {}
-        isAnimating = false
-        drawPrizeBall = false
-        drawPrize = false
-    end)
+    -- Reset
+    timer.Create("TTTGmrGacha_Reset", GAMER.Config.Timing.Animations.Reset, 1, ResetGacha)
 end
 concommand.Add("startgacha", function()
     if isAnimating then return end
@@ -452,4 +461,22 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
     DrawOutlinedRect(boxMaxX - (ballRadius * 4), boxMaxY + bodyHeight - bodyOverlap - (ballRadius * 4), ballRadius * 3, (ballRadius * 4) * outputHeight, 200, 200, 200)
 end)
 
--- TODO: Stop all of this when the player dies or round state changes (End, Prep, etc.)
+-------------
+-- CLEANUP --
+-------------
+
+local function Cleanup()
+    timer.Remove("TTTGmrGacha_Step1")
+    timer.Remove("TTTGmrGacha_Step2")
+    timer.Remove("TTTGmrGacha_Step3")
+    timer.Remove("TTTGmrGacha_Step4")
+    timer.Remove("TTTGmrGacha_Step5")
+    timer.Remove("TTTGmrGacha_Step6")
+    timer.Remove("TTTGmrGacha_Step7")
+    timer.Remove("TTTGmrGacha_Step8")
+    timer.Remove("TTTGmrGacha_Reset")
+    ResetGacha()
+end
+
+AddHook("TTTPrepareRound", "Gamer_TTTPrepareRound", Cleanup)
+AddHook("TTTEndRound", "Gamer_TTTPrepareRound", Cleanup)
