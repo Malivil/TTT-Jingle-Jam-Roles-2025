@@ -517,6 +517,11 @@ AddHook("TTTEndRound", "Gamer_TTTEndRound", Cleanup)
 
 AddHook("TTTTutorialRoleText", "Gamer_TTTTutorialRoleText", function(role, titleLabel)
     if role == ROLE_GAMER then
+        local roleColor = GetRoleTeamColor(ROLE_TEAM_DETECTIVE)
+        local html = "The " .. ROLE_STRINGS[ROLE_GAMER] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>detective role</span> whose goal is to help their team by buying snacks that gives them a buff and trying their luck with gacha rolls."
+
         -- TODO
+
+        return html
     end
 end)

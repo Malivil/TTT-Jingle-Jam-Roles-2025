@@ -38,12 +38,14 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
         if IsValid(gacha) then
             gacha:SetClip1(math.max(0, gacha:Clip1()) + 2)
         end
+        ply:EmitSound("gamer/doritos.mp3", 100, 100, 1, CHAN_ITEM)
     elseif isequip == EQUIP_GAMER_MTDEW then
         if ply.SetMaxJumpLevel then
             ply:SetMaxJumpLevel(ply:GetMaxJumpLevel() + 1)
         else
             p:SetJumpPower(320)
         end
+        ply:EmitSound("gamer/mtdew.mp3", 100, 100, 1, CHAN_ITEM)
     elseif isequip == EQUIP_GAMER_CHEETOS then
         -- Heal the player to max
         local hp = ply:Health()
@@ -64,8 +66,12 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
         if IsValid(fingers) then
             fingers:SetClip1(math.max(0, fingers:Clip1()) + 1)
         end
+        ply:EmitSound("gamer/cheetos.mp3", 100, 100, 1, CHAN_ITEM)
+    elseif isequip == EQUIP_GAMER_SPAGHETTI then
+        ply:EmitSound("gamer/spaghetti.mp3", 100, 100, 1, CHAN_ITEM)
     elseif isequip == EQUIP_GAMER_MILK then
         -- TODO: ??
+        ply:EmitSound("gamer/milk.mp3", 100, 100, 1, CHAN_ITEM)
     end
 end)
 
