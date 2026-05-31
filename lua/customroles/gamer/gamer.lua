@@ -16,7 +16,7 @@ util.AddNetworkString("TTTGamerGachaStart")
 ------------------
 
 local gamer_spaghetti_amount = CreateConVar("ttt_gamer_spaghetti_amount", "5", FCVAR_REPLICATED, "The amount of health a player should regain per interval after they each spaghetti", 1, 25)
-local gamer_spaghetti_interval = CreateConVar("ttt_gamer_spaghetti_interval", "1", FCVAR_REPLICATED, "How often a player who eats spaghetti should regain health", 1, 60)
+local gamer_spaghetti_interval = CreateConVar("ttt_gamer_spaghetti_interval", "5", FCVAR_REPLICATED, "How often a player who eats spaghetti should regain health", 1, 60)
 
 ----------------
 -- ROLE LOGIC --
@@ -41,6 +41,8 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
     elseif isequip == EQUIP_GAMER_MTDEW then
         if ply.SetMaxJumpLevel then
             ply:SetMaxJumpLevel(ply:GetMaxJumpLevel() + 1)
+        else
+            p:SetJumpPower(320)
         end
     elseif isequip == EQUIP_GAMER_CHEETOS then
         -- Heal the player to max
@@ -97,6 +99,8 @@ local function Cleanup()
         p:ClearProperty("TTTGamerCheetoMarked")
         if p.SetMaxJumpLevel then
             p:SetMaxJumpLevel(jumps)
+        else
+            p:SetJumpPower(160)
         end
     end
 end

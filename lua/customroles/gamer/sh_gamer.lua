@@ -29,8 +29,16 @@ ROLE.translations = {
         ["gamer_rarity_epic"] = "Epic",
         ["gamer_rarity_legendary"] = "Legendary",
         ["gamer_prize_display_format"] = "{name} [{rarity}]",
-        ["gamer_prize_doritos_name"] = "Doritos",
-        ["gamer_prize_doritos_desc"] = "Get two free gacha rolls"
+        ["item_gamer_doritos"] = "Doritos ®",
+        ["item_gamer_doritos_desc"] = "Gain 2 gacha rolls",
+        ["item_gamer_mtdew"] = "Mt. Dew ®",
+        ["item_gamer_mtdew_desc"] = "Increase your movement speed and gain some extra jump power",
+        ["item_gamer_cheetos"] = "Cheetos ®",
+        ["item_gamer_cheetos_desc"] = "Heals you to full and allows you to smear your dirty fingers on someone to track them through the round",
+        ["item_gamer_spaghetti"] = "Mom's Spaghetti",
+        ["item_gamer_spaghetti_desc"] = "Heals you periodically for the rest of the round",
+        ["item_gamer_milk"] = "Choccy Milk",
+        ["item_gamer_milk_desc"] = "TODO: ???"
     }
 }
 
@@ -86,8 +94,8 @@ local function InitializeEquipment()
         if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_DORITOS) then
             TableInsert(EquipmentItems[ROLE_GAMER], {
                 id = EQUIP_GAMER_DORITOS,
-                type = "item_passive",
-                material = "vgui/ttt/gamer/icon_doritos",
+                type = "item_active",
+                material = "vgui/ttt/gamer/icon_gamer_doritos",
                 name = "item_gamer_doritos",
                 desc = "item_gamer_doritos_desc",
                 norandom = true
@@ -98,7 +106,7 @@ local function InitializeEquipment()
             TableInsert(EquipmentItems[ROLE_GAMER], {
                 id = EQUIP_GAMER_MTDEW,
                 type = "item_passive",
-                material = "vgui/ttt/gamer/icon_mtdew",
+                material = "vgui/ttt/gamer/icon_gamer_mtdew",
                 name = "item_gamer_mtdew",
                 desc = "item_gamer_mtdew_desc",
                 norandom = true
@@ -108,8 +116,8 @@ local function InitializeEquipment()
         if not table.HasItemWithPropertyValue(EquipmentItems[ROLE_GAMER], "id", EQUIP_GAMER_CHEETOS) then
             TableInsert(EquipmentItems[ROLE_GAMER], {
                 id = EQUIP_GAMER_CHEETOS,
-                type = "item_passive",
-                material = "vgui/ttt/gamer/icon_cheetos",
+                type = "item_active",
+                material = "vgui/ttt/gamer/icon_gamer_cheetos",
                 name = "item_gamer_cheetos",
                 desc = "item_gamer_cheetos_desc",
                 norandom = true
@@ -120,7 +128,7 @@ local function InitializeEquipment()
             TableInsert(EquipmentItems[ROLE_GAMER], {
                 id = EQUIP_GAMER_SPAGHETTI,
                 type = "item_passive",
-                material = "vgui/ttt/gamer/icon_spaghetti",
+                material = "vgui/ttt/gamer/icon_gamer_spaghetti",
                 name = "item_gamer_spaghetti",
                 desc = "item_gamer_spaghetti_desc",
                 norandom = true
@@ -131,7 +139,7 @@ local function InitializeEquipment()
             TableInsert(EquipmentItems[ROLE_GAMER], {
                 id = EQUIP_GAMER_MILK,
                 type = "item_passive",
-                material = "vgui/ttt/gamer/icon_milk",
+                material = "vgui/ttt/gamer/icon_gamer_milk",
                 name = "item_gamer_milk",
                 desc = "item_gamer_milk_desc",
                 norandom = true

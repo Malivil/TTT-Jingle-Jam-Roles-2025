@@ -356,3 +356,5 @@ ttt_yorkshireman_update_scoreboard 0   // Whether Yorkshiremen show dead players
 - [Lykrast](https://steamcommunity.com/id/Lykrast) for the code and models used to create the Yorkshireman's double barrel shotgun taken from ['Lykrast's TTT Weapon Collection'](https://steamcommunity.com/sharedfiles/filedetails/?id=337994500)
 - [Fresh Garry](https://steamcommunity.com/id/Fresh_Garry) for the code for the Puppeteer's target camera view taken from [TTT Detective Playercam](https://steamcommunity.com/sharedfiles/filedetails/?id=942402787)
 - HellSpike for the [finger model](https://gamebanana.com/mods/212872) used by the Gamer's Cheeto Fingers weapon
+- [pngimage.com](https://pngimg.com) for the [Spaghetti PNG](https://pngimg.com/image/85952) used by the Gamer's Mom's Spaghetti item
+- [pngall.com](https://www.pngall.com) for the [Chocolate Milk Transparent](https://www.pngall.com/chocolate-milk-png/download/145716/) used by the Gamer's Choccy Milk item

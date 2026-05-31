@@ -1,0 +1,7 @@
+"UnlitGeneric"
+{
+ "$basetexture" "vgui/ttt/gamer/icon_gamer_milk"
+ "$vertexcolor" 1
+ "$vertexalpha" 1
+ "$translucent" 1
+}

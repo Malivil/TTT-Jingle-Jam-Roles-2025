@@ -206,13 +206,13 @@ local function AnimateGacha()
     -- Reset
     timer.Create("TTTGmrGacha_Reset", GAMER.Config.Timing.Animations.Reset, 1, ResetGacha)
 end
--- TODO: Remove this
+
 concommand.Add("startgacha", function()
     if isAnimating then return end
 
-    prizeBall = GAMER.Prizes["doritos"]
+    prizeBall = GAMER.Prizes[table.GetKeys(GAMER.Prizes)[1]]
     AnimateGacha()
-end)
+end, nil, nil, FCVAR_CHEAT)
 
 net.Receive("TTTGamerGachaStart", function()
     if isAnimating then return end
@@ -510,3 +510,13 @@ end
 
 AddHook("TTTPrepareRound", "Gamer_TTTPrepareRound", Cleanup)
 AddHook("TTTEndRound", "Gamer_TTTEndRound", Cleanup)
+
+--------------
+-- TUTORIAL --
+--------------
+
+AddHook("TTTTutorialRoleText", "Gamer_TTTTutorialRoleText", function(role, titleLabel)
+    if role == ROLE_GAMER then
+        -- TODO
+    end
+end)
