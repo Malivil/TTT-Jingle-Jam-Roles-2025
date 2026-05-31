@@ -744,7 +744,7 @@ end)
 AddHook("TTTTutorialRoleText", "Puppeteer_TTTTutorialRoleText", function(role, titleLabel)
     if role == ROLE_PUPPETEER then
         local roleColor = ROLE_COLORS[ROLE_TRAITOR]
-        local html = "The " .. ROLE_STRINGS[ROLE_PUPPETEER] .. " is a a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>traitor team</span whose goal is to control a targeted player, watching their movements and applying negative effects."
+        local html = "The " .. ROLE_STRINGS[ROLE_PUPPETEER] .. " is a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>traitor team</span> whose goal is to control a targeted player, watching their movements and applying negative effects."
 
         html = html .. "<span style='display: block; margin-top: 10px;'>Each target can only have <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>one debuff</span> active on them.</span>"
 
