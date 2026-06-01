@@ -478,6 +478,8 @@ AddHook("PreDrawHalos", "Gamer_Highlight_PreDrawHalos", function()
         client = LocalPlayer()
     end
 
+    if not client:IsActiveGamer() or client:IsRoleAbilityDisabled() then return end
+
     local targets = {}
     for _, v in PlayerIterator() do
         if IsPlayer(v) and v:IsActive() and v ~= client and v.TTTGamerCheetoMarked then
@@ -489,6 +491,40 @@ AddHook("PreDrawHalos", "Gamer_Highlight_PreDrawHalos", function()
 
     -- Highlight the gamer's marked targets as orange
     halo.Add(targets, GAMER.Config.CheetoColor, 1, 1, 1, true, true)
+end)
+
+local fartColor = COLOR_GREEN
+net.Receive("TTTGamerMilkFart", function()
+    local target = net.ReadPlayer()
+    if not IsPlayer(target) then return end
+    if target:IsSpec() or not target:Alive() then return end
+
+    if not client then
+        client = LocalPlayer()
+    end
+
+    local height = target:GetViewOffset().z / 2
+    local pos = target:GetPos() + Vector(0, 0, height)
+    if client:GetPos():DistToSqr(pos) > 9000000 then return end
+
+    local emitter = ParticleEmitter(pos)
+    emitter:SetPos(pos)
+
+    for _ = 0, math.random(5, 15) do
+        local vec = Vector(MathRand(-3, 3), MathRand(-3, 3), height + MathRand(-2, 2))
+        local particle = emitter:Add("particle/particle_smokegrenade", target:LocalToWorld(vec))
+        particle:SetVelocity(Vector(0, 0, 4) + VectorRand() * 3)
+        particle:SetDieTime(MathRand(0.5, 2))
+        particle:SetStartAlpha(MathRandom(150, 220))
+        particle:SetEndAlpha(0)
+        local size = MathRandom(4, 7)
+        particle:SetStartSize(size)
+        particle:SetEndSize(size + 1)
+        particle:SetRoll(0)
+        particle:SetRollDelta(0)
+        particle:SetColor(fartColor.r, fartColor.g, fartColor.b)
+    end
+    emitter:Finish()
 end)
 
 -------------

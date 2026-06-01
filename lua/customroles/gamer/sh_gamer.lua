@@ -45,11 +45,11 @@ ROLE.translations = {
         ["item_gamer_spaghetti"] = "Mom's Spaghetti",
         ["item_gamer_spaghetti_desc"] = "Heals you periodically for the rest of the round",
         ["item_gamer_milk"] = "Choccy Milk",
-        ["item_gamer_milk_desc"] = "Eliminates fall damage and increases melee damage. Hope you're not lactose intolerant though..."
+        ["item_gamer_milk_desc"] = "Reduces fall damage and increases melee damage. Hope you're not lactose intolerant though..."
     }
 }
 
-local gamer_mtdew_speed_boost = CreateConVar("ttt_gamer_mtdew_speed_boost", "0.2", FCVAR_REPLICATED, "The amount to boost a player's speed after they drink a Mt. Dew (e.g. 0.2 = 20% = 120% total movement speed)", 0.1, 1)
+local gamer_mtdew_speed_boost = CreateConVar("ttt_gamer_mtdew_speed_boost", "0.2", FCVAR_REPLICATED, "The percentage to boost a player's speed after they drink a Mt. Dew (e.g. 0.2 = 20% = 120% total movement speed)", 0.1, 1)
 
 ROLE.convars = {
     {
@@ -64,6 +64,26 @@ ROLE.convars = {
     },
     {
         cvar = "ttt_gamer_spaghetti_interval",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_gamer_milk_fall_damage_reduction",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 2
+    },
+    {
+        cvar = "ttt_gamer_milk_melee_damage_bonus",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 2
+    },
+    {
+        cvar = "ttt_gamer_milk_fart_interval_min",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
+        cvar = "ttt_gamer_milk_fart_interval_max",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
     }

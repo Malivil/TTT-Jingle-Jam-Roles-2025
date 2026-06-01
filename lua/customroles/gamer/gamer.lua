@@ -1,22 +1,29 @@
 local cvars = cvars
 local hook = hook
 local math = math
+local net = net
 local player = player
 local timer = timer
 local util = util
 
 local AddHook = hook.Add
 local MathMin = math.min
+local MathRandom = math.random
 local PlayerIterator = player.Iterator
 
 util.AddNetworkString("TTTGamerGachaStart")
+util.AddNetworkString("TTTGamerMilkFart")
 
 ------------------
 -- ROLE CONVARS --
 ------------------
 
-local gamer_spaghetti_amount = CreateConVar("ttt_gamer_spaghetti_amount", "5", FCVAR_REPLICATED, "The amount of health a player should regain per interval after they each spaghetti", 1, 25)
+local gamer_spaghetti_amount = CreateConVar("ttt_gamer_spaghetti_amount", "5", FCVAR_REPLICATED, "The amount of health a player should regain per interval after they eat spaghetti", 1, 25)
 local gamer_spaghetti_interval = CreateConVar("ttt_gamer_spaghetti_interval", "5", FCVAR_REPLICATED, "How often a player who eats spaghetti should regain health", 1, 60)
+local gamer_milk_fall_damage_reduction = CreateConVar("ttt_gamer_milk_fall_damage_reduction", "1", FCVAR_REPLICATED, "The percentage of a player's fall damage to reduce after they drink choccy milk (e.g. 1 = 100% = 0 fall damage)", 0.1, 1)
+local gamer_milk_melee_damage_bonus = CreateConVar("ttt_gamer_milk_melee_damage_bonus", "0.25", FCVAR_REPLICATED, "The percentage to add to a player's melee damage after they drink choccy milk (e.g. 0.25 = 25% = 125% total melee damage)", 0.1, 1)
+local gamer_milk_fart_interval_min = CreateConVar("ttt_gamer_milk_fart_interval_min", "15", FCVAR_REPLICATED, "The minimum amount of time (in seconds) between milk farts", 1, 30)
+local gamer_milk_fart_interval_max = CreateConVar("ttt_gamer_milk_fart_interval_max", "45", FCVAR_REPLICATED, "The maximum amount of time (in seconds) between milk farts", 1, 60)
 
 ----------------
 -- ROLE LOGIC --
@@ -41,18 +48,22 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
         end
         ply:EmitSound("gamer/doritos.mp3", 100, 100, 1, CHAN_ITEM)
     elseif isequip == EQUIP_GAMER_MTDEW then
-        if ply.SetMaxJumpLevel then
-            ply:SetMaxJumpLevel(ply:GetMaxJumpLevel() + 1)
-        else
-            ply:SetJumpPower(ply:GetJumpPower() + defaultJumpPower)
+        if not ply:IsRoleAbilityDisabled() then
+            if ply.SetMaxJumpLevel then
+                ply:SetMaxJumpLevel(ply:GetMaxJumpLevel() + 1)
+            else
+                ply:SetJumpPower(ply:GetJumpPower() + defaultJumpPower)
+            end
         end
         ply:EmitSound("gamer/mtdew.mp3", 100, 100, 1, CHAN_ITEM)
     elseif isequip == EQUIP_GAMER_CHEETOS then
-        -- Heal the player to max
-        local hp = ply:Health()
-        local max = ply:GetMaxHealth()
-        if hp < max then
-            ply:SetHealth(max)
+        if not ply:IsRoleAbilityDisabled() then
+            -- Heal the player to max
+            local hp = ply:Health()
+            local max = ply:GetMaxHealth()
+            if hp < max then
+                ply:SetHealth(max)
+            end
         end
 
         -- If the player doesn't have the cheeto fingers already, give it to them
@@ -71,29 +82,69 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
     elseif isequip == EQUIP_GAMER_SPAGHETTI then
         ply:EmitSound("gamer/spaghetti.mp3", 100, 100, 1, CHAN_ITEM)
     elseif isequip == EQUIP_GAMER_MILK then
-        -- TODO:
-        -- Eliminate fall damage
-        -- Increase melee damage
-        -- Occasionally create fart cloud
         ply:EmitSound("gamer/milk.mp3", 100, 100, 1, CHAN_ITEM)
     end
 end)
 
-AddHook("TTTPlayerAliveThink", "Gamer_Spaghetti_TTTPlayerAliveThink", function(ply)
+AddHook("TTTPlayerAliveThink", "Gamer_TTTPlayerAliveThink", function(ply)
     if not IsPlayer(ply) then return end
-    if not ply:HasEquipmentItem(EQUIP_GAMER_SPAGHETTI) then return end
 
-    local lastHeal = ply.TTTGamerSpaghettiHealTime or 0
-    local curTime = CurTime()
-    if lastHeal + gamer_spaghetti_interval:GetInt() > curTime then return end
+    local hasSpaghetti = ply:HasEquipmentItem(EQUIP_GAMER_SPAGHETTI)
+    local hasMilk = ply:HasEquipmentItem(EQUIP_GAMER_MILK)
+    if not hasSpaghetti and not hasMilk then return end
+    if not ply:IsActiveGamer() or ply:IsRoleAbilityDisabled() then return end
 
-    ply.TTTGamerSpaghettiHealTime = curTime
+    if hasSpaghetti then
+        local lastHeal = ply.TTTGamerSpaghettiHealTime or 0
+        local curTime = CurTime()
+        if lastHeal + gamer_spaghetti_interval:GetInt() > curTime then return end
 
-    local hp = ply:Health()
-    local newHp = MathMin(ply:GetMaxHealth(), hp + gamer_spaghetti_amount:GetInt())
-    if hp >= newHp then return end
+        ply.TTTGamerSpaghettiHealTime = curTime
 
-    ply:SetHealth(newHp)
+        local hp = ply:Health()
+        local newHp = MathMin(ply:GetMaxHealth(), hp + gamer_spaghetti_amount:GetInt())
+        if hp >= newHp then return end
+
+        ply:SetHealth(newHp)
+    end
+
+    if hasMilk then
+        local nextMilkFart = ply.TTTGamerNextMilkFart or 0
+        local curTime = CurTime()
+        if nextMilkFart <= curTime then
+            local min = gamer_milk_fart_interval_min:GetInt()
+            local max = gamer_milk_fart_interval_max:GetInt()
+            if max < min then
+                max = min
+            end
+            ply.TTTGamerNextMilkFart = curTime + MathRandom(min, max)
+
+            ply:EmitSound("gamer/fart.mp3", 100, 100, 1, CHAN_ITEM)
+
+            net.Start("TTTGamerMilkFart")
+                net.WritePlayer(ply)
+            net.Broadcast()
+        end
+    end
+end)
+
+AddHook("EntityTakeDamage", "Gamer_Milk_EntityTakeDamage", function(ent, dmginfo)
+    if not IsPlayer(ent) then return end
+
+    -- Reduce fall damage if the victim has had milk
+    if ent:HasEquipmentItem(EQUIP_GAMER_MILK) then
+        if not ent:IsActiveGamer() or ent:IsRoleAbilityDisabled() then return end
+        if not dmginfo:IsFallDamage() then return end
+        dmginfo:ScaleDamage(1 - gamer_milk_fall_damage_reduction:GetFloat())
+    end
+
+    local att = dmginfo:GetAttacker()
+    -- Boost melee damage if the attacker has had milk
+    if IsPlayer(att) and att:HasEquipmentItem(EQUIP_GAMER_MILK) then
+        if not att:IsActiveGamer() or att:IsRoleAbilityDisabled() then return end
+        if not dmginfo:IsDamageType(DMG_SLASH) and not dmginfo:IsDamageType(DMG_CLUB) then return end
+        dmginfo:ScaleDamage(1 + gamer_milk_melee_damage_bonus:GetFloat())
+    end
 end)
 
 -------------
@@ -107,6 +158,7 @@ local function Cleanup()
         p.TTTGamerSpaghettiHealTime = nil
         p.TTTGamerHasUniquePrize = nil
         p.TTTGamerPrizes = nil
+        p.TTTGamerNextMilkFart = nil
 
         p:ClearProperty("TTTGamerCheetoMarked")
         if p.SetMaxJumpLevel then
