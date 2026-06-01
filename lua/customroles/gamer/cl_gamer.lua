@@ -470,8 +470,8 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
         local rarity = LANG.GetTranslation(GAMER.Config.Rarities[prizeBall.Rarity].Name)
         local text = string.upper(LANG.GetParamTranslation("gamer_prize_display_format", { name = name, rarity = rarity }))
 
-        DrawOutlinedText(text, "TraitorState", ScrW() / 2, ScrH() / 2 + 160, prizeColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        DrawOutlinedText(desc, "TraitorStateSmall", ScrW() / 2, ScrH() / 2 + 192, Color(255, 255, 255, prizeTextAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        DrawOutlinedText(text, "TraitorState", ScrW() / 2, ScrH() / 2 + 144, prizeColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        DrawOutlinedText(desc, "TraitorStateSmall", ScrW() / 2, ScrH() / 2 + 176, Color(255, 255, 255, prizeTextAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
 
     -- Prize Ball

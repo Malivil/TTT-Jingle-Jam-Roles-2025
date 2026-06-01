@@ -356,7 +356,7 @@ ttt_yorkshireman_update_scoreboard 0   // Whether Yorkshiremen show dead players
 ```
 
 # Special Thanks
-- [Game icons](https://game-icons.net/) for the role icons
+- [Game icons](https://game-icons.net/) for the role icons and prize icons used by the Gamer
 - [avhatar](https://sketchfab.com/avhatar) for the [original model](https://sketchfab.com/3d-models/simple-safe-2e308cb3fe1d4676beb43e75fdd27e8e) for the Safekeeper
   - Licensed as [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 - [Famoso](https://steamcommunity.com/profiles/76561198308951372) for the GMod version of the [safe model](https://steamcommunity.com/sharedfiles/filedetails/?id=3030515670) for the Safekeeper
