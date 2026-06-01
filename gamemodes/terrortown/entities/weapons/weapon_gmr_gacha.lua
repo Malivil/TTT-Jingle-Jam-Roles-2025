@@ -91,6 +91,8 @@ local function ChooseRandomPrize(ply)
         end
     end
 
+    prizes = {GAMER.Prizes["supergamer"]}
+
     return prizes[MathRandom(#prizes)]
 end
 

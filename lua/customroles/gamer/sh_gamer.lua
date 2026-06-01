@@ -65,6 +65,8 @@ ROLE.translations = {
         ["gamer_prize_sticksbreakbones_desc"] = "Immune to all but melee damage but can only do melee damage (with a 50% bonus)",
         ["gamer_prize_gambler_name"] = "Gambler",
         ["gamer_prize_gambler_desc"] = "Your loadout is randomized every 10 seconds, however you gain a 50% damage bonus",
+        ["gamer_prize_supergamer_name"] = "Supergamer",
+        ["gamer_prize_supergamer_desc"] = "Get a PAP'd Jetpack, a PHD Flopper, and take 50% less damage",
         -- Shop
         ["item_gamer_doritos"] = "Doritos ®",
         ["item_gamer_doritos_desc"] = "Gain 2 gacha rolls",
