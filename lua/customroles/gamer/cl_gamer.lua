@@ -610,12 +610,11 @@ end
 AddHook("TTTPrepareRound", "Gamer_TTTPrepareRound", Cleanup)
 AddHook("TTTEndRound", "Gamer_TTTEndRound", Cleanup)
 
-
 ----------------
 -- ROLE POPUP --
 ----------------
 
-hook.Add("TTTRolePopupRoleStringOverride", "Gamer_TTTRolePopupRoleStringOverride", function(cli, roleString)
+AddHook("TTTRolePopupRoleStringOverride", "Gamer_TTTRolePopupRoleStringOverride", function(cli, roleString)
     if not IsPlayer(cli) or not cli:IsGamer() then return end
 
     if gacha_only_mode:GetBool() then

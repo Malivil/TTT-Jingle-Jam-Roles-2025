@@ -102,14 +102,14 @@ local function ChooseRandomPrize(ply)
         TableInsert(prizes[prize.Rarity], prize)
     end
 
-    if (#prizes[targetRarity] > 0) then
+    if #prizes[targetRarity] > 0 then
         return prizes[targetRarity][MathRandom(#prizes[targetRarity])]
     end
 
     -- If we can't find any prizes of the target rarity check the next lowest rarity and try again until we find a prize or run out of lower rarities
     local nextRarity = targetRarity - 1
     while nextRarity >= GAMER.Rarities.Common do
-        if (#prizes[nextRarity] > 0) then
+        if #prizes[nextRarity] > 0 then
             return prizes[nextRarity][MathRandom(#prizes[nextRarity])]
         end
         nextRarity = nextRarity - 1
@@ -118,7 +118,7 @@ local function ChooseRandomPrize(ply)
     -- If there are still no prizes in any of the lower rarities, check the next highest rarity and try again until we find a prize or run out of higher rarities
     nextRarity = targetRarity + 1
     while nextRarity <= GAMER.Rarities.Legendary do
-        if (#prizes[nextRarity] > 0) then
+        if #prizes[nextRarity] > 0 then
             return prizes[nextRarity][MathRandom(#prizes[nextRarity])]
         end
         nextRarity = nextRarity + 1

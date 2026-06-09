@@ -195,7 +195,7 @@ local function InitializeEquipment()
             -- If we are in gacha only mode then don't put these items in the Gamer's shop
             for i = #EquipmentItems[ROLE_GAMER], 1, -1 do
                 local equipment = EquipmentItems[ROLE_GAMER][i]
-                if equipment["id"] == EQUIP_GAMER_DORITOS or equipment["id"] == EQUIP_GAMER_MTDEW or equipment["id"] == EQUIP_GAMER_CHEETOS or equipment["id"] == EQUIP_GAMER_SPAGHETTI or equipment["id"] == EQUIP_GAMER_MILK then
+                if equipment.id == EQUIP_GAMER_DORITOS or equipment.id == EQUIP_GAMER_MTDEW or equipment.id == EQUIP_GAMER_CHEETOS or equipment.id == EQUIP_GAMER_SPAGHETTI or equipment.id == EQUIP_GAMER_MILK then
                     TableRemove(EquipmentItems[ROLE_GAMER], i)
                 end
             end
@@ -260,8 +260,8 @@ local function InitializeEquipment()
 end
 InitializeEquipment()
 
-hook.Add("Initialize", "Gamer_Equipment_Initialize", InitializeEquipment)
-hook.Add("TTTPrepareRound", "Gamer_Equipment_Initialize", InitializeEquipment)
+AddHook("Initialize", "Gamer_Equipment_Initialize", InitializeEquipment)
+AddHook("TTTPrepareRound", "Gamer_Equipment_Initialize", InitializeEquipment)
 
 ------------
 -- CONFIG --
