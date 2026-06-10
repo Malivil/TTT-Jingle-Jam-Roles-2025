@@ -343,7 +343,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         PUPPETEER_DEBUFF_TYPE_PINATA, dform, buttonWidth, buttonHeight, "pinata", padding)
     dpinata:SetPos(padding, buttonY)
 
-    local dspoilsport = CreateDebuffButton(T("puppeteer_puppet_debuff_1"), PT("puppeteer_puppet_debuff_1_tip", { avindicator = ROLE_STRINGS_EXT[ROLE_VINDICATOR] }),
+    local dspoilsport = CreateDebuffButton(T("puppeteer_puppet_debuff_1"), PT("puppeteer_puppet_debuff_1_tip", { aninnocent = ROLE_STRINGS_EXT[ROLE_INNOCENT], avindicator = ROLE_STRINGS_EXT[ROLE_VINDICATOR] }),
         PUPPETEER_DEBUFF_TYPE_SPOILSPORT, dform, buttonWidth, buttonHeight, "spoilsport", padding)
     dspoilsport:SetY(buttonY)
     dspoilsport:MoveRightOf(dpinata, padding)
