@@ -73,6 +73,8 @@ local function UpdateState(enabled)
     if not client:IsActivePuppeteer() then return end
 
     for _, btn in pairs(buttons) do
+        if not btn or not IsValid(btn) then continue end
+
         local btnEnabled = enabled and (not btn.EnablePredicate or btn:EnablePredicate())
         btn:SetEnabled(btnEnabled)
         if btn.label then
@@ -222,6 +224,7 @@ local function UpdateTargetsList(skip)
     end
 end
 
+local fireStatus = {}
 AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dframe)
     if not client then
         client = LocalPlayer()
@@ -262,6 +265,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
 
         ClearTarget()
         buttons = {}
+
+        dtargetbox = nil
+        dfire = nil
+        dcredits = nil
     end
 
     local div = vgui.Create("DHorizontalDivider", dform)
@@ -289,11 +296,13 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     dfire:SetEnabled(false)
     function dfire:EnablePredicate()
         if not IsPlayer(target) then return false end
+        if fireStatus[target:SteamID64()] then return false end
         if not IsPlayer(client) or not client:IsActivePuppeteer() then return false end
         return true
     end
     function dfire:DoClick()
         dfire:SetEnabled(false)
+        fireStatus[target:SteamID64()] = true
         net.Start("TTT_PuppeteerFireWeapon")
             net.WritePlayer(target)
         net.SendToServer()
@@ -480,7 +489,8 @@ net.Receive("TTT_PuppeteerFireWeapon", function()
     end
     if not IsPlayer(client) or not client:IsActivePuppeteer() then return end
 
-    if tgt == target then
+    fireStatus[tgt:SteamID64()] = true
+    if tgt == target and dfire and IsValid(dfire) then
         dfire:SetEnabled(false)
     end
 end)
@@ -494,7 +504,8 @@ net.Receive("TTT_PuppeteerFireWeaponEnd", function()
     end
     if not IsPlayer(client) or not client:IsActivePuppeteer() then return end
 
-    if tgt == target then
+    fireStatus[tgt:SteamID64()] = nil
+    if tgt == target and dfire and IsValid(dfire) then
         dfire:SetEnabled(true)
     end
 end)
@@ -717,6 +728,7 @@ AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     ClearCamera()
     TargetCleanup()
 
+    fireStatus = {}
     buttons = {}
 end)
 
