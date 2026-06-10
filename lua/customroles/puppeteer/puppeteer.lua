@@ -30,6 +30,8 @@ util.AddNetworkString("TTT_PuppeteerFireWeaponEnd")
 -- ROLE CONVARS --
 ------------------
 
+local puppeteer_command_fire_cooldown = CreateConVar("ttt_puppeteer_command_fire_cooldown", "0", FCVAR_NONE, "The additional cooldown (in seconds) to apply to the Fire Weapon command for each target", 0, 30)
+
 local puppeteer_command_fire_duration = GetConVar("ttt_puppeteer_command_fire_duration")
 local puppeteer_debuff_pinata_count = GetConVar("ttt_puppeteer_debuff_pinata_count")
 local puppeteer_debuff_wanderer_delay = GetConVar("ttt_puppeteer_debuff_wanderer_delay")
@@ -130,30 +132,48 @@ end)
 -- FIRE WEAPON --
 -----------------
 
+local function EndFireCommand(target)
+    if not IsPlayer(target) then return end
+
+    net.Start("TTT_PuppeteerFireWeaponEnd")
+        net.WritePlayer(target)
+    net.Send(GetRoleFilter(ROLE_PUPPETEER))
+end
+
 net.Receive("TTT_PuppeteerFireWeapon", function(len, ply)
     local target = net.ReadPlayer()
 
     if not IsPlayer(ply) or not ply:IsActivePuppeteer() then return end
     if not IsPlayer(target) or not target:Alive() or target:IsSpec() then return end
 
-    net.Start("TTT_PuppeteerFireWeapon")
-        net.WritePlayer(target)
-    net.Send(GetRoleFilter(ROLE_PUPPETEER, true))
-
     local wep = target.GetActiveWeapon and target:GetActiveWeapon() or nil
     if not IsValid(wep) then return end
     if not wep.Primary or not wep.Primary.Delay then return end
 
+    local timerId = "Puppeteer_FireWeapon_" .. target:SteamID64()
+    if timer.Exists(timerId) then return end
+
     target:QueueMessage(MSG_PRINTBOTH, string.Capitalize(ROLE_STRINGS_EXT[ROLE_PUPPETEER]) .. " is forcing you to use your weapon!")
 
     local dur = puppeteer_command_fire_duration:GetInt()
+    local cooldown = puppeteer_command_fire_cooldown:GetInt()
+
+    net.Start("TTT_PuppeteerFireWeapon")
+        net.WritePlayer(target)
+        net.WriteUInt(dur + cooldown, 6)
+    net.Send(GetRoleFilter(ROLE_PUPPETEER))
+
     local repeats = math.floor(dur/wep.Primary.Delay) + 1
-    local timerId = "Puppeteer_FireWeapon_" .. ply:SteamID64()
     timer.Create(timerId, wep.Primary.Delay, repeats, function()
         if timer.RepsLeft(timerId) == 0 and IsPlayer(target) then
-            net.Start("TTT_PuppeteerFireWeaponEnd")
-                net.WritePlayer(target)
-            net.Send(GetRoleFilter(ROLE_PUPPETEER, true))
+            if cooldown > 0 then
+                timer.Create(timerId, cooldown, 1, function()
+                    EndFireCommand(target)
+                end)
+            else
+                EndFireCommand(target)
+            end
+            return
         end
 
         if not IsValid(wep) then return end

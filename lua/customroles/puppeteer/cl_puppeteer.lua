@@ -482,12 +482,7 @@ end)
 
 net.Receive("TTT_PuppeteerFireWeapon", function()
     local tgt = net.ReadPlayer()
-    if not IsPlayer(tgt) or not tgt:Alive() or tgt:IsSpec() then return end
-
-    if not client then
-        client = LocalPlayer()
-    end
-    if not IsPlayer(client) or not client:IsActivePuppeteer() then return end
+    if not IsPlayer(tgt) then return end
 
     fireStatus[tgt:SteamID64()] = true
     if tgt == target and dfire and IsValid(dfire) then
@@ -497,12 +492,7 @@ end)
 
 net.Receive("TTT_PuppeteerFireWeaponEnd", function()
     local tgt = net.ReadPlayer()
-    if not IsPlayer(tgt) or not tgt:Alive() or tgt:IsSpec() then return end
-
-    if not client then
-        client = LocalPlayer()
-    end
-    if not IsPlayer(client) or not client:IsActivePuppeteer() then return end
+    if not IsPlayer(tgt) then return end
 
     fireStatus[tgt:SteamID64()] = nil
     if tgt == target and dfire and IsValid(dfire) then

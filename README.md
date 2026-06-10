@@ -211,6 +211,7 @@ ttt_puppeteer_min_players              0   // The minimum number of players requ
 ttt_puppeteer_starting_health          100 // The amount of health a Puppeteer starts with
 ttt_puppeteer_max_health               100 // The maximum amount of health a Puppeteer can have
 ttt_puppeteer_command_fire_duration    2   // How long (in seconds) the target's weapon should be fired for when the Puppeteer commands it
+ttt_puppeteer_command_fire_cooldown    0   // The additional cooldown (in seconds) to apply to the Fire Weapon command for each target
 ttt_puppeteer_debuff_pinata_count      3   // How many shop items a player with the Piñata debuff will drop when they are killed
 ttt_puppeteer_debuff_wanderer_delay    10  // How long (in seconds) before each Wanderer location is sent to the Puppeteer debuff target
 ttt_puppeteer_debuff_wanderer_timer    45  // How long (in seconds) the Puppeteer debuff target has to find the Wanderer location

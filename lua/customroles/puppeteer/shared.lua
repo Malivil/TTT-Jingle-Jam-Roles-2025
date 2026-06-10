@@ -25,6 +25,11 @@ ROLE.convars =
         decimal = 2
     },
     {
+        cvar = "ttt_puppeteer_command_fire_cooldown",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
         cvar = "ttt_puppeteer_debuff_pinata_count",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
