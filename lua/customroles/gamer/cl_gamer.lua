@@ -263,6 +263,14 @@ net.Receive("TTTGamerGachaStart", function()
     AnimateGacha()
 end)
 
+net.Receive("TTTGachaPrizeStart", function()
+    isAnimating = false
+    local prizeId = net.ReadString()
+    if GAMER.Prizes[prizeId] then
+        GAMER.Prizes[prizeId]:Start(LocalPlayer())
+    end
+end)
+
 local function DrawBall(ball)
     local circlePoly = {}
     for i = 0, 32 do
