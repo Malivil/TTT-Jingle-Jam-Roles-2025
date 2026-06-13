@@ -183,12 +183,3 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:DryFire() return false end
-
-if CLIENT then
-    net.Receive("TTTGachaPrizeStart", function()
-        local prizeId = net.ReadString()
-        if GAMER.Prizes[prizeId] then
-            GAMER.Prizes[prizeId]:Start(LocalPlayer())
-        end
-    end)
-end
