@@ -46,6 +46,11 @@ function PRIZE:Start(ply)
     end)
 end
 
+function PRIZE:End(ply)
+    if CLIENT then return end
+    hook.Remove("EntityTakeDamage", "Gamer_Supergamer_EntityTakeDamage_" .. ply:SteamID64())
+end
+
 function PRIZE:CanStart(ply)
     if not TTTPAP then return false end
     return weapons.Get("weapon_ttt_jetpack") ~= nil and weapons.Get("ttt_perk_phd") ~= nil

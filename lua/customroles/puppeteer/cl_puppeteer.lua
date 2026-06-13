@@ -73,6 +73,8 @@ local function UpdateState(enabled)
     if not client:IsActivePuppeteer() then return end
 
     for _, btn in pairs(buttons) do
+        if not btn or not IsValid(btn) then continue end
+
         local btnEnabled = enabled and (not btn.EnablePredicate or btn:EnablePredicate())
         btn:SetEnabled(btnEnabled)
         if btn.label then
@@ -222,6 +224,7 @@ local function UpdateTargetsList(skip)
     end
 end
 
+local fireStatus = {}
 AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dframe)
     if not client then
         client = LocalPlayer()
@@ -262,6 +265,10 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
 
         ClearTarget()
         buttons = {}
+
+        dtargetbox = nil
+        dfire = nil
+        dcredits = nil
     end
 
     local div = vgui.Create("DHorizontalDivider", dform)
@@ -289,11 +296,13 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     dfire:SetEnabled(false)
     function dfire:EnablePredicate()
         if not IsPlayer(target) then return false end
+        if fireStatus[target:SteamID64()] then return false end
         if not IsPlayer(client) or not client:IsActivePuppeteer() then return false end
         return true
     end
     function dfire:DoClick()
         dfire:SetEnabled(false)
+        fireStatus[target:SteamID64()] = true
         net.Start("TTT_PuppeteerFireWeapon")
             net.WritePlayer(target)
         net.SendToServer()
@@ -334,7 +343,7 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
         PUPPETEER_DEBUFF_TYPE_PINATA, dform, buttonWidth, buttonHeight, "pinata", padding)
     dpinata:SetPos(padding, buttonY)
 
-    local dspoilsport = CreateDebuffButton(T("puppeteer_puppet_debuff_1"), PT("puppeteer_puppet_debuff_1_tip", { avindicator = ROLE_STRINGS_EXT[ROLE_VINDICATOR] }),
+    local dspoilsport = CreateDebuffButton(T("puppeteer_puppet_debuff_1"), PT("puppeteer_puppet_debuff_1_tip", { aninnocent = ROLE_STRINGS_EXT[ROLE_INNOCENT], avindicator = ROLE_STRINGS_EXT[ROLE_VINDICATOR] }),
         PUPPETEER_DEBUFF_TYPE_SPOILSPORT, dform, buttonWidth, buttonHeight, "spoilsport", padding)
     dspoilsport:SetY(buttonY)
     dspoilsport:MoveRightOf(dpinata, padding)
@@ -473,28 +482,20 @@ end)
 
 net.Receive("TTT_PuppeteerFireWeapon", function()
     local tgt = net.ReadPlayer()
-    if not IsPlayer(tgt) or not tgt:Alive() or tgt:IsSpec() then return end
+    if not IsPlayer(tgt) then return end
 
-    if not client then
-        client = LocalPlayer()
-    end
-    if not IsPlayer(client) or not client:IsActivePuppeteer() then return end
-
-    if tgt == target then
+    fireStatus[tgt:SteamID64()] = true
+    if tgt == target and dfire and IsValid(dfire) then
         dfire:SetEnabled(false)
     end
 end)
 
 net.Receive("TTT_PuppeteerFireWeaponEnd", function()
     local tgt = net.ReadPlayer()
-    if not IsPlayer(tgt) or not tgt:Alive() or tgt:IsSpec() then return end
+    if not IsPlayer(tgt) then return end
 
-    if not client then
-        client = LocalPlayer()
-    end
-    if not IsPlayer(client) or not client:IsActivePuppeteer() then return end
-
-    if tgt == target then
+    fireStatus[tgt:SteamID64()] = nil
+    if tgt == target and dfire and IsValid(dfire) then
         dfire:SetEnabled(true)
     end
 end)
@@ -717,6 +718,7 @@ AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
     ClearCamera()
     TargetCleanup()
 
+    fireStatus = {}
     buttons = {}
 end)
 

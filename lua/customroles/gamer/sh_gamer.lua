@@ -437,7 +437,7 @@ local function Cleanup()
         end
 
         if SERVER then
-            p.TTTGamerPrizes = nil
+            p:ClearProperty("TTTGamerPrizes", p)
         end
     end
 end

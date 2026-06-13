@@ -25,6 +25,11 @@ ROLE.convars =
         decimal = 2
     },
     {
+        cvar = "ttt_puppeteer_command_fire_cooldown",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
+    },
+    {
         cvar = "ttt_puppeteer_debuff_pinata_count",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
@@ -64,7 +69,7 @@ ROLE.translations = {
         ["puppeteer_puppet_debuff_0_tip"] = "When the target dies, they drop {num} random {traitor} items",
         ["puppeteer_puppet_debuff_0_desc"] = "Drop random shop items on death",
         ["puppeteer_puppet_debuff_1"] = "Spoilsport",
-        ["puppeteer_puppet_debuff_1_tip"] = "When the target is killed, they come back as {avindicator}",
+        ["puppeteer_puppet_debuff_1_tip"] = "When the target is killed by {aninnocent}, they come back as {avindicator}",
         ["puppeteer_puppet_debuff_1_desc"] = "You hunt down your killer",
         ["puppeteer_puppet_debuff_2"] = "Copycat",
         ["puppeteer_puppet_debuff_2_tip"] = "Target becomes the role of the next player they kill",

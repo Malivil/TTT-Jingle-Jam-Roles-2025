@@ -38,6 +38,7 @@ function PRIZE:Start(ply)
 end
 
 function PRIZE:End(ply)
+    if CLIENT then return end
     hook.Remove("EntityTakeDamage", "Gamer_SticksBreakBones_EntityTakeDamage_" .. ply:SteamID64())
 end
 

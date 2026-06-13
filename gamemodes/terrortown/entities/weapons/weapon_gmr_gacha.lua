@@ -171,7 +171,7 @@ function SWEP:PrimaryAttack()
 
             local prizes = owner.TTTGamerPrizes or {}
             TableInsert(prizes, prize.Id)
-            owner.TTTGamerPrizes = prizes
+            owner:SetProperty("TTTGamerPrizes", prizes, owner)
         end)
 
         if ammo == 1 and not gacha_only_mode:GetBool() then

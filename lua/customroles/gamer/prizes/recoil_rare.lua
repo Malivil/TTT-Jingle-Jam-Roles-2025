@@ -23,6 +23,9 @@ function PRIZE:Start(ply)
 end
 
 function PRIZE:End(ply)
+    if SERVER then
+        hook.Remove("WeaponEquip", "Gamer_WeaponEquip_Rare_" .. ply:SteamID64())
+    end
     for _, weap in ipairs(ply:GetWeapons()) do
         GAMER.ResetWeaponRecoil(weap)
     end
