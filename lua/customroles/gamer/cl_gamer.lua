@@ -51,7 +51,6 @@ local gacha_offset_y = CreateClientConVar("ttt_gamer_gacha_offset_y", "0", true,
 local gacha_only_mode = GetConVar("ttt_gamer_gacha_only_mode")
 local gacha_silly_prizes = GetConVar("ttt_gamer_gacha_silly_prizes")
 
-
 concommand.Add("ttt_gamer_gacha_offset_reset", function()
     gacha_offset_x:SetInt(gacha_offset_x:GetDefault())
     gacha_offset_y:SetInt(gacha_offset_y:GetDefault())
