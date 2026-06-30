@@ -248,7 +248,7 @@ ttt_randoswapper_max_swaps                5   // The maximum number of times the
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/sfk/tab_sfk.png) Safekeeper
 _Suggested By_: Corvatile\
-The Safekeeper is a Independent role that places a safe somewhere on the map that they must defend. If the safe is placed and unopened when the round ends, they win!
+The Safekeeper is an Independent role that places a safe somewhere on the map that they must defend. If the safe is placed and unopened when the round ends, they win!
 \
 \
 **ConVars**
