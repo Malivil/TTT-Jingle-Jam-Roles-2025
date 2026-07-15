@@ -50,6 +50,10 @@ ROLE.convars =
         numericOffset = 0
     },
     {
+        cvar = "ttt_sibling_reveal_target",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
         cvar = "ttt_sibling_target_innocents",
         type = ROLE_CONVAR_TYPE_BOOL
     },
@@ -73,7 +77,9 @@ ROLE.convars =
 
 ROLE.translations = {
     ["english"] = {
-        ["sibling_targetid"] = "YOUR SIBLING"
+        ["sibling_targetid"] = "YOUR SIBLING",
+        ["info_popup_sibling_hidden"] = [[You are {role}! You get copies of your
+target's shop purchases (and might steal them).]]
     }
 }
 
@@ -96,6 +102,7 @@ end
 local sibling_share_mode = CreateConVar("ttt_sibling_share_mode", "3", FCVAR_REPLICATED, "How to handle the Sibling's \"share\" logic. 1 - Copy the purchased item. 2 - Chance to steal. 3 - Copy the purchased item with a chance to steal", 1, 3)
 local sibling_copy_count = CreateConVar("ttt_sibling_copy_count", "1", FCVAR_REPLICATED, "How many times the Sibling should copy their target's shop purchases. Set to \"0\" to copy all purchases. Only used when \"ttt_sibling_share_mode\" is set to a mode that copies", 0, 25)
 local sibling_steal_chance = CreateConVar("ttt_sibling_steal_chance", "0.5", FCVAR_REPLICATED, "The chance that a Sibling will steal their target's shop purchase instead of copying (e.g. 0.5 = 50% chance to steal). Only used when \"ttt_sibling_share_mode\" is set to a mode that steals", 0, 1)
+local sibling_reveal_target = CreateConVar("ttt_sibling_reveal_target", "1", FCVAR_REPLICATED, "Whether the Sibling's target is revealed to the Sibling", 0, 1)
 local sibling_target_innocents = CreateConVar("ttt_sibling_target_innocents", "1", FCVAR_REPLICATED, "Whether the Sibling's target can be an innocent role (not including detectives)", 0, 1)
 local sibling_target_detectives = CreateConVar("ttt_sibling_target_detectives", "1", FCVAR_REPLICATED, "Whether the Sibling's target can be a detective role", 0, 1)
 local sibling_target_traitors = CreateConVar("ttt_sibling_target_traitors", "1", FCVAR_REPLICATED, "Whether the Sibling's target can be a traitor role", 0, 1)
@@ -156,7 +163,9 @@ if SERVER then
         local target = targets[MathRandom(#targets)]
         ply:SetProperty("TTTSiblingTarget", target:SteamID64(), ply)
         ply.TTTSiblingCopyCount = 0
-        ply:QueueMessage(MSG_PRINTBOTH, target:Nick() .. " is your " .. ROLE_STRINGS[ROLE_SIBLING] .. "!")
+        if sibling_reveal_target:GetBool() then
+            ply:QueueMessage(MSG_PRINTBOTH, target:Nick() .. " is your " .. ROLE_STRINGS[ROLE_SIBLING] .. "!")
+        end
     end
 
     local function CallShopHooks(isequip, id, ply)
@@ -272,7 +281,7 @@ if CLIENT then
     ---------------
 
     local function Sibling_TTTTargetIDPlayerText(ent, cli, text, col, secondary_text)
-        if cli:IsSibling() and IsPlayer(ent) and ent:SteamID64() == cli.TTTSiblingTarget and not cli:IsRoleAbilityDisabled() then
+        if cli:IsSibling() and IsPlayer(ent) and ent:SteamID64() == cli.TTTSiblingTarget and sibling_reveal_target:GetBool() and not cli:IsRoleAbilityDisabled() then
             -- Don't overwrite text
             if text then
                 -- Don't overwrite secondary text either
@@ -287,6 +296,7 @@ if CLIENT then
     ROLE.istargetidoverridden = function(ply, target, showJester)
         if not ply:IsSibling() then return end
         if not IsPlayer(target) then return end
+        if not sibling_reveal_target:GetBool() then return end
         if ply:IsRoleAbilityDisabled() then return end
 
         ------ icon , ring , text
@@ -298,7 +308,7 @@ if CLIENT then
     ----------------
 
     local function Sibling_TTTScoreboardPlayerName(ply, cli, text)
-        if cli:IsSibling() and ply:SteamID64() == cli.TTTSiblingTarget and not cli:IsRoleAbilityDisabled() then
+        if cli:IsSibling() and ply:SteamID64() == cli.TTTSiblingTarget and sibling_reveal_target:GetBool() and not cli:IsRoleAbilityDisabled()then
             local newText = " (" .. LANG.GetTranslation("sibling_targetid") .. ")"
             return ply:Nick() .. newText
         end
@@ -307,6 +317,7 @@ if CLIENT then
     ROLE.isscoreboardinfooverridden = function(ply, target)
         if not ply:IsSibling() then return end
         if not IsPlayer(target) then return end
+        if not sibling_reveal_target:GetBool() then return end
         if ply:IsRoleAbilityDisabled() then return end
 
         -- Shared logic
@@ -328,6 +339,14 @@ if CLIENT then
                 targetNick = target:Nick()
             end
             return { siblingtarget = targetNick }
+        end
+    end
+
+    local function Sibling_TTTRolePopupRoleStringOverride(cli, roleString)
+        if not IsPlayer(cli) or not cli:IsSibling() then return end
+
+        if not sibling_reveal_target:GetBool() then
+            return roleString .. "_hidden"
         end
     end
 
@@ -417,6 +436,7 @@ if CLIENT then
 
     ROLE.registeredhooks = {
         ["TTTRolePopupParams"] = Sibling_TTTRolePopupParams,
+        ["TTTRolePopupRoleStringOverride"] = Sibling_TTTRolePopupRoleStringOverride,
         ["TTTScoreboardPlayerName"] = Sibling_TTTScoreboardPlayerName,
         ["TTTTargetIDPlayerText"] = Sibling_TTTTargetIDPlayerText
     }

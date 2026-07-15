@@ -248,7 +248,7 @@ ttt_randoswapper_max_swaps                5   // The maximum number of times the
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/sfk/tab_sfk.png) Safekeeper
 _Suggested By_: Corvatile\
-The Safekeeper is a Independent role that places a safe somewhere on the map that they must defend. If the safe is placed and unopened when the round ends, they win!
+The Safekeeper is an Independent role that places a safe somewhere on the map that they must defend. If the safe is placed and unopened when the round ends, they win!
 \
 \
 **ConVars**
@@ -295,6 +295,7 @@ ttt_sibling_max_health          100 // The maximum amount of health a Sibling ca
 ttt_sibling_copy_count          1   // How many times the Sibling should copy their target's shop purchases. Set to "0" to copy all purchases. Only used when "ttt_sibling_share_mode" is set to a mode that copies
 ttt_sibling_share_mode          3   // How to handle the Sibling's "share" logic. 1 - Copy the purchased item. 2 - Chance to steal. 3 - Copy the purchased item with a chance to steal
 ttt_sibling_steal_chance        0.5 // The chance that a Sibling will steal their target's shop purchase instead of copying (e.g. 0.5 = 50% chance to steal). Only used when "ttt_sibling_share_mode" is set to a mode that steals
+ttt_sibling_reveal_target       1   // Whether the Sibling's target is revealed to the Sibling
 ttt_sibling_target_detectives   1   // Whether the Sibling's target can be a detective role
 ttt_sibling_target_independents 1   // Whether the Sibling's target can be an independent role
 ttt_sibling_target_innocents    1   // Whether the Sibling's target can be an innocent role (not including detectives)
