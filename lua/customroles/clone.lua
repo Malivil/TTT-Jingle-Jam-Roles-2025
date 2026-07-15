@@ -55,8 +55,6 @@ ROLE.convars = {
     }
 }
 
-RegisterRole(ROLE)
-
 ------------------
 -- ROLE CONVARS --
 ------------------
@@ -88,7 +86,7 @@ if SERVER then
     -- ROLE FEATURES --
     -------------------
 
-    AddHook("PostPlayerDeath", "Clone_PostPlayerDeath", function(ply)
+    local function Clone_PostPlayerDeath(ply)
         local sid64 = ply:SteamID64()
         for _, p in PlayerIterator() do
             if not p:IsClone() then continue end
@@ -99,7 +97,7 @@ if SERVER then
                 p:Kill()
             end
         end
-    end)
+    end
 
     ------------
     -- EVENTS --
@@ -118,6 +116,14 @@ if SERVER then
             v:ClearProperty("TTTCloneTarget")
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["PostPlayerDeath"] = Clone_PostPlayerDeath
+    }
 end
 
 if CLIENT then
@@ -125,7 +131,7 @@ if CLIENT then
     -- TARGET ID --
     ---------------
 
-    AddHook("TTTTargetIDPlayerText", "Clone_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
+    local function Clone_TTTTargetIDPlayerText(ent, cli, text, col, secondary_text)
         if cli:IsClone() and IsPlayer(ent) and ent:SteamID64() == cli.TTTCloneTarget and not cli:IsRoleAbilityDisabled() then
             -- Don't overwrite text
             if text then
@@ -136,7 +142,7 @@ if CLIENT then
                 return LANG.GetTranslation("clone_targetid"), ROLE_COLORS_RADAR[ROLE_CLONE]
             end
         end
-    end)
+    end
 
     ROLE.istargetidoverridden = function(ply, target, showJester)
         if not ply:IsClone() then return end
@@ -151,12 +157,12 @@ if CLIENT then
     -- SCOREBOARD --
     ----------------
 
-    AddHook("TTTScoreboardPlayerName", "Clone_TTTScoreboardPlayerName", function(ply, cli, text)
+    local function Clone_TTTScoreboardPlayerName(ply, cli, text)
         if cli:IsClone() and ply:SteamID64() == cli.TTTCloneTarget and not cli:IsRoleAbilityDisabled() then
             local newText = " (" .. LANG.GetTranslation("clone_targetid") .. ")"
             return ply:Nick() .. newText
         end
-    end)
+    end
 
     ROLE.isscoreboardinfooverridden = function(ply, target)
         if not ply:IsClone() then return end
@@ -174,7 +180,7 @@ if CLIENT then
     -- WIN CHECKS --
     ----------------
 
-    AddHook("TTTScoringSecondaryWins", "Clone_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+    local function Clone_TTTScoringSecondaryWins(wintype, secondary_wins)
         for _, p in PlayerIterator() do
             if not p:IsClone() then continue end
 
@@ -200,13 +206,13 @@ if CLIENT then
                 return
             end
         end
-    end)
+    end
 
     ------------
     -- EVENTS --
     ------------
 
-    AddHook("TTTSyncEventIDs", "Clone_TTTSyncEventIDs", function()
+    local function Clone_TTTSyncEventIDs()
         EVENT_CLONEPLAYERCLONED = EVENTS_BY_ROLE[ROLE_CLONE]
         local cloned_icon = Material("icon16/user_suit.png")
         local Event = CLSCORE.DeclareEventDisplay
@@ -218,7 +224,7 @@ if CLIENT then
             icon = function(e)
                 return cloned_icon, "Cloned"
             end})
-    end)
+    end
 
     net.Receive("TTT_ClonePlayerCloned", function(len)
         local clone = net.ReadString()
@@ -230,7 +236,7 @@ if CLIENT then
         })
     end)
 
-    hook.Add("TTTScoringSummaryRender", "Clone_TTTScoringSummaryRender", function(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
+    local function Clone_TTTScoringSummaryRender(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
         if not IsPlayer(ply) then return end
         if not ply:IsClone() then return end
 
@@ -239,7 +245,7 @@ if CLIENT then
         if not IsPlayer(target) then return end
 
         return roleFileName, groupingRole, roleColor, name, target:Nick(), LANG.GetTranslation("score_clone_cloned")
-    end)
+    end
 
     --------------
     -- TUTORIAL --
@@ -285,4 +291,18 @@ if CLIENT then
             return html
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["TTTScoreboardPlayerName"] = Clone_TTTScoreboardPlayerName,
+        ["TTTScoringSecondaryWins"] = Clone_TTTScoringSecondaryWins,
+        ["TTTScoringSummaryRender"] = Clone_TTTScoringSummaryRender,
+        ["TTTSyncEventIDs"] = Clone_TTTSyncEventIDs,
+        ["TTTTargetIDPlayerText"] = Clone_TTTTargetIDPlayerText
+    }
 end
+
+RegisterRole(ROLE)

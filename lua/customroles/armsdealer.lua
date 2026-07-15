@@ -282,11 +282,11 @@ if SERVER then
         end
     end
 
-    AddHook("PostPlayerDeath", "ArmsDealer_PostPlayerDeath", function(ply)
+    local function ArmsDealer_PostPlayerDeath(ply)
         if not IsPlayer(ply) then return end
         if not ply:IsArmsDealer() then return end
         ClearTracking(ply)
-    end)
+    end
 
     AddHook("TTTPlayerRoleChanged", "ArmsDealer_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
         if oldRole == newRole then return end
@@ -302,7 +302,7 @@ if SERVER then
         end
     end)
 
-    AddHook("TTTPlayerAliveThink", "ArmsDealer_TTTPlayerAliveThink_Deal", function(ply)
+    local function ArmsDealer_TTTPlayerAliveThink_Deal(ply)
         if GetRoundState() ~= ROUND_ACTIVE then return end
         if not ply:IsArmsDealer() then return end
         if ply.TTTArmsDealerDisabled then return end
@@ -500,16 +500,16 @@ if SERVER then
                 end
             end
         end
-    end)
+    end
 
     AddHook("TTTBeginRound", "ArmsDealer_TTTBeginRound", function()
         blocklistWeapons = ParseBlocklist(armsdealer_deal_blocklist)
     end)
 
-    AddHook("TTTOnRoleAbilityEnabled", "ArmsDealer_TTTOnRoleAbilityEnabled", function(ply)
+    local function ArmsDealer_TTTOnRoleAbilityEnabled(ply)
         if not IsPlayer(ply) or not ply:IsArmsDealer() then return end
         ply.TTTArmsDealerDisabled = false
-    end)
+    end
 
     -------------
     -- CLEANUP --
@@ -527,6 +527,16 @@ if SERVER then
             timer.Remove("TTTArmsDealerNotifyDelay_" .. v:SteamID64())
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["PostPlayerDeath"] = ArmsDealer_PostPlayerDeath,
+        ["TTTOnRoleAbilityEnabled"] = ArmsDealer_TTTOnRoleAbilityEnabled,
+        ["TTTPlayerAliveThink"] = ArmsDealer_TTTPlayerAliveThink_Deal
+    }
 end
 
 if CLIENT then
@@ -547,7 +557,7 @@ if CLIENT then
     end
 
     -- Show a revealed target's team info (NOT ROLE)
-    AddHook("TTTTargetIDPlayerRoleIcon", "ArmsDealer_TTTTargetIDPlayerRoleIcon", function(ply, cli, role, noz, color_role, hideBeggar, showJester, hideBodysnatcher)
+    local function ArmsDealer_TTTTargetIDPlayerRoleIcon(ply, cli, role, noz, color_role, hideBeggar, showJester, hideBodysnatcher)
         -- Don't overwrite something we already know
         if role then return end
         if not cli:IsArmsDealer() then return end
@@ -566,9 +576,9 @@ if CLIENT then
         end
 
         return ROLE_NONE, false, role
-    end)
+    end
 
-    AddHook("TTTTargetIDPlayerRing", "ArmsDealer_TTTTargetIDPlayerRing", function(ent, cli, ring_visible)
+    local function ArmsDealer_TTTTargetIDPlayerRing(ent, cli, ring_visible)
         -- Don't overwrite something we already know
         if ring_visible then return end
         if not cli:IsArmsDealer() then return end
@@ -577,9 +587,9 @@ if CLIENT then
         if cli:IsRoleAbilityDisabled() then return end
 
         return true, GetRoleColor(ent)
-    end)
+    end
 
-    AddHook("TTTTargetIDPlayerText", "ArmsDealer_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
+    local function ArmsDealer_TTTTargetIDPlayerText(ent, cli, text, col, secondary_text)
         -- Don't bother if something else is already showing both texts
         if text and secondary_text then return end
         if not cli:IsArmsDealer() then return end
@@ -623,7 +633,7 @@ if CLIENT then
         else
             return primary, primaryCol, secondary, secondaryCol
         end
-    end)
+    end
 
     ROLE.istargetidoverridden = function(ply, target, showJester)
         if not ply:IsArmsDealer() then return end
@@ -652,7 +662,7 @@ if CLIENT then
     -- SCOREBOARD --
     ----------------
 
-    AddHook("TTTScoreboardPlayerRole", "ArmsDealer_TTTScoreboardPlayerRole", function(ply, cli, c, roleStr)
+    local function ArmsDealer_TTTScoreboardPlayerRole(ply, cli, c, roleStr)
         -- Don't overwrite something we already know
         if roleStr and #roleStr ~= 0 then return end
         if not cli:IsArmsDealer() then return end
@@ -671,7 +681,7 @@ if CLIENT then
         end
 
         return ROLE_COLORS_SCOREBOARD[role], ROLE_STRINGS_SHORT[ROLE_NONE]
-    end)
+    end
 
     ROLE.isscoreboardinfooverridden = function(ply, target, showJester)
         if not ply:IsArmsDealer() then return end
@@ -690,7 +700,7 @@ if CLIENT then
     local hide_role = GetConVar("ttt_hide_role")
 
     local client
-    AddHook("HUDPaint", "ArmsDealer_HUDPaint", function()
+    local function ArmsDealer_HUDPaint()
         if not client then
             client = LocalPlayer()
         end
@@ -739,9 +749,9 @@ if CLIENT then
             local progress = math.min(1, 1 - ((endTime - CurTime()) / deal_time))
             CRHUD:PaintProgressBar(x, y, w, color, text, progress)
         end
-    end)
+    end
 
-    AddHook("TTTHUDInfoPaint", "ArmsDealer_TTTHUDInfoPaint", function(cli, label_left, label_top, active_labels)
+    local function ArmsDealer_TTTHUDInfoPaint(cli, label_left, label_top, active_labels)
         if hide_role:GetBool() then return end
         if not cli:IsActiveArmsDealer() then return end
 
@@ -791,13 +801,13 @@ if CLIENT then
 
         -- Track that the label was added so others can position accurately
         TableInsert(active_labels, "armsdealerCooldown")
-    end)
+    end
 
     ----------------
     -- WIN CHECKS --
     ----------------
 
-    AddHook("TTTScoringSecondaryWins", "ArmsDealer_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+    local function ArmsDealer_TTTScoringSecondaryWins(wintype, secondary_wins)
         local deal_to_win = armsdealer_deal_to_win:GetInt()
         for _, p in PlayerIterator() do
             if not p:IsArmsDealer() then continue end
@@ -808,7 +818,7 @@ if CLIENT then
                 return
             end
         end
-    end)
+    end
 
     ------------
     -- EVENTS --
@@ -830,7 +840,7 @@ if CLIENT then
         return item
     end
 
-    AddHook("TTTSyncEventIDs", "ArmsDealer_TTTSyncEventIDs", function()
+    local function ArmsDealer_TTTSyncEventIDs()
         EVENT_ARMSDEALERDEALT = EVENTS_BY_ROLE[ROLE_ARMSDEALER]
         local deal_icon = Material("icon16/group_go.png")
         local Event = CLSCORE.DeclareEventDisplay
@@ -842,7 +852,7 @@ if CLIENT then
             icon = function(e)
                 return deal_icon, "Item dealt"
             end})
-    end)
+    end
 
     net.Receive("TTT_ArmsDealerItemDealt", function(len)
         local armsdealer = net.ReadPlayer()
@@ -881,7 +891,7 @@ if CLIENT then
         })
     end)
 
-    AddHook("TTTScoringSummaryRender", "ArmsDealer_TTTScoringSummaryRender", function(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
+    local function ArmsDealer_TTTScoringSummaryRender(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
         if not IsPlayer(ply) then return end
         if not ply:IsArmsDealer() then return end
 
@@ -891,7 +901,7 @@ if CLIENT then
             dealt = dealt .. "/" .. deal_to_win
         end
         return roleFileName, groupingRole, roleColor, name, LANG.GetParamTranslation("score_adl_weapons", {count = dealt}), LANG.GetTranslation("score_adl_dealt")
-    end)
+    end
 
     -------------
     -- CLEANUP --
@@ -907,11 +917,11 @@ if CLIENT then
     -- ROLE POPUP --
     ----------------
 
-    AddHook("TTTRolePopupParams", "ArmsDealer_TTTRolePopupParams", function(cli)
+    local function ArmsDealer_TTTRolePopupParams(cli)
         if cli:IsArmsDealer() then
             return { deals = armsdealer_deal_to_win:GetInt() }
         end
-    end)
+    end
 
     --------------
     -- TUTORIAL --
@@ -1016,6 +1026,23 @@ if CLIENT then
             return html
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["HUDPaint"] = ArmsDealer_HUDPaint,
+        ["TTTHUDInfoPaint"] = ArmsDealer_TTTHUDInfoPaint,
+        ["TTTRolePopupParams"] = ArmsDealer_TTTRolePopupParams,
+        ["TTTScoreboardPlayerRole"] = ArmsDealer_TTTScoreboardPlayerRole,
+        ["TTTScoringSecondaryWins"] = ArmsDealer_TTTScoringSecondaryWins,
+        ["TTTScoringSummaryRender"] = ArmsDealer_TTTScoringSummaryRender,
+        ["TTTSyncEventIDs"] = ArmsDealer_TTTSyncEventIDs,
+        ["TTTTargetIDPlayerRing"] = ArmsDealer_TTTTargetIDPlayerRing,
+        ["TTTTargetIDPlayerRoleIcon"] = ArmsDealer_TTTTargetIDPlayerRoleIcon,
+        ["TTTTargetIDPlayerText"] = ArmsDealer_TTTTargetIDPlayerText
+    }
 end
 
 RegisterRole(ROLE)

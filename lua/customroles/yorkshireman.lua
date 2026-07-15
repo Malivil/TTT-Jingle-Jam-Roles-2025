@@ -189,17 +189,17 @@ if SERVER then
         end)
     end
 
-    AddHook("TTTPlayerAliveThink", "Yorkshireman_TTTPlayerAliveThink", function(ply)
+    local function Yorkshireman_TTTPlayerAliveThink(ply)
         if not IsValid(ply) then return end
         if not ply.TTTYorkshiremanCooldownEnd then return end
 
         if CurTime() >= ply.TTTYorkshiremanCooldownEnd then
             ply:ClearProperty("TTTYorkshiremanCooldownEnd", ply)
         end
-    end)
+    end
 
     --  Make the dog automatically attack anyone that damages the Yorkshireman if they don't already have an explicit target
-    AddHook("PostEntityTakeDamage", "Yorkshireman_PostEntityTakeDamage", function(ent, dmginfo, wasDamageTaken)
+    local function Yorkshireman_PostEntityTakeDamage(ent, dmginfo, wasDamageTaken)
         if not wasDamageTaken then return end
         if not IsPlayer(ent) then return end
         if not ent:IsActiveYorkshireman() then return end
@@ -216,13 +216,13 @@ if SERVER then
         if not att:Alive() or att:IsSpec() then return end
 
         dog:SetEnemy(att)
-    end)
+    end
 
-    AddHook("PostPlayerDeath", "Yorkshireman_PostPlayerDeath", function(ply)
+    local function Yorkshireman_PostPlayerDeath(ply)
         if not IsPlayer(ply) then return end
         SafeRemoveEntity(ply.TTTYorkshiremanDog)
         ply.TTTYorkshiremanDog = nil
-    end)
+    end
 
     -------------
     -- CLEANUP --
@@ -236,6 +236,16 @@ if SERVER then
             v:ClearProperty("TTTYorkshiremanCooldownEnd", v)
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["PostEntityTakeDamage"] = Yorkshireman_PostEntityTakeDamage,
+        ["PostPlayerDeath"] = Yorkshireman_PostPlayerDeath,
+        ["TTTPlayerAliveThink"] = Yorkshireman_TTTPlayerAliveThink
+    }
 end
 
 if CLIENT then
@@ -248,16 +258,16 @@ if CLIENT then
         ysm_wins = true
     end)
 
-    AddHook("TTTScoringSecondaryWins", "Yorkshireman_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+    local function Yorkshireman_TTTScoringSecondaryWins(wintype, secondary_wins)
         if not ysm_wins then return end
         TableInsert(secondary_wins, ROLE_YORKSHIREMAN)
-    end)
+    end
 
     ------------
     -- EVENTS --
     ------------
 
-    AddHook("TTTScoringSummaryRender", "Yorkshireman_TTTScoringSummaryRender", function(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
+    local function Yorkshireman_TTTScoringSummaryRender(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
         if not IsPlayer(ply) then return end
         if not ply:IsYorkshireman() then return end
 
@@ -265,7 +275,7 @@ if CLIENT then
         local _, total = GetTeaLimits()
 
         return roleFileName, groupingRole, roleColor, name, collected .. "/" .. total, LANG.GetTranslation("score_ysm_collected")
-    end)
+    end
 
     ---------
     -- HUD --
@@ -273,7 +283,7 @@ if CLIENT then
 
     local hide_role = GetConVar("ttt_hide_role")
 
-    AddHook("TTTHUDInfoPaint", "Yorkshireman_TTTHUDInfoPaint", function(cli, label_left, label_top, active_labels)
+    local function Yorkshireman_TTTHUDInfoPaint(cli, label_left, label_top, active_labels)
         if hide_role:GetBool() then return end
         if not cli:IsYorkshireman() then return end
 
@@ -316,7 +326,7 @@ if CLIENT then
 
         -- Track that the label was added so others can position accurately
         TableInsert(active_labels, "yorkshiremanCooldown")
-    end)
+    end
 
     --------------
     -- TUTORIAL --
@@ -344,6 +354,16 @@ if CLIENT then
     AddHook("TTTPrepareRound", "Yorkshireman_TTTPrepareRound", function()
         ysm_wins = false
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["TTTHUDInfoPaint"] = Yorkshireman_TTTHUDInfoPaint,
+        ["TTTScoringSecondaryWins"] = Yorkshireman_TTTScoringSecondaryWins,
+        ["TTTScoringSummaryRender"] = Yorkshireman_TTTScoringSummaryRender
+    }
 end
 
 RegisterRole(ROLE)

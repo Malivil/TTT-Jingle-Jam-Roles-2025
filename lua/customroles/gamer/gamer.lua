@@ -36,7 +36,7 @@ local gamer_gacha_only_mode = GetConVar("ttt_gamer_gacha_only_mode")
 -- ROLE LOGIC --
 ----------------
 
-AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, isequip)
+local function Gamer_TTTOrderedEquipment(ply, id, isequip)
     if not isequip then return end
 
     if isequip == EQUIP_GAMER_DORITOS then
@@ -94,9 +94,9 @@ AddHook("TTTOrderedEquipment", "Gamer_TTTOrderedEquipment", function(ply, id, is
     elseif isequip == EQUIP_GAMER_MILK then
         ply:EmitSound("gamer/milk.mp3", 100, 100, 1, CHAN_ITEM)
     end
-end)
+end
 
-AddHook("TTTPlayerAliveThink", "Gamer_TTTPlayerAliveThink", function(ply)
+local function Gamer_TTTPlayerAliveThink(ply)
     if not IsPlayer(ply) then return end
 
     local hasSpaghetti = ply:HasEquipmentItem(EQUIP_GAMER_SPAGHETTI)
@@ -136,9 +136,9 @@ AddHook("TTTPlayerAliveThink", "Gamer_TTTPlayerAliveThink", function(ply)
             net.Broadcast()
         end
     end
-end)
+end
 
-AddHook("EntityTakeDamage", "Gamer_Milk_EntityTakeDamage", function(ent, dmginfo)
+local function Gamer_Milk_EntityTakeDamage(ent, dmginfo)
     if not IsPlayer(ent) then return end
 
     -- Reduce fall damage if the victim has had milk
@@ -155,7 +155,7 @@ AddHook("EntityTakeDamage", "Gamer_Milk_EntityTakeDamage", function(ent, dmginfo
         if not dmginfo:IsDamageType(DMG_SLASH) and not dmginfo:IsDamageType(DMG_CLUB) then return end
         dmginfo:ScaleDamage(1 + gamer_milk_melee_damage_bonus:GetFloat())
     end
-end)
+end
 
 AddHook("TTTUpdateRoleState", "Gamer_TTTUpdateRoleState", function()
     local gacha = weapons.GetStored("weapon_gmr_gacha")
@@ -168,7 +168,7 @@ end)
 
 -- In "Gacha-only" mode, credits are treated as ammunition for the Gacha Roller
 -- Initialize it with the same number of credits the player has to start
-AddHook("PlayerLoadout", "Gamer_PlayerLoadout", function(ply)
+local function Gamer_PlayerLoadout(ply)
     if not gamer_gacha_only_mode:GetBool() then return end
     timer.Simple(0, function()
         if not IsPlayer(ply) then return end
@@ -178,17 +178,17 @@ AddHook("PlayerLoadout", "Gamer_PlayerLoadout", function(ply)
 
         gacha:SetClip1(ply:GetCredits())
     end)
-end)
+end
 
 -- And update it any time the player's credits change
-AddHook("TTTPlayerCreditsChanged", "Gamer_TTTPlayerCreditsChanged", function(ply, amt)
+local function Gamer_TTTPlayerCreditsChanged(ply, amt)
     if not gamer_gacha_only_mode:GetBool() then return end
 
     local gacha = ply:GetWeapon("weapon_gmr_gacha")
     if not IsValid(gacha) then return end
 
     gacha:SetClip1(ply:GetCredits())
-end)
+end
 
 -------------
 -- CLEANUP --
@@ -212,4 +212,16 @@ local function Cleanup()
 end
 
 AddHook("TTTPrepareRound", "Gamer_TTTPrepareRound", Cleanup)
-AddHook("TTTEndRound", "Gamer_TTTEndRound", Cleanup)
+
+------------------
+-- REGISTRATION --
+------------------
+
+ROLE_REGISTERED_HOOKS[ROLE_GAMER] = {
+    ["EntityTakeDamage"] = Gamer_Milk_EntityTakeDamage,
+    ["PlayerLoadout"] = Gamer_PlayerLoadout,
+    ["TTTEndRound"] = Cleanup,
+    ["TTTOrderedEquipment"] = Gamer_TTTOrderedEquipment,
+    ["TTTPlayerAliveThink"] = Gamer_TTTPlayerAliveThink,
+    ["TTTPlayerCreditsChanged"] = Gamer_TTTPlayerCreditsChanged
+}

@@ -98,7 +98,7 @@ if SERVER then
     end
 
     local blocklist = {}
-    AddHook("PostEntityTakeDamage", "Pinata_PostEntityTakeDamage", function(ent, dmginfo, taken)
+    local function Pinata_PostEntityTakeDamage(ent, dmginfo, taken)
         if not taken then return end
         if not IsPlayer(ent) or not ent:IsActivePinata() then return end
         if ent:IsRoleAbilityDisabled() then return end
@@ -147,7 +147,7 @@ if SERVER then
             TableInsert(pinatas_damaged, ent:SteamID64())
             att:SetProperty("TTTPinatasDamaged", pinatas_damaged, ent)
         end
-    end)
+    end
 
     AddHook("TTTBeginRound", "Pinata_TTTBeginRound", function()
         blocklist = {}
@@ -156,7 +156,7 @@ if SERVER then
         end
     end)
 
-    AddHook("EntityTakeDamage", "Pinata_EntityTakeDamage", function(ent, dmginfo)
+    local function Pinata_EntityTakeDamage(ent, dmginfo)
         if not IsPlayer(ent) then return end
 
         local att = dmginfo:GetAttacker()
@@ -171,7 +171,7 @@ if SERVER then
             dmginfo:SetDamageBonus(dmginfo:GetDamage())
             dmginfo:ScaleDamage(1 - pinata_damage_reduction:GetFloat())
         end
-    end)
+    end
 
     ------------------
     -- ANNOUNCEMENT --
@@ -206,7 +206,7 @@ if SERVER then
         WIN_PINATA = GenerateNewWinID(ROLE_PINATA)
     end)
 
-    AddHook("TTTCheckForWin", "Pinata_TTTCheckForWin", function()
+    local function Pinata_TTTCheckForWin()
         local pinata_alive = false
         local other_alive = false
         for _, v in PlayerIterator() do
@@ -222,15 +222,15 @@ if SERVER then
         if pinata_alive and not other_alive then
             return WIN_PINATA
         end
-    end)
+    end
 
-    AddHook("TTTPrintResultMessage", "Pinata_TTTPrintResultMessage", function(type)
+    local function Pinata_TTTPrintResultMessage(type)
         if type == WIN_PINATA then
             LANG.Msg("win_pinata", { role = ROLE_STRINGS[ROLE_PINATA] })
             ServerLog("Result: " .. ROLE_STRINGS[ROLE_PINATA] .. " wins.\n")
             return true
         end
-    end)
+    end
 
     -------------
     -- CLEANUP --
@@ -242,6 +242,17 @@ if SERVER then
             v:ClearProperty("TTTPinatasDamaged")
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["EntityTakeDamage"] = Pinata_EntityTakeDamage,
+        ["PostEntityTakeDamage"] = Pinata_PostEntityTakeDamage,
+        ["TTTCheckForWin"] = Pinata_TTTCheckForWin,
+        ["TTTPrintResultMessage"] = Pinata_TTTPrintResultMessage
+    }
 end
 
 if CLIENT then
@@ -249,7 +260,7 @@ if CLIENT then
     -- TARGET ID --
     ---------------
 
-    AddHook("TTTTargetIDPlayerText", "Pinata_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
+    local function Pinata_TTTTargetIDPlayerText(ent, cli, text, col, secondary_text)
         if cli:IsPinata() and IsPlayer(ent) and ent.TTTPinatasDamaged and TableHasValue(ent.TTTPinatasDamaged, cli:SteamID64()) and not cli:IsRoleAbilityDisabled() then
             -- Don't overwrite text
             if text then
@@ -260,7 +271,7 @@ if CLIENT then
                 return LANG.GetTranslation("pinata_targetid"), ROLE_COLORS_RADAR[ROLE_TRAITOR]
             end
         end
-    end)
+    end
 
     ROLE.istargetidoverridden = function(ply, target, showJester)
         if not ply:IsPinata() then return end
@@ -275,17 +286,17 @@ if CLIENT then
     -- WIN CHECKS --
     ----------------
 
-    AddHook("TTTSyncWinIDs", "Pinata_TTTSyncWinIDs", function()
+    local function Pinata_TTTSyncWinIDs()
         WIN_PINATA = WINS_BY_ROLE[ROLE_PINATA]
-    end)
+    end
 
-    AddHook("TTTScoringWinTitle", "Pinata_TTTScoringWinTitle", function(wintype, wintitles, title, secondary_win_role)
+    local function Pinata_TTTScoringWinTitle(wintype, wintitles, title, secondary_win_role)
         if wintype == WIN_PINATA then
             return { txt = "hilite_win_role_singular", params = { role = utf8.upper(ROLE_STRINGS[ROLE_PINATA]) }, c = ROLE_COLORS[ROLE_PINATA] }
         end
-    end)
+    end
 
-    AddHook("TTTScoringSecondaryWins", "Pinata_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+    local function Pinata_TTTScoringSecondaryWins(wintype, secondary_wins)
         if wintype == WIN_PINATA then return end
 
         for _, p in PlayerIterator() do
@@ -295,23 +306,23 @@ if CLIENT then
             TableInsert(secondary_wins, ROLE_PINATA)
             return
         end
-    end)
+    end
 
     ------------
     -- EVENTS --
     ------------
 
-    AddHook("TTTEventFinishText", "Pinata_TTTEventFinishText", function(e)
+    local function Pinata_TTTEventFinishText(e)
         if e.win == WIN_PINATA then
             return LANG.GetParamTranslation("ev_win_pinata", { role = string.lower(ROLE_STRINGS[ROLE_PINATA]) })
         end
-    end)
+    end
 
-    AddHook("TTTEventFinishIconText", "Pinata_TTTEventFinishIconText", function(e, win_string, role_string)
+    local function Pinata_TTTEventFinishIconText(e, win_string, role_string)
         if e.win == WIN_PINATA then
             return win_string, ROLE_STRINGS[ROLE_PINATA]
         end
-    end)
+    end
 
     --------------
     -- TUTORIAL --
@@ -333,6 +344,19 @@ if CLIENT then
             return html
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["TTTEventFinishIconText"] = Pinata_TTTEventFinishIconText,
+        ["TTTEventFinishText"] = Pinata_TTTEventFinishText,
+        ["TTTScoringSecondaryWins"] = Pinata_TTTScoringSecondaryWins,
+        ["TTTScoringWinTitle"] = Pinata_TTTScoringWinTitle,
+        ["TTTSyncWinIDs"] = Pinata_TTTSyncWinIDs,
+        ["TTTTargetIDPlayerText"] = Pinata_TTTTargetIDPlayerText
+    }
 end
 
 RegisterRole(ROLE)

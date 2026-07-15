@@ -225,7 +225,7 @@ local function UpdateTargetsList(skip)
 end
 
 local fireStatus = {}
-AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dframe)
+local function Puppeteer_TTTEquipmentTabs(dsheet, dframe)
     if not client then
         client = LocalPlayer()
     end
@@ -397,11 +397,11 @@ AddHook("TTTEquipmentTabs", "Puppeteer_TTTEquipmentTabs", function(dsheet, dfram
     local added = dsheet:AddSheet(LANG.GetTranslation("puppeteer_puppet_menu_name"), dform, "icon16/television.png", false, false, LANG.GetTranslation("puppeteer_puppet_menu_tip"))
     dsheet:SetActiveTab(added.Tab)
     return true
-end)
+end
 
-AddHook("ShouldDrawLocalPlayer", "Puppeteer_ShouldDrawLocalPlayer", function(ply)
+local function Puppeteer_ShouldDrawLocalPlayer(ply)
     if renderingCamView then return true end
-end)
+end
 
 net.Receive("TTT_PuppeteerPlayerDeath", function()
     if not client then
@@ -434,7 +434,7 @@ end)
 -- HUD --
 ---------
 
-AddHook("TTTHUDInfoPaint", "Puppeteer_TTTHUDInfoPaint", function(cli, label_left, label_top, active_labels)
+local function Puppeteer_TTTHUDInfoPaint(cli, label_left, label_top, active_labels)
     if not cli.TTTPuppeteerDebuffed then return end
 
     surface.SetFont("TabLarge")
@@ -474,7 +474,7 @@ AddHook("TTTHUDInfoPaint", "Puppeteer_TTTHUDInfoPaint", function(cli, label_left
 
     -- Track that the label was added so others can position accurately
     TableInsert(active_labels, "puppeteerDebuff")
-end)
+end
 
 -----------------
 -- FIRE WEAPON --
@@ -599,7 +599,7 @@ local function TargetCleanup()
     RemoveLink()
 end
 
-AddHook("Think", "Puppeteer_Wanderer_Think", function()
+local function Puppeteer_Wanderer_Think()
     if not IsPlayer(client) then
         client = LocalPlayer()
     end
@@ -614,9 +614,9 @@ AddHook("Think", "Puppeteer_Wanderer_Think", function()
     else
         TargetCleanup()
     end
-end)
+end
 
-AddHook("HUDPaint", "Puppeteer_Wanderer_HUDPaint", function()
+local function Puppeteer_Wanderer_HUDPaint()
     if not IsPlayer(client) then
         client = LocalPlayer()
     end
@@ -644,13 +644,13 @@ AddHook("HUDPaint", "Puppeteer_Wanderer_HUDPaint", function()
         color = ROLE_COLORS[ROLE_INNOCENT]
     end
     CRHUD:PaintProgressBar(x, y, w, color, message, progress)
-end)
+end
 
 ------------
 -- EVENTS --
 ------------
 
-AddHook("TTTSyncEventIDs", "Puppeteer_TTTSyncEventIDs", function()
+local function Puppeteer_TTTSyncEventIDs()
     EVENT_PUPPETEERDEBUFFED = EVENTS_BY_ROLE[ROLE_PUPPETEER]
     local debuff_icon = Material("icon16/emoticon_unhappy.png")
     local Event = CLSCORE.DeclareEventDisplay
@@ -662,7 +662,7 @@ AddHook("TTTSyncEventIDs", "Puppeteer_TTTSyncEventIDs", function()
         icon = function(e)
             return debuff_icon, "Debuffed"
         end})
-end)
+end
 
 net.Receive("TTT_PuppeteerDebuffed", function(len)
     local attacker = net.ReadPlayer()
@@ -746,3 +746,16 @@ AddHook("TTTTutorialRoleText", "Puppeteer_TTTTutorialRoleText", function(role, t
         return html
     end
 end)
+
+------------------
+-- REGISTRATION --
+------------------
+
+ROLE_REGISTERED_HOOKS[ROLE_PUPPETEER] = {
+    ["HUDPaint"] = Puppeteer_Wanderer_HUDPaint,
+    ["ShouldDrawLocalPlayer"] = Puppeteer_ShouldDrawLocalPlayer,
+    ["TTTEquipmentTabs"] = Puppeteer_TTTEquipmentTabs,
+    ["TTTHUDInfoPaint"] = Puppeteer_TTTHUDInfoPaint,
+    ["TTTSyncEventIDs"] = Puppeteer_TTTSyncEventIDs,
+    ["Think"] = Puppeteer_Wanderer_Think
+}

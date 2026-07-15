@@ -147,7 +147,7 @@ local mindgoblin_possess_resist_length = CreateConVar("ttt_mindgoblin_possess_re
 -------------------
 
 local speedPlayers = {}
-AddHook("TTTSpeedMultiplier", "MindGoblin_TTTSpeedMultiplier", function(ply, mults)
+local function MindGoblin_TTTSpeedMultiplier(ply, mults)
     if not ply:Alive() or ply:IsSpec() then return end
     local sid = ply:SteamID64()
     local speedFactor
@@ -158,7 +158,7 @@ AddHook("TTTSpeedMultiplier", "MindGoblin_TTTSpeedMultiplier", function(ply, mul
     if speedFactor then
         TableInsert(mults, speedFactor)
     end
-end)
+end
 
 if SERVER then
     AddCSLuaFile()
@@ -189,7 +189,7 @@ if SERVER then
         timer.Remove("MindGoblinPossessingSpectate_" .. ply:SteamID64())
     end
 
-    AddHook("PlayerDeath", "MindGoblin_PlayerDeath", function(victim, inflictor, attacker)
+    local function MindGoblin_PlayerDeath(victim, inflictor, attacker)
         if not IsPlayer(victim) then return end
         if not victim:IsMindGoblin() then
             -- If this player is the target of a mind goblin, clear all that
@@ -271,12 +271,12 @@ if SERVER then
             net.WriteString(victim:Nick())
             net.WriteString(attacker:Nick())
         net.Broadcast()
-    end)
+    end
 
     local timerIds = {}
     local damagePlayers = {}
     local resistPlayers = {}
-    AddHook("KeyPress", "MindGoblin_KeyPress", function(ply, key)
+    local function MindGoblin_KeyPress(ply, key)
         if not IsPlayer(ply) then return end
         if not ply:IsMindGoblin() then return end
 
@@ -420,9 +420,9 @@ if SERVER then
 
         -- Prevent normal spectator buttons
         return true
-    end)
+    end
 
-    AddHook("EntityTakeDamage", "MindGoblin_EntityTakeDamage", function(ply, dmginfo)
+    local function MindGoblin_EntityTakeDamage(ply, dmginfo)
         local att = dmginfo:GetAttacker()
         -- If the attacker is buffed, scale their damage up
         if IsPlayer(att) and att:Alive() and not att:IsSpec() then
@@ -440,7 +440,7 @@ if SERVER then
         if resistPlayers[plySid64] and resistPlayers[plySid64] > 0 then
             dmginfo:ScaleDamage(1 - mindgoblin_possess_resist_factor:GetFloat())
         end
-    end)
+    end
 
     ------------
     -- EVENTS --
@@ -468,6 +468,17 @@ if SERVER then
         damagePlayers = {}
         resistPlayers = {}
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["EntityTakeDamage"] = MindGoblin_EntityTakeDamage,
+        ["KeyPress"] = MindGoblin_KeyPress,
+        ["PlayerDeath"] = MindGoblin_PlayerDeath,
+        ["TTTSpeedMultiplier"] = MindGoblin_TTTSpeedMultiplier
+    }
 end
 
 if CLIENT then
@@ -494,12 +505,12 @@ if CLIENT then
         healPlayers[sid64] = healPlayers[sid64] - 1
     end)
 
-    AddHook("TTTShouldPlayerSmoke", "MindGoblin_TTTShouldPlayerSmoke", function(ply, cli, shouldSmoke, smokeParticle, smokeOffset)
+    local function MindGoblin_TTTShouldPlayerSmoke(ply, cli, shouldSmoke, smokeParticle, smokeOffset)
         local sid64 = ply:SteamID64()
         if healPlayers[sid64] and healPlayers[sid64] > 0 then
             return true, COLOR_GREEN
         end
-    end)
+    end
 
     net.Receive("TTT_MindGoblinSpeedStart", function()
         local cli = LocalPlayer()
@@ -526,7 +537,7 @@ if CLIENT then
     -- HUD --
     ---------
 
-    AddHook("TTTSpectatorShowHUD", "MindGoblin_TTTSpectatorShowHUD", function(cli, tgt)
+    local function MindGoblin_TTTSpectatorShowHUD(cli, tgt)
         if not cli:IsMindGoblin() or not IsPlayer(tgt) then return end
 
         local L = LANG.GetUnsafeLanguageTable()
@@ -561,13 +572,13 @@ if CLIENT then
         local max_power = mindgoblin_possess_power_max:GetInt()
 
         CRHUD:PaintPowersHUD(cli, powers, max_power, current_power, willpower_colors, L.mindgoblin_possess_title)
-    end)
+    end
 
     ------------
     -- EVENTS --
     ------------
 
-    AddHook("TTTSyncEventIDs", "MindGoblin_TTTSyncEventIDs", function()
+    local function MindGoblin_TTTSyncEventIDs()
         EVENT_MINDGOBLIN = EVENTS_BY_ROLE[ROLE_MINDGOBLIN]
         local possess_icon = Material("icon16/group.png")
         local PT = LANG.GetParamTranslation
@@ -579,7 +590,7 @@ if CLIENT then
             icon = function(e)
                 return possess_icon, "Possess"
             end})
-    end)
+    end
 
     net.Receive("TTT_MindGoblinPossess", function(len)
         local victim = net.ReadString()
@@ -595,7 +606,7 @@ if CLIENT then
     -- WIN CHECKS --
     ----------------
 
-    AddHook("TTTScoringSecondaryWins", "MindGoblin_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+    local function MindGoblin_TTTScoringSecondaryWins(wintype, secondary_wins)
         for _, p in PlayerIterator() do
             if p:Alive() or not p:IsSpec() then continue end
             if not p:IsMindGoblin() then continue end
@@ -610,13 +621,13 @@ if CLIENT then
             TableInsert(secondary_wins, ROLE_MINDGOBLIN)
             return
         end
-    end)
+    end
 
     -------------
     -- SCORING --
     -------------
 
-    AddHook("TTTScoringSummaryRender", "MindGoblin_TTTScoringSummaryRender", function(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
+    local function MindGoblin_TTTScoringSummaryRender(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
         if not IsPlayer(ply) then return end
 
         if ply:IsMindGoblin() then
@@ -625,7 +636,7 @@ if CLIENT then
                 return roleFileName, groupingRole, roleColor, name, possessedName, LANG.GetTranslation("score_mindgoblin_possessed")
             end
         end
-    end)
+    end
 
     -------------
     -- CLEANUP --
@@ -685,6 +696,18 @@ if CLIENT then
 
         return html
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["TTTScoringSecondaryWins"] = MindGoblin_TTTScoringSecondaryWins,
+        ["TTTScoringSummaryRender"] = MindGoblin_TTTScoringSummaryRender,
+        ["TTTShouldPlayerSmoke"] = MindGoblin_TTTShouldPlayerSmoke,
+        ["TTTSpectatorShowHUD"] = MindGoblin_TTTSpectatorShowHUD,
+        ["TTTSyncEventIDs"] = MindGoblin_TTTSyncEventIDs
+    }
 end
 
 RegisterRole(ROLE)

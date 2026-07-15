@@ -56,7 +56,7 @@ concommand.Add("ttt_gamer_gacha_offset_reset", function()
     gacha_offset_y:SetInt(gacha_offset_y:GetDefault())
 end)
 
-AddHook("TTTSettingsRolesTabSections", "Gamer_TTTSettingsRolesTabSections", function(role, parentForm)
+local function Gamer_TTTSettingsRolesTabSections(role, parentForm)
     if role ~= ROLE_GAMER then return end
 
     -- Let the user move the gacha machine within the bounds of the window
@@ -65,7 +65,7 @@ AddHook("TTTSettingsRolesTabSections", "Gamer_TTTSettingsRolesTabSections", func
     parentForm:NumSlider(LANG.GetTranslation("gamer_config_gacha_offset_y"), "ttt_gamer_gacha_offset_y", -height, height, 0)
     parentForm:Button(LANG.GetTranslation("gamer_config_gacha_offset_reset"), "ttt_gamer_gacha_offset_reset")
     return true
-end)
+end
 
 local xOffset = 0
 local xOffsetTarget = 0
@@ -390,7 +390,7 @@ local function DrawOutlinedText(text, font, x, y, color, xalign, yalign)
     draw.SimpleText(text, font, x, y, color, xalign, yalign)
 end
 
-AddHook("HUDPaint", "Gamer_HUDPaint", function()
+local function Gamer_HUDPaint()
     if not isAnimating then return end
 
     xOffset = xOffset + (xOffsetTarget - xOffset) * 0.1
@@ -512,13 +512,13 @@ AddHook("HUDPaint", "Gamer_HUDPaint", function()
 
     -- Cover
     DrawOutlinedRect(boxMaxX - (ballRadius * 4), boxMaxY + bodyHeight - bodyOverlap - (ballRadius * 4), ballRadius * 3, (ballRadius * 4) * outputHeight, 200, 200, 200)
-end)
+end
 
 ---------------------
 -- CHEETO TRACKING --
 ---------------------
 
-AddHook("PreDrawHalos", "Gamer_Highlight_PreDrawHalos", function()
+local function Gamer_Highlight_PreDrawHalos()
     if GetRoundState() ~= ROUND_ACTIVE then return end
 
     if not client then
@@ -538,7 +538,7 @@ AddHook("PreDrawHalos", "Gamer_Highlight_PreDrawHalos", function()
 
     -- Highlight the gamer's marked targets as orange
     halo.Add(targets, GAMER.Config.CheetoColor, 1, 1, 1, true, true)
-end)
+end
 
 local fartColor = COLOR_GREEN
 net.Receive("TTTGamerMilkFart", function()
@@ -592,19 +592,18 @@ local function Cleanup()
 end
 
 AddHook("TTTPrepareRound", "Gamer_TTTPrepareRound", Cleanup)
-AddHook("TTTEndRound", "Gamer_TTTEndRound", Cleanup)
 
 ----------------
 -- ROLE POPUP --
 ----------------
 
-AddHook("TTTRolePopupRoleStringOverride", "Gamer_TTTRolePopupRoleStringOverride", function(cli, roleString)
+local function Gamer_TTTRolePopupRoleStringOverride(cli, roleString)
     if not IsPlayer(cli) or not cli:IsGamer() then return end
 
     if gacha_only_mode:GetBool() then
         return roleString .. "_gacha_only"
     end
-end)
+end
 
 --------------
 -- TUTORIAL --
@@ -638,3 +637,15 @@ AddHook("TTTTutorialRoleText", "Gamer_TTTTutorialRoleText", function(role, title
         return html
     end
 end)
+
+------------------
+-- REGISTRATION --
+------------------
+
+ROLE_REGISTERED_HOOKS[ROLE_GAMER] = {
+    ["HUDPaint"] = Gamer_HUDPaint,
+    ["PreDrawHalos"] = Gamer_Highlight_PreDrawHalos,
+    ["TTTEndRound"] = Cleanup,
+    ["TTTRolePopupRoleStringOverride"] = Gamer_TTTRolePopupRoleStringOverride,
+    ["TTTSettingsRolesTabSections"] = Gamer_TTTSettingsRolesTabSections
+}

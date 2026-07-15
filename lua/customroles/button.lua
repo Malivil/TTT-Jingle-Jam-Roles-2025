@@ -134,7 +134,7 @@ if SERVER then
     -- DAMAGE --
     ------------
 
-    AddHook("EntityTakeDamage", "Button_EntityTakeDamage", function(ent, dmginfo)
+    local function Button_EntityTakeDamage(ent, dmginfo)
         if GetRoundState() < ROUND_ACTIVE then return end
         if not IsPlayer(ent) then return end
         if not ent:IsButton() then return end
@@ -143,7 +143,7 @@ if SERVER then
         if not IsPlayer(att) then return end
 
         dmginfo:SetDamage(0)
-    end)
+    end
 
     ----------------
     -- WIN CHECKS --
@@ -153,11 +153,11 @@ if SERVER then
         WIN_BUTTON = GenerateNewWinID(ROLE_BUTTON)
     end)
 
-    AddHook("TTTCheckForWin", "Button_TTTCheckForWin", function()
+    local function Button_TTTCheckForWin()
         if GetGlobalBool("ttt_button_pressed") and CurTime() > GetGlobalFloat("ttt_button_timer_end", -1) then
             return WIN_TRAITOR
         end
-    end)
+    end
 
     -------------
     -- CLEANUP --
@@ -217,6 +217,15 @@ if SERVER then
             end
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["EntityTakeDamage"] = Button_EntityTakeDamage,
+        ["TTTCheckForWin"] = Button_TTTCheckForWin
+    }
 end
 
 if CLIENT then
@@ -239,7 +248,7 @@ if CLIENT then
     local timerWidth = 8*segmentWidth + 4*segmentLength + 8*segmentMargin
     local timerHeight = segmentWidth + 2*segmentLength + 4*segmentMargin
 
-    AddHook("TTTSettingsRolesTabSections", "Button_TTTSettingsRolesTabSections", function(role, parentForm)
+    local function Button_TTTSettingsRolesTabSections(role, parentForm)
         if role ~= ROLE_BUTTON then return end
 
         -- Let the user move the timer within the bounds of the window
@@ -248,15 +257,15 @@ if CLIENT then
         parentForm:NumSlider(LANG.GetTranslation("button_config_timer_offset_y"), "ttt_button_timer_offset_y", 0, ScrH() - timerHeight, 0)
         parentForm:Button(LANG.GetTranslation("button_config_timer_offset_reset"), "ttt_button_timer_offset_reset")
         return true
-    end)
+    end
 
     ----------------
     -- WIN CHECKS --
     ----------------
 
-    AddHook("TTTSyncWinIDs", "Button_TTTSyncWinIDs", function()
+    local function Button_TTTSyncWinIDs()
         WIN_BUTTON = WINS_BY_ROLE[ROLE_BUTTON]
-    end)
+    end
 
     local buttonWins = false
     net.Receive("TTT_UpdateButtonWins", function()
@@ -275,27 +284,27 @@ if CLIENT then
     AddHook("TTTPrepareRound", "Button_WinTracking_TTTPrepareRound", ResetButtonWin)
     AddHook("TTTBeginRound", "Button_WinTracking_TTTBeginRound", ResetButtonWin)
 
-    AddHook("TTTScoringSecondaryWins", "Button_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+    local function Button_TTTScoringSecondaryWins(wintype, secondary_wins)
         if buttonWins then
             TableInsert(secondary_wins, ROLE_BUTTON)
         end
-    end)
+    end
 
     ------------
     -- EVENTS --
     ------------
 
-    AddHook("TTTEventFinishText", "Button_TTTEventFinishText", function(e)
+    local function Button_TTTEventFinishText(e)
         if e.win == WIN_BUTTON then
             return LANG.GetParamTranslation("ev_win_button", { role = string.lower(ROLE_STRINGS[ROLE_BUTTON]) })
         end
-    end)
+    end
 
-    AddHook("TTTEventFinishIconText", "Button_TTTEventFinishIconText", function(e, win_string, role_string)
+    local function Button_TTTEventFinishIconText(e, win_string, role_string)
         if e.win == WIN_BUTTON then
             return "ev_win_icon_also", ROLE_STRINGS[ROLE_BUTTON]
         end
-    end)
+    end
 
     ---------
     -- HUD --
@@ -415,7 +424,7 @@ if CLIENT then
 
     end
 
-    AddHook("HUDPaint", "Button_HUDPaint", function()
+    local function Button_HUDPaint()
         local x = ((ScrW() - timerWidth) / 2) + timer_offset_x:GetInt()
         local y = timer_offset_y:GetInt();
         local remaining = MathMax(0, GetGlobalFloat("ttt_button_timer_end", -1) - CurTime())
@@ -431,7 +440,7 @@ if CLIENT then
                 DrawSevenSegmentNumber(timeLeft, x, y, segmentWidth, segmentLength, segmentMargin)
             end
         end
-    end)
+    end
 
     local redTint = {
         ["$pp_colour_addr"] = 0.1,
@@ -444,13 +453,13 @@ if CLIENT then
         ["$pp_colour_mulg"] = 0,
         ["$pp_colour_mulb"] = 0
     }
-    AddHook("RenderScreenspaceEffects", "Button_RenderScreenspaceEffects", function()
+    local function Button_RenderScreenspaceEffects()
         if not GetGlobalBool("ttt_button_pressed", false) then return end
         local remaining = MathMax(0, GetGlobalFloat("ttt_button_timer_end", -1) - CurTime())
         if MathFloor(remaining) % 2 == 0 then
             DrawColorModify(redTint)
         end
-    end)
+    end
 
     ------------
     -- SOUNDS --
@@ -458,7 +467,7 @@ if CLIENT then
 
     local countdownNumbers = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
     local playedNumber = {false, false, false, false, false, false, false, false, false, false}
-    AddHook("Think", "Button_Think", function()
+    local function Button_Think()
         if not GetGlobalBool("ttt_button_pressed", false) then return end
 
         local remaining = MathMax(0, GetGlobalFloat("ttt_button_timer_end", -1) - CurTime())
@@ -468,7 +477,7 @@ if CLIENT then
                 surface.PlaySound("button/" .. countdownNumbers[k] .. ".wav")
             end
         end
-    end)
+    end
 
     local function ResetSounds()
         local countdown_length = button_countdown_length:GetFloat();
@@ -492,30 +501,30 @@ if CLIENT then
     -- TARGET ID --
     ---------------
 
-    AddHook("TTTTargetIDPlayerRoleIcon", "Button_TTTTargetIDPlayerRoleIcon", function(ply, cli, role, noz, color_role, hideBeggar, showJester, hideBodysnatcher)
+    local function Button_TTTTargetIDPlayerRoleIcon(ply, cli, role, noz, color_role, hideBeggar, showJester, hideBodysnatcher)
         if GetRoundState() < ROUND_ACTIVE then return end
         if cli:IsTraitorTeam() and ply:IsButton() then
             return ROLE_BUTTON, false, ROLE_BUTTON
         end
-    end)
+    end
 
-    AddHook("TTTTargetIDPlayerRing", "Button_TTTTargetIDPlayerRing", function(ent, cli, ring_visible)
+    local function Button_TTTTargetIDPlayerRing(ent, cli, ring_visible)
         if GetRoundState() < ROUND_ACTIVE then return end
         if not IsPlayer(ent) then return end
 
         if cli:IsTraitorTeam() and ent:IsButton() then
             return true, ROLE_COLORS_RADAR[ROLE_BUTTON]
         end
-    end)
+    end
 
-    AddHook("TTTTargetIDPlayerText", "Button_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
+    local function Button_TTTTargetIDPlayerText(ent, cli, text, col, secondary_text)
         if GetRoundState() < ROUND_ACTIVE then return end
         if not IsPlayer(ent) then return end
 
         if cli:IsTraitorTeam() and ent:IsButton() then
             return Utf8Upper(ROLE_STRINGS[ROLE_BUTTON]), ROLE_COLORS_RADAR[ROLE_BUTTON]
         end
-    end)
+    end
 
     ROLE.istargetidoverridden = function(ply, target)
         if GetRoundState() < ROUND_ACTIVE then return end
@@ -530,12 +539,12 @@ if CLIENT then
     -- SCOREBOARD --
     ----------------
 
-    AddHook("TTTScoreboardPlayerRole", "Button_TTTScoreboardPlayerRole", function(ply, cli, color, roleFileName)
+    local function Button_TTTScoreboardPlayerRole(ply, cli, color, roleFileName)
         if GetRoundState() < ROUND_ACTIVE then return end
         if cli:IsTraitorTeam() and ply:IsButton() then
             return ROLE_COLORS_SCOREBOARD[ROLE_BUTTON], ROLE_STRINGS_SHORT[ROLE_BUTTON]
         end
-    end)
+    end
 
     ROLE.isscoreboardinfooverridden = function(ply, target)
         if GetRoundState() < ROUND_ACTIVE then return end
@@ -587,6 +596,25 @@ if CLIENT then
             return html
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["HUDPaint"] = Button_HUDPaint,
+        ["RenderScreenspaceEffects"] = Button_RenderScreenspaceEffects,
+        ["TTTEventFinishIconText"] = Button_TTTEventFinishIconText,
+        ["TTTEventFinishText"] = Button_TTTEventFinishText,
+        ["TTTScoreboardPlayerRole"] = Button_TTTScoreboardPlayerRole,
+        ["TTTScoringSecondaryWins"] = Button_TTTScoringSecondaryWins,
+        ["TTTSettingsRolesTabSections"] = Button_TTTSettingsRolesTabSections,
+        ["TTTSyncWinIDs"] = Button_TTTSyncWinIDs,
+        ["TTTTargetIDPlayerRing"] = Button_TTTTargetIDPlayerRing,
+        ["TTTTargetIDPlayerRoleIcon"] = Button_TTTTargetIDPlayerRoleIcon,
+        ["TTTTargetIDPlayerText"] = Button_TTTTargetIDPlayerText,
+        ["Think"] = Button_Think
+    }
 end
 
 RegisterRole(ROLE)

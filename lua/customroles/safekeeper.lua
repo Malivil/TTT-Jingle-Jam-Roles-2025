@@ -133,7 +133,7 @@ if SERVER then
         ply:ClearProperty("TTTSafekeeperPickStart", ply)
     end
 
-    AddHook("TTTPlayerAliveThink", "Safekeeper_TTTPlayerAliveThink_Picking", function(ply)
+    local function Safekeeper_TTTPlayerAliveThink_Picking(ply)
         if ply.TTTSafekeeperLastPickTime == nil then return end
 
         local pickTarget = ply.TTTSafekeeperPickTarget
@@ -154,14 +154,14 @@ if SERVER then
         if curTime - pickStart < safekeeper_pick_time:GetInt() then return end
 
         pickTarget:Open(ply)
-    end)
+    end
 
-    AddHook("PostPlayerDeath", "Safekeeper_PostPlayerDeath", function(ply)
+    local function Safekeeper_PostPlayerDeath(ply)
         if not IsPlayer(ply) then return end
 
         -- If a player died, they can't be picking the safe anymore so clear that state
         ResetPickState(ply)
-    end)
+    end
 
     -------------------
     -- ROLE FEATURES --
@@ -182,7 +182,7 @@ if SERVER then
     end
 
     -- Drop the safe when the player they hold it for too long
-    AddHook("TTTPlayerAliveThink", "Safekeeper_TTTPlayerAliveThink", function(ply)
+    local function Safekeeper_TTTPlayerAliveThink(ply)
         if not IsPlayer(ply) then return end
         if not ply:IsSafekeeper() then return end
 
@@ -204,12 +204,12 @@ if SERVER then
         if not IsValid(wep) then return end
 
         wep:PrimaryAttack(true)
-    end)
+    end
 
     -- Automatically switch to the safe placers when they player gets it and
     -- start the auto-drop timer
     -- Also track who loots the items that come out of the safe
-    AddHook("WeaponEquip", "Safekeeper_WeaponEquip", function(wep, ply)
+    local function Safekeeper_WeaponEquip(wep, ply)
         if not IsPlayer(ply) then return end
 
         -- If this weapon is from a Safekeeper's safe,
@@ -254,10 +254,10 @@ if SERVER then
             ply:SetProperty("TTTSafekeeperDropTime", CurTime() + drop_time, ply)
         end)
         ply:ClearProperty("TTTSafekeeperSafe")
-    end)
+    end
 
     -- Mark the safe for a dead Safekeeper as revealed and tell everyone
-    AddHook("TTTBodyFound", "Safekeeper_TTTBodyFound", function(ply, deadply, rag)
+    local function Safekeeper_TTTBodyFound(ply, deadply, rag)
         if not IsPlayer(deadply) then return end
 
         local safeEntIdx = deadply.TTTSafekeeperSafe
@@ -275,10 +275,10 @@ if SERVER then
             end
         end
         safe:SetProperty("TTTSafekeeperSafeRevealed", true)
-    end)
+    end
 
     -- If this weapon comes from a Safekeeper's safe, the Safekeeper cannot pick it up
-    AddHook("PlayerCanPickupWeapon", "Safekeeper_PlayerCanPickupWeapon", function(ply, wep)
+    local function Safekeeper_PlayerCanPickupWeapon(ply, wep)
         if not IsPlayer(ply) then return end
         if not IsValid(wep) then return end
         if not ply:IsSafekeeper() then return end
@@ -286,7 +286,7 @@ if SERVER then
         if wep.TTTSafekeeperSpawnedBy == ply:SteamID64() then
             return false
         end
-    end)
+    end
 
     ------------
     -- EVENTS --
@@ -315,7 +315,7 @@ if SERVER then
     ----------------
 
     -- On disconnect, destroy the safe if they have one
-    AddHook("PlayerDisconnected", "Safekeeper_PlayerDisconnected", function(ply)
+    local function Safekeeper_PlayerDisconnected(ply)
         if not IsPlayer(ply) then return end
 
         local safeEntIdx = ply.TTTSafekeeperSafe
@@ -325,7 +325,22 @@ if SERVER then
         if not IsValid(safe) then return end
 
         SafeRemoveEntity(safe)
-    end)
+    end
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["PlayerCanPickupWeapon"] = Safekeeper_PlayerCanPickupWeapon,
+        ["PlayerDisconnected"] = Safekeeper_PlayerDisconnected,
+        ["PostPlayerDeath"] = Safekeeper_PostPlayerDeath,
+        ["TTTBodyFound"] = Safekeeper_TTTBodyFound,
+        ["TTTPlayerAliveThink"] = {            ["Safekeeper_TTTPlayerAliveThink"] = Safekeeper_TTTPlayerAliveThink,
+            ["Safekeeper_TTTPlayerAliveThink_Picking"] = Safekeeper_TTTPlayerAliveThink_Picking
+        },
+        ["WeaponEquip"] = Safekeeper_WeaponEquip
+    }
 end
 
 if CLIENT then
@@ -334,7 +349,7 @@ if CLIENT then
     --------------------
 
     local client
-    AddHook("HUDPaint", "Safekeeper_HUDPaint", function()
+    local function Safekeeper_HUDPaint()
         if not client then
             client = LocalPlayer()
         end
@@ -356,7 +371,7 @@ if CLIENT then
         local y = ScrH() / 2
         local w = 300
         CRHUD:PaintProgressBar(x, y, w, COLOR_GREEN, text, progress)
-    end)
+    end
 
     net.Receive("TTT_SafekeeperPlaySound", function()
         local soundType = net.ReadString()
@@ -368,7 +383,7 @@ if CLIENT then
     ---------------
 
     -- Show skull icon over the looters' heads
-    AddHook("TTTTargetIDPlayerTargetIcon", "Safekeeper_TTTTargetIDPlayerTargetIcon", function(ply, cli, showJester)
+    local function Safekeeper_TTTTargetIDPlayerTargetIcon(ply, cli, showJester)
         if not cli:IsSafekeeper() then return end
         if not IsPlayer(ply) then return end
         if not ply.TTTSafekeeperLootedList then return end
@@ -377,10 +392,10 @@ if CLIENT then
         if cli:IsRoleAbilityDisabled() then return end
 
         return "kill", true, ROLE_COLORS_SPRITE[ROLE_SAFEKEEPER], "down"
-    end)
+    end
 
     -- And "LOOTER" under their name
-    hook.Add("TTTTargetIDPlayerText", "Safekeeper_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
+    local function Safekeeper_TTTTargetIDPlayerText(ent, cli, text, col, secondary_text)
         if not cli:IsSafekeeper() then return end
         if not IsPlayer(ent) then return end
         if not ent.TTTSafekeeperLootedList then return end
@@ -395,7 +410,7 @@ if CLIENT then
             return text, col, LANG.GetTranslation("safekeeper_target_looter"), ROLE_COLORS_RADAR[ROLE_SAFEKEEPER]
         end
         return LANG.GetTranslation("safekeeper_target_looter"), ROLE_COLORS_RADAR[ROLE_SAFEKEEPER]
-    end)
+    end
 
     ROLE.istargetidoverridden = function(ply, target, showJester)
         if not ply:IsSafekeeper() then return end
@@ -423,7 +438,7 @@ if CLIENT then
         return TableHasValue(target.TTTSafekeeperLootedList, ply:SteamID64())
     end
 
-    AddHook("PreDrawHalos", "Safekeeper_PreDrawHalos_Highlight", function()
+    local function Safekeeper_PreDrawHalos_Highlight()
         if not client then
             client = LocalPlayer()
         end
@@ -463,13 +478,13 @@ if CLIENT then
         if #safes == 0 then return end
 
         halo.Add(safes, COLOR_WHITE, 1, 1, 1, true, true)
-    end)
+    end
 
     ------------
     -- EVENTS --
     ------------
 
-    AddHook("TTTSyncEventIDs", "Safekeeper_TTTSyncEventIDs", function()
+    local function Safekeeper_TTTSyncEventIDs()
         EVENT_SAFEKEEPERPICKED = EVENTS_BY_ROLE[ROLE_SAFEKEEPER]
         local swap_icon = Material("icon16/lock_open.png")
         local Event = CLSCORE.DeclareEventDisplay
@@ -481,7 +496,7 @@ if CLIENT then
             icon = function(e)
                 return swap_icon, "Safe Picked"
             end})
-    end)
+    end
 
     net.Receive("TTT_SafekeeperSafePicked", function(len)
         local safekeeper = net.ReadString()
@@ -497,7 +512,7 @@ if CLIENT then
     -- WIN CHECKS --
     ----------------
 
-    AddHook("TTTScoringSecondaryWins", "Safekeeper_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+    local function Safekeeper_TTTScoringSecondaryWins(wintype, secondary_wins)
         for _, p in PlayerIterator() do
             if not p:IsSafekeeper() then continue end
 
@@ -534,13 +549,13 @@ if CLIENT then
                 return
             end
         end
-    end)
+    end
 
     ---------
     -- HUD --
     ---------
 
-    AddHook("TTTHUDInfoPaint", "Safekeeper_TTTHUDInfoPaint", function(cli, label_left, label_top, active_labels)
+    local function Safekeeper_TTTHUDInfoPaint(cli, label_left, label_top, active_labels)
         if not cli:IsActiveSafekeeper() then return end
 
         surface.SetFont("TabLarge")
@@ -569,7 +584,7 @@ if CLIENT then
 
         -- Track that the label was added so others can position accurately
         TableInsert(active_labels, "safekeeper")
-    end)
+    end
 
     --------------
     -- TUTORIAL --
@@ -607,6 +622,20 @@ if CLIENT then
             return html
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["HUDPaint"] = Safekeeper_HUDPaint,
+        ["PreDrawHalos"] = Safekeeper_PreDrawHalos_Highlight,
+        ["TTTHUDInfoPaint"] = Safekeeper_TTTHUDInfoPaint,
+        ["TTTScoringSecondaryWins"] = Safekeeper_TTTScoringSecondaryWins,
+        ["TTTSyncEventIDs"] = Safekeeper_TTTSyncEventIDs,
+        ["TTTTargetIDPlayerTargetIcon"] = Safekeeper_TTTTargetIDPlayerTargetIcon,
+        ["TTTTargetIDPlayerText"] = Safekeeper_TTTTargetIDPlayerText
+    }
 end
 
 RegisterRole(ROLE)

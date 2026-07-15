@@ -14,17 +14,17 @@ local randoswapper_max_swaps = GetConVar("ttt_randoswapper_max_swaps")
 -- TRANSLATIONS --
 ------------------
 
-AddHook("TTTRolePopupParams", "Randoswapper_TTTRolePopupParams", function(cli)
+local function Randoswapper_TTTRolePopupParams(cli)
     if not cli:IsRandoswapper() then return end
 
     return { randoswapper = ROLE_STRINGS[ROLE_RANDOSWAPPER] }
-end)
+end
 
 ------------
 -- EVENTS --
 ------------
 
-AddHook("TTTSyncEventIDs", "Randoswapper_TTTSyncEventIDs", function()
+local function Randoswapper_TTTSyncEventIDs()
     EVENT_RANDOSWAPPER = EVENTS_BY_ROLE[ROLE_RANDOSWAPPER]
     local swap_icon = Material("icon16/arrow_refresh_small.png")
     local Event = CLSCORE.DeclareEventDisplay
@@ -36,7 +36,7 @@ AddHook("TTTSyncEventIDs", "Randoswapper_TTTSyncEventIDs", function()
         icon = function(e)
             return swap_icon, "Randoswapped"
         end})
-end)
+end
 
 net.Receive("TTT_RandoswapperSwapped", function(len)
     local victim = net.ReadString()
@@ -56,7 +56,7 @@ end)
 -------------
 
 -- Show who the current randoswapper killed (if anyone)
-AddHook("TTTScoringSummaryRender", "Randoswapper_TTTScoringSummaryRender", function(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
+local function Randoswapper_TTTScoringSummaryRender(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
     if not IsPlayer(ply) then return end
 
     if ply:IsRandoswapper() then
@@ -65,7 +65,7 @@ AddHook("TTTScoringSummaryRender", "Randoswapper_TTTScoringSummaryRender", funct
             return roleFileName, groupingRole, roleColor, name, swappedWith, LANG.GetTranslation("score_randoswapper_killed")
         end
     end
-end)
+end
 
 --------------
 -- TUTORIAL --
@@ -91,3 +91,13 @@ AddHook("TTTTutorialRoleText", "Randoswapper_TTTTutorialRoleText", function(role
         return html
     end
 end)
+
+------------------
+-- REGISTRATION --
+------------------
+
+ROLE_REGISTERED_HOOKS[ROLE_RANDOSWAPPER] = {
+    ["TTTRolePopupParams"] = Randoswapper_TTTRolePopupParams,
+    ["TTTScoringSummaryRender"] = Randoswapper_TTTScoringSummaryRender,
+    ["TTTSyncEventIDs"] = Randoswapper_TTTSyncEventIDs
+}
