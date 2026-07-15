@@ -717,7 +717,7 @@ if CLIENT then
             surface.DrawText(text)
 
             -- Track that the label was added so others can position accurately
-            TableInsert(active_labels, "thiefCredits")
+            TableInsert(active_labels, "thiefStolen")
         end
 
         if cli.TTTThiefStealState ~= THIEF_STEAL_STATE_COOLDOWN then return end
