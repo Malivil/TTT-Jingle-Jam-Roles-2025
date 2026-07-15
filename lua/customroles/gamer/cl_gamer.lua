@@ -263,7 +263,6 @@ net.Receive("TTTGamerGachaStart", function()
 end)
 
 net.Receive("TTTGachaPrizeStart", function()
-    isAnimating = false
     local prizeId = net.ReadString()
     if GAMER.Prizes[prizeId] then
         GAMER.Prizes[prizeId]:Start(LocalPlayer())

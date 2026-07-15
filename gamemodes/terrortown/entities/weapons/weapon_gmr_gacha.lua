@@ -137,6 +137,9 @@ function SWEP:PrimaryAttack()
     local owner = self:GetOwner()
     if not IsPlayer(owner) then return end
 
+    local timerId = "TTTGmrGachaPrize_" .. owner:SteamID64()
+    if timer.Exists(timerId) then return end
+
     if owner:IsRoleAbilityDisabled() then return end
 
     self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
@@ -158,7 +161,8 @@ function SWEP:PrimaryAttack()
             net.WriteString(prize.Id)
         net.Send(owner)
 
-        timer.Create("TTTGmrGachaPrize_" .. owner:SteamID64(), GAMER.Config.Timing.Effect, 1, function()
+        timer.Create(timerId, GAMER.Config.Timing.Effect, 1, function()
+            timer.Remove(timerId)
             if not IsPlayer(owner) then return end
             prize:Start(owner)
             net.Start("TTTGachaPrizeStart")
