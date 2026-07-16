@@ -761,9 +761,9 @@ if CLIENT then
     -- WIN CHECKS --
     ----------------
 
-    local function Thief_TTTSyncWinIDs()
+    AddHook("TTTSyncWinIDs", "Thief_TTTSyncWinIDs", function()
         WIN_THIEF = WINS_BY_ROLE[ROLE_THIEF]
-    end
+    end)
 
     local function Thief_TTTScoringWinTitle(wintype, wintitles, title, secondary_win_role)
         if wintype == WIN_THIEF then
@@ -819,7 +819,7 @@ if CLIENT then
         end
     end
 
-    local function Thief_TTTSyncEventIDs()
+    AddHook("TTTSyncEventIDs", "Thief_TTTSyncEventIDs", function()
         EVENT_THIEFSTOLEN = EVENTS_BY_ROLE[ROLE_THIEF]
         local steal_icon = Material("icon16/money.png")
         local Event = CLSCORE.DeclareEventDisplay
@@ -831,7 +831,7 @@ if CLIENT then
             icon = function(e)
                 return steal_icon, "Item stolen"
             end})
-    end
+    end)
 
     net.Receive("TTT_ThiefItemStolen", function(len)
         local thief = net.ReadPlayer()
@@ -984,9 +984,7 @@ if CLIENT then
         ["TTTRolePopupParams"] = Thief_TTTRolePopupParams,
         ["TTTScoringSecondaryWins"] = Thief_TTTScoringSecondaryWins,
         ["TTTScoringSummaryRender"] = Thief_TTTScoringSummaryRender,
-        ["TTTScoringWinTitle"] = Thief_TTTScoringWinTitle,
-        ["TTTSyncEventIDs"] = Thief_TTTSyncEventIDs,
-        ["TTTSyncWinIDs"] = Thief_TTTSyncWinIDs
+        ["TTTScoringWinTitle"] = Thief_TTTScoringWinTitle
     }
 end
 

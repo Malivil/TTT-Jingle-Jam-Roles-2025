@@ -212,7 +212,7 @@ if CLIENT then
     -- EVENTS --
     ------------
 
-    local function Clone_TTTSyncEventIDs()
+    AddHook("TTTSyncEventIDs", "Clone_TTTSyncEventIDs", function()
         EVENT_CLONEPLAYERCLONED = EVENTS_BY_ROLE[ROLE_CLONE]
         local cloned_icon = Material("icon16/user_suit.png")
         local Event = CLSCORE.DeclareEventDisplay
@@ -224,7 +224,7 @@ if CLIENT then
             icon = function(e)
                 return cloned_icon, "Cloned"
             end})
-    end
+    end)
 
     net.Receive("TTT_ClonePlayerCloned", function(len)
         local clone = net.ReadString()
@@ -300,7 +300,6 @@ if CLIENT then
         ["TTTScoreboardPlayerName"] = Clone_TTTScoreboardPlayerName,
         ["TTTScoringSecondaryWins"] = Clone_TTTScoringSecondaryWins,
         ["TTTScoringSummaryRender"] = Clone_TTTScoringSummaryRender,
-        ["TTTSyncEventIDs"] = Clone_TTTSyncEventIDs,
         ["TTTTargetIDPlayerText"] = Clone_TTTTargetIDPlayerText
     }
 end

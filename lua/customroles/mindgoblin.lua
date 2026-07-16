@@ -578,7 +578,7 @@ if CLIENT then
     -- EVENTS --
     ------------
 
-    local function MindGoblin_TTTSyncEventIDs()
+    AddHook("TTTSyncEventIDs", "MindGoblin_TTTSyncEventIDs", function()
         EVENT_MINDGOBLIN = EVENTS_BY_ROLE[ROLE_MINDGOBLIN]
         local possess_icon = Material("icon16/group.png")
         local PT = LANG.GetParamTranslation
@@ -590,7 +590,7 @@ if CLIENT then
             icon = function(e)
                 return possess_icon, "Possess"
             end})
-    end
+    end)
 
     net.Receive("TTT_MindGoblinPossess", function(len)
         local victim = net.ReadString()
@@ -705,8 +705,7 @@ if CLIENT then
         ["TTTScoringSecondaryWins"] = MindGoblin_TTTScoringSecondaryWins,
         ["TTTScoringSummaryRender"] = MindGoblin_TTTScoringSummaryRender,
         ["TTTShouldPlayerSmoke"] = MindGoblin_TTTShouldPlayerSmoke,
-        ["TTTSpectatorShowHUD"] = MindGoblin_TTTSpectatorShowHUD,
-        ["TTTSyncEventIDs"] = MindGoblin_TTTSyncEventIDs
+        ["TTTSpectatorShowHUD"] = MindGoblin_TTTSpectatorShowHUD
     }
 end
 

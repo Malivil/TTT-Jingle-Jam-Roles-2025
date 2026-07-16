@@ -263,9 +263,9 @@ if CLIENT then
     -- WIN CHECKS --
     ----------------
 
-    local function Button_TTTSyncWinIDs()
+    AddHook("TTTSyncWinIDs", "Button_TTTSyncWinIDs", function()
         WIN_BUTTON = WINS_BY_ROLE[ROLE_BUTTON]
-    end
+    end)
 
     local buttonWins = false
     net.Receive("TTT_UpdateButtonWins", function()
@@ -609,7 +609,6 @@ if CLIENT then
         ["TTTScoreboardPlayerRole"] = Button_TTTScoreboardPlayerRole,
         ["TTTScoringSecondaryWins"] = Button_TTTScoringSecondaryWins,
         ["TTTSettingsRolesTabSections"] = Button_TTTSettingsRolesTabSections,
-        ["TTTSyncWinIDs"] = Button_TTTSyncWinIDs,
         ["TTTTargetIDPlayerRing"] = Button_TTTTargetIDPlayerRing,
         ["TTTTargetIDPlayerRoleIcon"] = Button_TTTTargetIDPlayerRoleIcon,
         ["TTTTargetIDPlayerText"] = Button_TTTTargetIDPlayerText,

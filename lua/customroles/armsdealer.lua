@@ -840,7 +840,7 @@ if CLIENT then
         return item
     end
 
-    local function ArmsDealer_TTTSyncEventIDs()
+    AddHook("TTTSyncEventIDs", "ArmsDealer_TTTSyncEventIDs", function()
         EVENT_ARMSDEALERDEALT = EVENTS_BY_ROLE[ROLE_ARMSDEALER]
         local deal_icon = Material("icon16/group_go.png")
         local Event = CLSCORE.DeclareEventDisplay
@@ -852,7 +852,7 @@ if CLIENT then
             icon = function(e)
                 return deal_icon, "Item dealt"
             end})
-    end
+    end)
 
     net.Receive("TTT_ArmsDealerItemDealt", function(len)
         local armsdealer = net.ReadPlayer()
@@ -1038,7 +1038,6 @@ if CLIENT then
         ["TTTScoreboardPlayerRole"] = ArmsDealer_TTTScoreboardPlayerRole,
         ["TTTScoringSecondaryWins"] = ArmsDealer_TTTScoringSecondaryWins,
         ["TTTScoringSummaryRender"] = ArmsDealer_TTTScoringSummaryRender,
-        ["TTTSyncEventIDs"] = ArmsDealer_TTTSyncEventIDs,
         ["TTTTargetIDPlayerRing"] = ArmsDealer_TTTTargetIDPlayerRing,
         ["TTTTargetIDPlayerRoleIcon"] = ArmsDealer_TTTTargetIDPlayerRoleIcon,
         ["TTTTargetIDPlayerText"] = ArmsDealer_TTTTargetIDPlayerText

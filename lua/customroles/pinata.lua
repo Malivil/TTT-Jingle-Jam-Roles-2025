@@ -286,9 +286,9 @@ if CLIENT then
     -- WIN CHECKS --
     ----------------
 
-    local function Pinata_TTTSyncWinIDs()
+    AddHook("TTTSyncWinIDs", "Pinata_TTTSyncWinIDs", function()
         WIN_PINATA = WINS_BY_ROLE[ROLE_PINATA]
-    end
+    end)
 
     local function Pinata_TTTScoringWinTitle(wintype, wintitles, title, secondary_win_role)
         if wintype == WIN_PINATA then
@@ -354,7 +354,6 @@ if CLIENT then
         ["TTTEventFinishText"] = Pinata_TTTEventFinishText,
         ["TTTScoringSecondaryWins"] = Pinata_TTTScoringSecondaryWins,
         ["TTTScoringWinTitle"] = Pinata_TTTScoringWinTitle,
-        ["TTTSyncWinIDs"] = Pinata_TTTSyncWinIDs,
         ["TTTTargetIDPlayerText"] = Pinata_TTTTargetIDPlayerText
     }
 end

@@ -484,7 +484,7 @@ if CLIENT then
     -- EVENTS --
     ------------
 
-    local function Safekeeper_TTTSyncEventIDs()
+    AddHook("TTTSyncEventIDs", "Safekeeper_TTTSyncEventIDs", function()
         EVENT_SAFEKEEPERPICKED = EVENTS_BY_ROLE[ROLE_SAFEKEEPER]
         local swap_icon = Material("icon16/lock_open.png")
         local Event = CLSCORE.DeclareEventDisplay
@@ -496,7 +496,7 @@ if CLIENT then
             icon = function(e)
                 return swap_icon, "Safe Picked"
             end})
-    end
+    end)
 
     net.Receive("TTT_SafekeeperSafePicked", function(len)
         local safekeeper = net.ReadString()
@@ -632,7 +632,6 @@ if CLIENT then
         ["PreDrawHalos"] = Safekeeper_PreDrawHalos_Highlight,
         ["TTTHUDInfoPaint"] = Safekeeper_TTTHUDInfoPaint,
         ["TTTScoringSecondaryWins"] = Safekeeper_TTTScoringSecondaryWins,
-        ["TTTSyncEventIDs"] = Safekeeper_TTTSyncEventIDs,
         ["TTTTargetIDPlayerTargetIcon"] = Safekeeper_TTTTargetIDPlayerTargetIcon,
         ["TTTTargetIDPlayerText"] = Safekeeper_TTTTargetIDPlayerText
     }

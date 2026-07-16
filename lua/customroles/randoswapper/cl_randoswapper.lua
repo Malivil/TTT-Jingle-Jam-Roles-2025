@@ -24,7 +24,7 @@ end
 -- EVENTS --
 ------------
 
-local function Randoswapper_TTTSyncEventIDs()
+AddHook("TTTSyncEventIDs", "Randoswapper_TTTSyncEventIDs", function()
     EVENT_RANDOSWAPPER = EVENTS_BY_ROLE[ROLE_RANDOSWAPPER]
     local swap_icon = Material("icon16/arrow_refresh_small.png")
     local Event = CLSCORE.DeclareEventDisplay
@@ -36,7 +36,7 @@ local function Randoswapper_TTTSyncEventIDs()
         icon = function(e)
             return swap_icon, "Randoswapped"
         end})
-end
+end)
 
 net.Receive("TTT_RandoswapperSwapped", function(len)
     local victim = net.ReadString()
@@ -98,6 +98,5 @@ end)
 
 ROLE_REGISTERED_HOOKS[ROLE_RANDOSWAPPER] = {
     ["TTTRolePopupParams"] = Randoswapper_TTTRolePopupParams,
-    ["TTTScoringSummaryRender"] = Randoswapper_TTTScoringSummaryRender,
-    ["TTTSyncEventIDs"] = Randoswapper_TTTSyncEventIDs
+    ["TTTScoringSummaryRender"] = Randoswapper_TTTScoringSummaryRender
 }

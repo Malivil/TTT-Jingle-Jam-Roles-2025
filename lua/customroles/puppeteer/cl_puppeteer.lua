@@ -650,7 +650,7 @@ end
 -- EVENTS --
 ------------
 
-local function Puppeteer_TTTSyncEventIDs()
+AddHook("TTTSyncEventIDs", "Puppeteer_TTTSyncEventIDs", function()
     EVENT_PUPPETEERDEBUFFED = EVENTS_BY_ROLE[ROLE_PUPPETEER]
     local debuff_icon = Material("icon16/emoticon_unhappy.png")
     local Event = CLSCORE.DeclareEventDisplay
@@ -662,7 +662,7 @@ local function Puppeteer_TTTSyncEventIDs()
         icon = function(e)
             return debuff_icon, "Debuffed"
         end})
-end
+end)
 
 net.Receive("TTT_PuppeteerDebuffed", function(len)
     local attacker = net.ReadPlayer()
@@ -756,6 +756,5 @@ ROLE_REGISTERED_HOOKS[ROLE_PUPPETEER] = {
     ["ShouldDrawLocalPlayer"] = Puppeteer_ShouldDrawLocalPlayer,
     ["TTTEquipmentTabs"] = Puppeteer_TTTEquipmentTabs,
     ["TTTHUDInfoPaint"] = Puppeteer_TTTHUDInfoPaint,
-    ["TTTSyncEventIDs"] = Puppeteer_TTTSyncEventIDs,
     ["Think"] = Puppeteer_Wanderer_Think
 }
