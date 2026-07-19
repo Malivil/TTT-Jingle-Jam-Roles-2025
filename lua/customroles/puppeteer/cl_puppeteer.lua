@@ -58,12 +58,12 @@ end
 -------------------
 
 surface.CreateFont("PuppeteerTitle", {
-    font = "Tahoma",
+    font = GAMEMODE_DEFAULT_UI_FONT or "Tahoma",
     size = 15,
     weight = 750
 })
 surface.CreateFont("PuppeteerDesc", {
-    font = "Tahoma",
+    font = GAMEMODE_DEFAULT_UI_FONT or "Tahoma",
     size = 13,
     weight = 550
 })
