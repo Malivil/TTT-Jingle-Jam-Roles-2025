@@ -58,7 +58,7 @@ local function ValidTarget(role)
 end
 
 local StartPinataDrop
-AddHook("PostPlayerDeath", "Puppeteer_PostPlayerDeath", function(ply)
+local function Puppeteer_PostPlayerDeath(ply)
     if not IsPlayer(ply) then return end
 
     -- Update the client if a viable target or a puppeteer has died
@@ -79,7 +79,7 @@ AddHook("PostPlayerDeath", "Puppeteer_PostPlayerDeath", function(ply)
     if debuff == PUPPETEER_DEBUFF_TYPE_PINATA then
         StartPinataDrop(ply)
     end
-end)
+end
 
 -- Update the client if a player has been changed to or from a viable target role
 AddHook("TTTPlayerRoleChanged", "Puppeteer_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
@@ -240,7 +240,7 @@ end
 -- Spoilsport --
 
 -- Do this in "DoPlayerDeath" so the Vindicator logic in "PlayerDeath" happens after
-AddHook("DoPlayerDeath", "Puppeteer_Spoilsport_DoPlayerDeath", function(ply, attacker, dmg)
+local function Puppeteer_Spoilsport_DoPlayerDeath(ply, attacker, dmg)
     if not IsPlayer(ply) then return end
     if ply.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_SPOILSPORT then return end
 
@@ -252,11 +252,11 @@ AddHook("DoPlayerDeath", "Puppeteer_Spoilsport_DoPlayerDeath", function(ply, att
     ply:StripRoleWeapons()
     RunHook("PlayerLoadout", ply)
     SendFullStateUpdate()
-end)
+end
 
 -- Copycat --
 
-AddHook("PlayerDeath", "Puppeteer_Copycat_PlayerDeath", function(victim, inflictor, attacker)
+local function Puppeteer_Copycat_PlayerDeath(victim, inflictor, attacker)
     if not IsPlayer(attacker) then return end
     if attacker.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_COPYCAT then return end
 
@@ -272,11 +272,11 @@ AddHook("PlayerDeath", "Puppeteer_Copycat_PlayerDeath", function(victim, inflict
         attacker:ClearProperty("TTTPuppeteerDebuffed")
         attacker:ClearProperty("TTTPuppeteerDebuff")
     end
-end)
+end
 
 -- Red Herring --
 
-AddHook("TTTOnCorpseCreated", "Puppeteer_RedHerring_TTTOnCorpseCreated", function(rag, ply)
+local function Puppeteer_RedHerring_TTTOnCorpseCreated(rag, ply)
     if not IsPlayer(ply) then return end
     if ply.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_REDHERRING then return end
     if rag.puppet_role then return end
@@ -288,9 +288,9 @@ AddHook("TTTOnCorpseCreated", "Puppeteer_RedHerring_TTTOnCorpseCreated", functio
     else
         rag.was_role = ROLE_TRAITOR
     end
-end)
+end
 
-AddHook("TTTPlayerPassesTraitorCheck", "Puppeteer_RedHerring_TTTPlayerPassesTraitorCheck", function(ply, ent)
+local function Puppeteer_RedHerring_TTTPlayerPassesTraitorCheck(ply, ent)
     if not IsPlayer(ply) then return end
     if ply.TTTPuppeteerDebuff ~= PUPPETEER_DEBUFF_TYPE_REDHERRING then return end
 
@@ -301,13 +301,13 @@ AddHook("TTTPlayerPassesTraitorCheck", "Puppeteer_RedHerring_TTTPlayerPassesTrai
     -- The other traitor checks have a Role property
     -- If they are checking for traitors, the Red Herring passes the check
     return ent.Role == ROLE_TRAITOR
-end)
+end
 
-AddHook("PlayerSpawn", "Puppeteer_RedHerring_PlayerSpawn", function(ply)
+local function Puppeteer_RedHerring_PlayerSpawn(ply)
     if not IsPlayer(ply) then return end
     if not ply.TTTPuppeteerRedHerring then return end
     ply.TTTPuppeteerRedHerring = nil
-end)
+end
 
 -- Wanderer --
 
@@ -388,3 +388,16 @@ AddHook("TTTPrepareRound", "Puppeteer_TTTPrepareRound", function()
         v:ClearProperty("TTTPuppeteerDebuffsUsed", v)
     end
 end)
+
+------------------
+-- REGISTRATION --
+------------------
+
+ROLE_REGISTERED_HOOKS[ROLE_PUPPETEER] = {
+    ["DoPlayerDeath"] = Puppeteer_Spoilsport_DoPlayerDeath,
+    ["PlayerDeath"] = Puppeteer_Copycat_PlayerDeath,
+    ["PlayerSpawn"] = Puppeteer_RedHerring_PlayerSpawn,
+    ["PostPlayerDeath"] = Puppeteer_PostPlayerDeath,
+    ["TTTOnCorpseCreated"] = Puppeteer_RedHerring_TTTOnCorpseCreated,
+    ["TTTPlayerPassesTraitorCheck"] = Puppeteer_RedHerring_TTTPlayerPassesTraitorCheck
+}

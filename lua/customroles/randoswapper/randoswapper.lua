@@ -148,7 +148,7 @@ local function SwapCupidLovers(attacker, randoswapper)
 end
 
 local swapCount = 0
-AddHook("PlayerDeath", "Randoswapper_KillCheck_PlayerDeath", function(victim, infl, attacker)
+local function Randoswapper_KillCheck_PlayerDeath(victim, infl, attacker)
     local valid_kill = IsPlayer(attacker) and attacker ~= victim and GetRoundState() == ROUND_ACTIVE
     if not valid_kill then return end
     if not victim:IsRandoswapper() or victim:IsRoleAbilityDisabled() then return end
@@ -259,9 +259,9 @@ AddHook("PlayerDeath", "Randoswapper_KillCheck_PlayerDeath", function(victim, in
     net.WriteString(attacker:Nick())
     net.WriteString(victim:SteamID64())
     net.Broadcast()
-end)
+end
 
-AddHook("TTTStopPlayerRespawning", "Randoswapper_TTTStopPlayerRespawning", function(ply)
+local function Randoswapper_TTTStopPlayerRespawning(ply)
     if not IsPlayer(ply) then return end
     if ply:Alive() then return end
 
@@ -269,13 +269,13 @@ AddHook("TTTStopPlayerRespawning", "Randoswapper_TTTStopPlayerRespawning", funct
         timer.Remove("Randoswapping_" .. ply:SteamID64())
         ply:SetNWBool("IsRandoswapping", false)
     end
-end)
+end
 
-AddHook("TTTCupidShouldLoverSurvive", "Randoswapper_TTTCupidShouldLoverSurvive", function(ply, lover)
+local function Randoswapper_TTTCupidShouldLoverSurvive(ply, lover)
     if ply:GetNWBool("IsRandoswapping", false) or lover:GetNWBool("IsRandoswapping", false) then
         return true
     end
-end)
+end
 
 AddHook("TTTPrepareRound", "Randoswapper_TTTPrepareRound", function()
     swapCount = 0
@@ -285,3 +285,13 @@ AddHook("TTTPrepareRound", "Randoswapper_TTTPrepareRound", function()
         timer.Remove("Randoswapping_" .. v:SteamID64())
     end
 end)
+
+------------------
+-- REGISTRATION --
+------------------
+
+ROLE_REGISTERED_HOOKS[ROLE_RANDOSWAPPER] = {
+    ["PlayerDeath"] = Randoswapper_KillCheck_PlayerDeath,
+    ["TTTCupidShouldLoverSurvive"] = Randoswapper_TTTCupidShouldLoverSurvive,
+    ["TTTStopPlayerRespawning"] = Randoswapper_TTTStopPlayerRespawning
+}

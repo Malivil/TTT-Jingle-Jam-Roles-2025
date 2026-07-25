@@ -201,7 +201,7 @@ if SERVER then
         end)
     end
 
-    AddHook("TTTCanOrderEquipment", "Sibling_TTTCanOrderEquipment", function(ply, item, is_item)
+    local function Sibling_TTTCanOrderEquipment(ply, item, is_item)
         local share_mode = sibling_share_mode:GetInt()
         local copy_count = sibling_copy_count:GetInt()
         local steal_chance = sibling_steal_chance:GetFloat()
@@ -253,7 +253,7 @@ if SERVER then
             ply:SubtractCredits(1)
             return false
         end
-    end)
+    end
 
     -------------
     -- CLEANUP --
@@ -265,6 +265,14 @@ if SERVER then
             v:ClearProperty("TTTSiblingTarget", v)
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["TTTCanOrderEquipment"] = Sibling_TTTCanOrderEquipment
+    }
 end
 
 if CLIENT then
@@ -272,7 +280,7 @@ if CLIENT then
     -- TARGET ID --
     ---------------
 
-    AddHook("TTTTargetIDPlayerText", "Sibling_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
+    local function Sibling_TTTTargetIDPlayerText(ent, cli, text, col, secondary_text)
         if cli:IsSibling() and IsPlayer(ent) and ent:SteamID64() == cli.TTTSiblingTarget and sibling_reveal_target:GetBool() and not cli:IsRoleAbilityDisabled() then
             -- Don't overwrite text
             if text then
@@ -283,7 +291,7 @@ if CLIENT then
                 return LANG.GetTranslation("sibling_targetid"), ROLE_COLORS_RADAR[ROLE_SIBLING]
             end
         end
-    end)
+    end
 
     ROLE.istargetidoverridden = function(ply, target, showJester)
         if not ply:IsSibling() then return end
@@ -299,12 +307,12 @@ if CLIENT then
     -- SCOREBOARD --
     ----------------
 
-    AddHook("TTTScoreboardPlayerName", "Sibling_TTTScoreboardPlayerName", function(ply, cli, text)
+    local function Sibling_TTTScoreboardPlayerName(ply, cli, text)
         if cli:IsSibling() and ply:SteamID64() == cli.TTTSiblingTarget and sibling_reveal_target:GetBool() and not cli:IsRoleAbilityDisabled()then
             local newText = " (" .. LANG.GetTranslation("sibling_targetid") .. ")"
             return ply:Nick() .. newText
         end
-    end)
+    end
 
     ROLE.isscoreboardinfooverridden = function(ply, target)
         if not ply:IsSibling() then return end
@@ -323,7 +331,7 @@ if CLIENT then
     -- ROLE POPUP --
     ----------------
 
-    AddHook("TTTRolePopupParams", "Sibling_TTTRolePopupParams", function(cli)
+    local function Sibling_TTTRolePopupParams(cli)
         if cli:IsSibling() then
             local target = player.GetBySteamID64(cli.TTTSiblingTarget)
             local targetNick = "No one"
@@ -332,15 +340,15 @@ if CLIENT then
             end
             return { siblingtarget = targetNick }
         end
-    end)
+    end
 
-    AddHook("TTTRolePopupRoleStringOverride", "Sibling_TTTRolePopupRoleStringOverride", function(cli, roleString)
+    local function Sibling_TTTRolePopupRoleStringOverride(cli, roleString)
         if not IsPlayer(cli) or not cli:IsSibling() then return end
 
         if not sibling_reveal_target:GetBool() then
             return roleString .. "_hidden"
         end
-    end)
+    end
 
     --------------
     -- TUTORIAL --
@@ -421,6 +429,17 @@ if CLIENT then
             return html
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["TTTRolePopupParams"] = Sibling_TTTRolePopupParams,
+        ["TTTRolePopupRoleStringOverride"] = Sibling_TTTRolePopupRoleStringOverride,
+        ["TTTScoreboardPlayerName"] = Sibling_TTTScoreboardPlayerName,
+        ["TTTTargetIDPlayerText"] = Sibling_TTTTargetIDPlayerText
+    }
 end
 
 RegisterRole(ROLE)

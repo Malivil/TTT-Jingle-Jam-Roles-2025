@@ -326,11 +326,11 @@ if SERVER then
         end
     end
 
-    AddHook("PostPlayerDeath", "Thief_PostPlayerDeath", function(ply)
+    local function Thief_PostPlayerDeath(ply)
         if not IsPlayer(ply) then return end
         if not ply:IsThief() then return end
         ClearTracking(ply)
-    end)
+    end
 
     AddHook("TTTPlayerRoleChanged", "Thief_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
         if oldRole == newRole then return end
@@ -346,7 +346,7 @@ if SERVER then
         end
     end)
 
-    AddHook("TTTPlayerAliveThink", "Thief_TTTPlayerAliveThink_Steal", function(ply)
+    local function Thief_TTTPlayerAliveThink_Steal(ply)
         if GetRoundState() ~= ROUND_ACTIVE then return end
         if not ply:IsThief() then return end
         if ply.TTTThiefDisabled then return end
@@ -466,12 +466,12 @@ if SERVER then
                 ply:ThiefSteal(target)
             end
         end
-    end)
+    end
 
-    AddHook("TTTOnRoleAbilityEnabled", "Thief_TTTOnRoleAbilityEnabled", function(ply)
+    local function Thief_TTTOnRoleAbilityEnabled(ply)
         if not IsPlayer(ply) or not ply:IsThief() then return end
         ply.TTTThiefDisabled = false
-    end)
+    end
 
     -- Thief can only use the weapons they steal, plus the allowed defaults, their thieves' tools, and any melee weapons
     ROLE.onroleassigned = function(ply)
@@ -502,7 +502,7 @@ if SERVER then
         end)
     end
 
-    AddHook("PlayerCanPickupWeapon", "Thief_PlayerCanPickupWeapon", function(ply, wep)
+    local function Thief_PlayerCanPickupWeapon(ply, wep)
         if not IsPlayer(ply) then return end
         if not ply:IsActiveThief() then return end
         if not IsValid(wep) then return end
@@ -515,9 +515,9 @@ if SERVER then
         if not TableHasValue(allowedWeaponClasses, wepClass) then
             return false
         end
-    end)
+    end
 
-    AddHook("WeaponEquip", "Thief_WeaponEquip", function(wep, ply)
+    local function Thief_WeaponEquip(wep, ply)
         if not IsPlayer(ply) then return end
         if not ply:IsActiveThief() then return end
         if not IsValid(wep) then return end
@@ -537,21 +537,21 @@ if SERVER then
             -- Reset the property for the next steal
             ply.TTTThiefStolenWeapon = nil
         end
-    end)
+    end
 
     -- Mark this as a weapon that the thief had previously stolen so they can pick it up again later
-    AddHook("PlayerDroppedWeapon", "Thief_PlayerDroppedWeapon", function(ply, wep)
+    local function Thief_PlayerDroppedWeapon(ply, wep)
         if not IsValid(ply) then return end
         if not IsValid(wep) then return end
         if not ply:IsThief() then return end
         wep.TTTThiefStolenWeapon = true
-    end)
+    end
 
     ----------------
     -- WIN CHECKS --
     ----------------
 
-    AddHook("TTTCheckForWin", "Thief_TTTCheckForWin", function()
+    local function Thief_TTTCheckForWin()
         if not INDEPENDENT_ROLES[ROLE_THIEF] then return end
         if ROLE_HAS_PASSIVE_WIN[ROLE_THIEF] then return end
 
@@ -572,15 +572,15 @@ if SERVER then
         elseif thief_alive then
             return WIN_NONE
         end
-    end)
+    end
 
-    AddHook("TTTPrintResultMessage", "Thief_TTTPrintResultMessage", function(type)
+    local function Thief_TTTPrintResultMessage(type)
         if type == WIN_THIEF then
             LANG.Msg("win_thief", { role = ROLE_STRINGS[ROLE_THIEF] })
             ServerLog("Result: " .. ROLE_STRINGS[ROLE_THIEF] .. " wins.\n")
             return true
         end
-    end)
+    end
 
     -------------
     -- CLEANUP --
@@ -598,6 +598,21 @@ if SERVER then
             timer.Remove("TTTThiefNotifyDelay_" .. v:SteamID64())
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["PlayerCanPickupWeapon"] = Thief_PlayerCanPickupWeapon,
+        ["PlayerDroppedWeapon"] = Thief_PlayerDroppedWeapon,
+        ["PostPlayerDeath"] = Thief_PostPlayerDeath,
+        ["TTTCheckForWin"] = Thief_TTTCheckForWin,
+        ["TTTOnRoleAbilityEnabled"] = Thief_TTTOnRoleAbilityEnabled,
+        ["TTTPlayerAliveThink"] = Thief_TTTPlayerAliveThink_Steal,
+        ["TTTPrintResultMessage"] = Thief_TTTPrintResultMessage,
+        ["WeaponEquip"] = Thief_WeaponEquip
+    }
 end
 
 if CLIENT then
@@ -608,7 +623,7 @@ if CLIENT then
     local hide_role = GetConVar("ttt_hide_role")
 
     local client
-    AddHook("HUDPaint", "Thief_HUDPaint", function()
+    local function Thief_HUDPaint()
         if not client then
             client = LocalPlayer()
         end
@@ -652,10 +667,10 @@ if CLIENT then
             local progress = math.min(1, 1 - ((endTime - CurTime()) / proximity_time))
             CRHUD:PaintProgressBar(x, y, w, color, text, progress)
         end
-    end)
+    end
 
     local icon_tex = Material("icon16/coins.png")
-    AddHook("TTTHUDInfoPaint", "Thief_TTTHUDInfoPaint", function(cli, label_left, label_top, active_labels)
+    local function Thief_TTTHUDInfoPaint(cli, label_left, label_top, active_labels)
         if hide_role:GetBool() then return end
         if not cli:IsActiveThief() then return end
 
@@ -717,7 +732,7 @@ if CLIENT then
             surface.DrawText(text)
 
             -- Track that the label was added so others can position accurately
-            TableInsert(active_labels, "thiefCredits")
+            TableInsert(active_labels, "thiefStolen")
         end
 
         if cli.TTTThiefStealState ~= THIEF_STEAL_STATE_COOLDOWN then return end
@@ -740,7 +755,7 @@ if CLIENT then
 
         -- Track that the label was added so others can position accurately
         TableInsert(active_labels, "thiefCooldown")
-    end)
+    end
 
     ----------------
     -- WIN CHECKS --
@@ -750,13 +765,13 @@ if CLIENT then
         WIN_THIEF = WINS_BY_ROLE[ROLE_THIEF]
     end)
 
-    AddHook("TTTScoringWinTitle", "Thief_TTTScoringWinTitle", function(wintype, wintitles, title, secondary_win_role)
+    local function Thief_TTTScoringWinTitle(wintype, wintitles, title, secondary_win_role)
         if wintype == WIN_THIEF then
             return { txt = "hilite_win_role_singular", params = { role = utf8.upper(ROLE_STRINGS[ROLE_THIEF]) }, c = ROLE_COLORS[ROLE_THIEF] }
         end
-    end)
+    end
 
-    AddHook("TTTScoringSecondaryWins", "Thief_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+    local function Thief_TTTScoringSecondaryWins(wintype, secondary_wins)
         -- The Thief only gets a secondary win if they are passive
         if not ROLE_HAS_PASSIVE_WIN[ROLE_THIEF] then return end
 
@@ -770,7 +785,7 @@ if CLIENT then
                 return
             end
         end
-    end)
+    end
 
     ------------
     -- EVENTS --
@@ -792,17 +807,17 @@ if CLIENT then
         return item
     end
 
-    AddHook("TTTEventFinishText", "Thief_TTTEventFinishText", function(e)
+    local function Thief_TTTEventFinishText(e)
         if e.win == WIN_THIEF then
             return LANG.GetParamTranslation("ev_win_thief", { role = string.lower(ROLE_STRINGS[ROLE_THIEF]) })
         end
-    end)
+    end
 
-    AddHook("TTTEventFinishIconText", "Thief_TTTEventFinishIconText", function(e, win_string, role_string)
+    local function Thief_TTTEventFinishIconText(e, win_string, role_string)
         if e.win == WIN_THIEF then
             return win_string, ROLE_STRINGS[ROLE_THIEF]
         end
-    end)
+    end
 
     AddHook("TTTSyncEventIDs", "Thief_TTTSyncEventIDs", function()
         EVENT_THIEFSTOLEN = EVENTS_BY_ROLE[ROLE_THIEF]
@@ -844,7 +859,7 @@ if CLIENT then
         })
     end)
 
-    AddHook("TTTScoringSummaryRender", "Thief_TTTScoringSummaryRender", function(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
+    local function Thief_TTTScoringSummaryRender(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
         if not IsPlayer(ply) then return end
         if not ply:IsThief() then return end
 
@@ -854,13 +869,13 @@ if CLIENT then
             stolen = stolen .. "/" .. steal_to_win
         end
         return roleFileName, groupingRole, roleColor, name, LANG.GetParamTranslation("score_thf_weapons", {count = stolen}), LANG.GetTranslation("score_thf_stole")
-    end)
+    end
 
     ----------------
     -- ROLE POPUP --
     ----------------
 
-    AddHook("TTTRolePopupParams", "Thief_TTTRolePopupParams", function(cli)
+    local function Thief_TTTRolePopupParams(cli)
         if not cli:IsThief() then return end
 
         local params = {
@@ -890,7 +905,7 @@ if CLIENT then
         end
 
         return params
-    end)
+    end
 
     --------------
     -- TUTORIAL --
@@ -956,6 +971,21 @@ if CLIENT then
             return html
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["HUDPaint"] = Thief_HUDPaint,
+        ["TTTEventFinishIconText"] = Thief_TTTEventFinishIconText,
+        ["TTTEventFinishText"] = Thief_TTTEventFinishText,
+        ["TTTHUDInfoPaint"] = Thief_TTTHUDInfoPaint,
+        ["TTTRolePopupParams"] = Thief_TTTRolePopupParams,
+        ["TTTScoringSecondaryWins"] = Thief_TTTScoringSecondaryWins,
+        ["TTTScoringSummaryRender"] = Thief_TTTScoringSummaryRender,
+        ["TTTScoringWinTitle"] = Thief_TTTScoringWinTitle
+    }
 end
 
 RegisterRole(ROLE)
