@@ -691,7 +691,7 @@ net.Receive("TTT_PuppeteerDebuffed", function(len)
         local message = LANG.GetParamTranslation("ev_puppeteerdebuffed", { attacker = string.Capitalize(ROLE_STRINGS_EXT[ROLE_PUPPETEER]), victim = LANG.GetTranslation("puppeteer_puppet_target_you"), debuff = eventData.deb })
         client:QueueMessage(MSG_PRINTBOTH, message)
     elseif client ~= attacker and client:IsTraitorTeam() then
-        local message = LANG.GetParamTranslation("ev_puppeteerdebuffed", { attacker = eventData.att, victim = eventData.vic, debuff = eventData.deb })
+        local message = LANG.GetParamTranslation("ev_puppeteerdebuffed", { attacker = string.Capitalize(ROLE_STRINGS_EXT[ROLE_PUPPETEER]), victim = eventData.vic, debuff = eventData.deb })
         client:QueueMessage(MSG_PRINTBOTH, message)
     end
 
