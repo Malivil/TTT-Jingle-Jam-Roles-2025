@@ -200,7 +200,7 @@ ttt_pinata_update_scoreboard 0    // Whether Piñatas show dead players as missi
 
 ## ![Role Icon](/gamemodes/terrortown/content/materials/vgui/ttt/roles/pup/tab_pup.png) Puppeteer
 _Suggested By_: Spaazington\
-The Puppeteer is a Special Traitor role that is controls a targeted player, watching their movements and applying negative effects.
+The Puppeteer is a Special Traitor role that controls a targeted player, watching their movements and applying negative effects.
 \
 \
 **ConVars**
