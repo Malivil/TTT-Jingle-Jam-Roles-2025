@@ -49,7 +49,7 @@ local function GetDebuffInfo(debuff)
     local T = LANG.GetTranslation
     local pinata_count = puppeteer_debuff_pinata_count:GetInt()
     local name = T("puppeteer_puppet_debuff_" .. debuff)
-    local desc = LANG.GetParamTranslation("puppeteer_puppet_debuff_" .. debuff .. "_tip", { num = pinata_count, traitor = T("traitor"), atraitor = ROLE_STRINGS_EXT[ROLE_TRAITOR], avindicator = ROLE_STRINGS_EXT[ROLE_VINDICATOR] })
+    local desc = LANG.GetParamTranslation("puppeteer_puppet_debuff_" .. debuff .. "_tip", { num = pinata_count, traitor = T("traitor"), atraitor = ROLE_STRINGS_EXT[ROLE_TRAITOR], avindicator = ROLE_STRINGS_EXT[ROLE_VINDICATOR], aninnocent = ROLE_STRINGS_EXT[ROLE_INNOCENT] })
     return icon_tex[debuff], name, desc
 end
 
