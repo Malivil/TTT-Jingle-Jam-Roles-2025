@@ -213,11 +213,14 @@ local function UpdateTargetsList(skip)
     local _, selected = dtargetbox:GetSelected()
     dtargetbox:Clear()
     dtargetbox:SetValue(LANG.GetTranslation("puppeteer_puppet_target_placeholder"))
+    local teamBlocked = IsIllusionistBlocking()
     for _, p in PlayerIterator() do
         if p == client or p == skip then continue end
         if not IsPlayer(p) then continue end
         if not p:Alive() or p:IsSpec() then continue end
-        if p:IsDetectiveTeam() or p:IsTraitorTeam() or p:IsGlitch() or p:IsJesterTeam() then continue end
+        if p:IsDetectiveTeam() or p:IsJesterTeam() then continue end
+        -- Only skip traitors and glitches if the puppeteer knows who their team is
+        if not teamBlocked and (p:IsTraitorTeam() or p:IsGlitch()) then continue end
 
         local sid64 = p:SteamID64()
         dtargetbox:AddChoice(p:Nick(), sid64, sid64 == selected)
@@ -690,7 +693,8 @@ net.Receive("TTT_PuppeteerDebuffed", function(len)
     if victim == client then
         local message = LANG.GetParamTranslation("ev_puppeteerdebuffed", { attacker = string.Capitalize(ROLE_STRINGS_EXT[ROLE_PUPPETEER]), victim = LANG.GetTranslation("puppeteer_puppet_target_you"), debuff = eventData.deb })
         client:QueueMessage(MSG_PRINTBOTH, message)
-    elseif client ~= attacker and client:IsTraitorTeam() then
+    -- If this client is a member of the puppeteer's team and they can see who their team is, then let them know what debuff the target got
+    elseif client ~= attacker and client:IsTraitorTeam() and not IsIllusionistBlocking() then
         local message = LANG.GetParamTranslation("ev_puppeteerdebuffed", { attacker = string.Capitalize(ROLE_STRINGS_EXT[ROLE_PUPPETEER]), victim = eventData.vic, debuff = eventData.deb })
         client:QueueMessage(MSG_PRINTBOTH, message)
     end
