@@ -56,6 +56,36 @@ local function AddBuffHook(ply, entIndex, foodType, amount)
     if foodType ~= CHEF_FOOD_TYPE_BURGER and foodType ~= CHEF_FOOD_TYPE_FISH then return end
     if not IsPlayer(ply) then return end
 
+    local hookType, hookName, hookFn
+    if foodType == CHEF_FOOD_TYPE_BURGER then
+        hookType = "TTTSpeedMultiplier"
+        hookName = "Chef_" .. hookType .. "_" .. foodType .. "_" .. entIndex
+        hookFn = function(tgt, mults)
+            if not IsPlayer(tgt) then return end
+            if tgt ~= ply then return end
+            TableInsert(mults, 1 + amount)
+        end
+    elseif foodType == CHEF_FOOD_TYPE_FISH then
+        hookType = "EntityTakeDamage"
+        hookName = "Chef_" .. hookType .. "_" .. foodType .. "_" .. entIndex
+        hookFn = function(tgt, dmginfo)
+            if not IsPlayer(tgt) then return end
+
+            local att = dmginfo:GetAttacker()
+            if not IsPlayer(att) then return end
+            if att ~= ply then return end
+
+            dmginfo:ScaleDamage(1 + amount)
+        end
+    end
+
+    if not ply.TTTChefHooks then
+        ply.TTTChefHooks = {}
+    end
+
+    -- This hook has already been created for this user
+    if ply.TTTChefHooks[hookName] == hookType then return end
+
     if SERVER then
         net.Start("TTT_ChefFoodAddHook")
             net.WriteUInt(entIndex, 16)
@@ -64,32 +94,7 @@ local function AddBuffHook(ply, entIndex, foodType, amount)
         net.Send(ply)
     end
 
-    local hookType, hookName
-    if foodType == CHEF_FOOD_TYPE_BURGER then
-        hookType = "TTTSpeedMultiplier"
-        hookName = "Chef_" .. hookType .. "_" .. foodType .. "_" .. entIndex
-        AddHook(hookType, hookName, function(tgt, mults)
-            if not IsPlayer(tgt) then return end
-            if tgt ~= ply then return end
-            TableInsert(mults, 1 + amount)
-        end)
-    elseif foodType == CHEF_FOOD_TYPE_FISH then
-        hookType = "EntityTakeDamage"
-        hookName = "Chef_" .. hookType .. "_" .. foodType .. "_" .. entIndex
-        AddHook(hookType, hookName, function(tgt, dmginfo)
-            if not IsPlayer(tgt) then return end
-
-            local att = dmginfo:GetAttacker()
-            if not IsPlayer(att) then return end
-            if att ~= ply then return end
-
-            dmginfo:ScaleDamage(1 + amount)
-        end)
-    end
-
-    if not ply.TTTChefHooks then
-        ply.TTTChefHooks = {}
-    end
+    AddHook(hookType, hookName, hookFn)
     ply.TTTChefHooks[hookName] = hookType
 end
 
@@ -169,6 +174,23 @@ if SERVER then
         return "like you're a bit more powerful."
     end
 
+    local function AddOrUpdateBuffTimer(timerId, interval, repetitions, func)
+        if timer.Exists(timerId) then
+            timer.Adjust(timerId, interval, repetitions + timer.RepsLeft(timerId))
+        else
+            timer.Create(timerId, interval, repetitions, func)
+        end
+    end
+
+    local function AddOrExtendTimer(timerId, time, func)
+        if timer.Exists(timerId) then
+            local timeLeft = timer.TimeLeft(timerId)
+            timer.Adjust(timerId, time + timeLeft)
+        else
+            timer.Create(timerId, time, 1, func)
+        end
+    end
+
     function ENT:Touch(ent)
         if not IsValid(self) then return end
         if self.DidCollide then return end
@@ -196,7 +218,7 @@ if SERVER then
             local amount = GetConVar("ttt_chef_burnt_amount"):GetInt()
             local repetitions = MathRound(time / interval)
             local chef = self:GetChef()
-            timer.Create(timerId, interval, repetitions, function()
+            AddOrUpdateBuffTimer(timerId, interval, repetitions, function()
                 if not IsPlayer(ent) then
                     timer.Remove(timerId)
                     return
@@ -215,7 +237,7 @@ if SERVER then
                 local interval = GetConVar("ttt_chef_hotdog_interval"):GetInt()
                 local amount = GetConVar("ttt_chef_hotdog_amount"):GetInt()
                 local repetitions = MathRound(time / interval)
-                timer.Create(timerId, interval, repetitions, function()
+                AddOrUpdateBuffTimer(timerId, interval, repetitions, function()
                     if not IsPlayer(ent) then
                         timer.Remove(timerId)
                         return
@@ -234,7 +256,7 @@ if SERVER then
                     amount = GetConVar("ttt_chef_fish_amount"):GetFloat()
                 end
                 AddBuffHook(ent, entIndex, foodType, amount)
-                timer.Create(timerId, time, 1, function()
+                AddOrExtendTimer(timerId, time, function()
                     RemoveBuffHook(ent, entIndex, foodType)
                 end)
             end
@@ -242,7 +264,7 @@ if SERVER then
 
         -- Tell the eater when the effects end too
         TableInsert(ent.TTTChefTimers, timerId .. "_End")
-        timer.Create(timerId .. "_End", time, 1, function()
+        AddOrExtendTimer(timerId .. "_End", time, function()
             if not IsPlayer(ent) then return end
             ent:QueueMessage(MSG_PRINTTALK, "The effects of the " .. foodName .. " you ate have faded.")
         end)

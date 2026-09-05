@@ -81,14 +81,14 @@ ttt_chef_overcook_time          5   // How long (in seconds) after food is finis
 ttt_chef_damage_own_stove       0   // Whether a stove's owner can damage it
 ttt_chef_warn_damage            1   // Whether to warn a stove's owner is warned when it is damaged
 ttt_chef_warn_destroy           1   // Whether to warn a stove's owner is warned when it is destroyed
-ttt_chef_burger_time            30  // The amount of time the burger effect should last
+ttt_chef_burger_time            60  // The amount of time the burger effect should last
 ttt_chef_burger_amount          0.5 // The percentage of speed boost that the burger eater should get (e.g. 0.5 = 50% speed boost)
-ttt_chef_hotdog_time            30  // The amount of time the hot dog effect should last
+ttt_chef_hotdog_time            60  // The amount of time the hot dog effect should last
 ttt_chef_hotdog_interval        1   // How often the hot dog eater's health should be restored
 ttt_chef_hotdog_amount          1   // The amount of the hot dog eater's health to restore per interval
-ttt_chef_fish_time              30  // The amount of time the fish effect should last
+ttt_chef_fish_time              60  // The amount of time the fish effect should last
 ttt_chef_fish_amount            0.5 // The percentage of damage boost that the fish eater should get (e.g. 0.5 = 50% damage boost)
-ttt_chef_burnt_time             30  // The amount of time the burnt food effect should last
+ttt_chef_burnt_time             60  // The amount of time the burnt food effect should last
 ttt_chef_burnt_interval         1   // How often the burnt food eater's health should be removed
 ttt_chef_burnt_amount           1   // The amount of the burnt food eater's health to remove per interval
 ttt_chef_placer_buyable         1   // Whether the Chef's Stove Placer is buyable in their shop. Only used if "ttt_chef_is_detective" is enabled
