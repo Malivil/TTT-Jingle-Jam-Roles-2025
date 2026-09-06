@@ -511,6 +511,7 @@ local function Cleanup()
     for _, prize in pairs(GAMER.Prizes) do
         prize:CleanUpHooks()
         prize:CleanUpTimers()
+        prize:End()
     end
 
     for _, p in PlayerIterator() do
